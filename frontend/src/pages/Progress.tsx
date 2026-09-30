@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SyncNotice } from '../components/SyncNotice'
+import { daySeconds, practiceDays } from '../store/practice'
 import { useProgress } from '../store/useProgress'
 import { EXERCISE_LIST, EXERCISES } from '../theory/exercises'
+import { localDateString } from '../theory/practice'
 import { PASS_ACCURACY } from '../theory/rules'
 
 function duration(seconds: number): string {
@@ -11,6 +14,37 @@ function duration(seconds: number): string {
 }
 
 const percent = (value: number) => `${Math.round(value * 100)}%`
+
+/** The last 14 days of the daily routine, oldest first. */
+function lastDays(count: number) {
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (count - 1 - i))
+    return { date: localDateString(d), label: d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) }
+  })
+}
+
+function DailyPractice() {
+  const practised = new Set(practiceDays())
+  const [days] = useState(() => lastDays(14))
+  const week = days.slice(-7).reduce((sum, d) => sum + daySeconds(d.date), 0)
+  const count = days.filter((d) => practised.has(d.date)).length
+  return (
+    <>
+      <h2>Daily practice</h2>
+      <ol className="dots" aria-label="Days of daily practice, last 14 days">
+        {days.map((d) => (
+          <li key={d.date} className={practised.has(d.date) ? 'on' : ''} title={d.label}>
+            <span className="visually-hidden">{d.label}: {practised.has(d.date) ? 'practised' : 'not practised'}</span>
+          </li>
+        ))}
+      </ol>
+      <p className="quiet">
+        {count} of the last 14 days · {Math.round(week / 60)} min in the last 7 days. <Link to="/daily">Open today&rsquo;s practice</Link>
+      </p>
+    </>
+  )
+}
 
 export function Progress() {
   const { progress, sync, message, pendingCount, rejectedCount } = useProgress()
@@ -23,6 +57,7 @@ export function Progress() {
         <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
         <p className="lede">Nothing here yet. Finish a session and your accuracy, streak and trouble spots show up here.</p>
         <Link className="button primary" to="/">Open the map</Link>
+        <DailyPractice />
       </section>
     )
   }
@@ -63,6 +98,8 @@ export function Progress() {
         })}
       </svg>
       <p className="quiet">Each bar is one session. The label is the lesson's first letter and the level: I3 is Intervals level 3, C2 is Chord quality level 2.</p>
+
+      <DailyPractice />
 
       {EXERCISE_LIST.map((exercise) => {
         const stats = progress.exercises[exercise.id]

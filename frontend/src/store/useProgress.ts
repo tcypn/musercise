@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchProgress, isConfigured } from '../api/client'
 import { mergeProgress } from './merge'
+import { absorbServerLogs, flushPractice, unsyncedPracticeDays } from './practice'
 import { flushPending, getCachedProgress, getPending, getRejected, setCachedProgress } from './pending'
 import type { Progress } from '../api/types'
 
@@ -12,6 +13,7 @@ export function useProgress() {
   const [rejectedCount, setRejectedCount] = useState(() => getRejected().length)
   const [sync, setSync] = useState<SyncState>(() => (isConfigured() ? 'syncing' : 'local'))
   const [message, setMessage] = useState<string>()
+  const [days, setDays] = useState(unsyncedPracticeDays)
 
   useEffect(() => {
     if (!isConfigured()) return
@@ -26,6 +28,9 @@ export function useProgress() {
         const fresh = await fetchProgress()
         if (cancelled) return
         setCachedProgress(fresh)
+        absorbServerLogs(fresh.practice.logs)
+        await flushPractice()
+        setDays(unsyncedPracticeDays())
         setServer(fresh)
         setMessage(flushed.error)
         setSync(flushed.remaining === 0 ? 'synced' : 'offline')
@@ -40,6 +45,6 @@ export function useProgress() {
     }
   }, [])
 
-  const progress = useMemo(() => mergeProgress(server, pending), [server, pending])
+  const progress = useMemo(() => mergeProgress(server, pending, undefined, days), [server, pending, days])
   return { progress, sync, message, pendingCount: pending.length, rejectedCount }
 }

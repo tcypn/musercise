@@ -17,3 +17,7 @@ EXERCISES = {
         "modes": ("block", "arpeggio"),
     },
 }
+
+# Rows of the daily practice routine (see frontend/src/theory/practice.ts).
+PRACTICE_ITEMS = ["warmup", "scale", "arpeggio", "cadence", "ear", "repertoire", "sightreading"]
+MAX_PRACTICE_SECONDS = 24 * 60 * 60

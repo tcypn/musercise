@@ -1,6 +1,6 @@
 import { normaliseProgress } from '../store/normalise'
 import { readJson, writeJson } from '../store/storage'
-import type { Progress, SessionPayload } from './types'
+import type { PracticeEntry, Progress, SessionPayload } from './types'
 
 const SETTINGS_KEY = 'musercise.settings'
 
@@ -59,3 +59,9 @@ export const fetchProgress = async (): Promise<Progress> => normaliseProgress(aw
 
 export const postSession = (payload: SessionPayload) =>
   request<unknown>('/sessions/', { method: 'POST', body: JSON.stringify(payload) })
+
+export const fetchPractice = async (since: string): Promise<PracticeEntry[]> =>
+  (await request<{ logs: PracticeEntry[] }>(`/practice/?since=${encodeURIComponent(since)}`)).logs
+
+export const postPractice = (entries: PracticeEntry[]) =>
+  request<unknown>('/practice/', { method: 'POST', body: JSON.stringify({ entries }) })

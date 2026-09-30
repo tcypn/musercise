@@ -45,6 +45,14 @@ Only the four triads are ever inverted: an inverted sus2 has the same notes as a
 
 Levels live in `frontend/src/theory/exercises/`. The pass rule is also in `backend/progress/rules.py`, together with the list of answers the server accepts; keep the two in sync.
 
+## Today's practice
+
+The **Today** tab is a ~30 minute daily routine: a Hanon-style warm-up pattern, scales, arpeggios, a cadence, an ear-training session, and free time for repertoire and sight reading. Everything uses the **key of the day**, which moves one step round the circle of fifths each day (all 12 keys in 12 days) and can be changed with the picker. Each key also covers its relative minor.
+
+Each row shows what to play as correctly spelled note names (F♯ major has E♯, D♯ minor's V chord has C♯♯), a **Hear it** button with a tempo slider, a timer and a Done box. The keyboard lights up in step with the audio: brass for the right hand, green for the left. The app cannot hear you, so it is a guide and a log, not a judge, and it shows no fingering numbers because those depend on the key and your hands.
+
+Rows are saved on your device and, when a server is set up, uploaded to it (`/api/practice/`, kept per day and row; the most time and "done" always win, so two devices never undo each other). A day with only routine practice still counts toward your streak. Routine material lives in `frontend/src/theory/practice.ts` and note spelling in `frontend/src/theory/spelling.ts`.
+
 ## Run it locally
 
 ```bash

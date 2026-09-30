@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { SyncNotice } from '../components/SyncNotice'
+import { getDay } from '../store/practice'
 import { useProgress } from '../store/useProgress'
 import { getConcept, KIND_LABEL, SUGGESTED_ROUTE } from '../theory/curriculum'
 import { EXERCISES, nextLevel } from '../theory/exercises'
 import { summariseMap, type ConceptStatus } from '../theory/mapProgress'
+import { keyForDate, localDateString, ROUTINE } from '../theory/practice'
 
 const STATE_LABEL = { soon: 'Coming soon', ready: 'Ready', progress: 'In progress', mastered: 'Mastered' } as const
 
@@ -18,6 +20,8 @@ export function Home() {
   const resume = hereExercise ? nextLevel(hereExercise, passed) : undefined
   const started = progress.totals.sessions > 0
   const percent = Math.round(map.percent * 100)
+  const today = localDateString()
+  const todayDone = ROUTINE.filter((r) => getDay(today)[r.id]?.done).length
 
   return (
     <>
@@ -43,13 +47,15 @@ export function Home() {
             {progress.totals.streak_days > 0 && ` · ${progress.totals.streak_days}-day streak`}
           </p>
         </div>
-        {here && resume && hereExercise && (
-          <div className="hero-actions">
+        <div className="hero-actions">
+          {here && resume && hereExercise && (
             <Link className="button primary" to={`/practice/${hereExercise.id}/${resume.id}`}>
               {started ? `Continue: ${here.name}, level ${resume.id}` : `Start with ${here.name.toLowerCase()}`}
             </Link>
-          </div>
-        )}
+          )}
+          <Link className="button" to="/daily">Today&rsquo;s practice</Link>
+          <span className="quiet">{keyForDate(today).label} major · {todayDone} of {ROUTINE.length} done</span>
+        </div>
       </section>
 
       <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />

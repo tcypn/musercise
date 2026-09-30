@@ -1,3 +1,4 @@
+import type { PracticeItem } from '../theory/practice'
 import type { ExerciseId, Mode } from '../theory/types'
 
 export interface AttemptPayload {
@@ -50,7 +51,18 @@ export interface Progress {
     practice_seconds: number
     streak_days: number
     last_practiced: string | null
+    /** Latest day with a session or a routine row (YYYY-MM-DD). Missing on servers older than v3. */
+    last_practice_day?: string | null
   }
   exercises: Record<ExerciseId, ExerciseProgress>
+  practice: { logs: PracticeEntry[] }
   history: HistoryRow[]
+}
+
+/** One row of the daily routine on one day. `date` is the user's local calendar date. */
+export interface PracticeEntry {
+  date: string
+  item: PracticeItem
+  seconds: number
+  done: boolean
 }

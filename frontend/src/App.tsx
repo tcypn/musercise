@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { ComingSoon } from './pages/ComingSoon'
+import { Daily } from './pages/Daily'
 import { Exercise } from './pages/Exercise'
 import { Home } from './pages/Home'
 import { Progress } from './pages/Progress'
@@ -19,6 +20,7 @@ export default function App() {
         <NavLink to="/" className="wordmark">musercise</NavLink>
         <nav aria-label="Main">
           <NavLink to="/" end>Map</NavLink>
+          <NavLink to="/daily">Today</NavLink>
           <NavLink to="/progress">Progress</NavLink>
           <NavLink to="/settings">Settings</NavLink>
         </nav>
@@ -29,6 +31,7 @@ export default function App() {
           <Route path="/learn/:exercise" element={<Roadmap />} />
           <Route path="/practice/:exercise/:level" element={<Exercise />} />
           <Route path="/practice/:level" element={<LegacyPractice />} />
+          <Route path="/daily" element={<Daily />} />
           <Route path="/soon/:concept" element={<ComingSoon />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/settings" element={<Settings />} />

@@ -43,6 +43,12 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": Path(os.environ.get("DATABASE_PATH", BASE_DIR / "db.sqlite3")),
+        "OPTIONS": {
+            # Take the write lock when a transaction starts, and wait up to 20 s for it. The default
+            # (read first, upgrade to write later) makes two overlapping uploads fail with "database is locked".
+            "transaction_mode": "IMMEDIATE",
+            "timeout": 20,
+        },
     }
 }
 

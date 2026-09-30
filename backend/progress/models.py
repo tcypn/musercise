@@ -32,3 +32,17 @@ class Attempt(models.Model):
     answered = models.CharField(max_length=16)
     correct = models.BooleanField()
     response_ms = models.PositiveIntegerField()
+
+
+class PracticeLog(models.Model):
+    """What was done on one day for one row of the daily routine. One row per (date, item)."""
+
+    date = models.DateField()
+    item = models.CharField(max_length=16)
+    seconds = models.PositiveIntegerField(default=0)
+    done = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["date", "item"], name="one_log_per_item_per_day")]
+        ordering = ["-date", "item"]

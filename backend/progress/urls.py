@@ -5,4 +5,5 @@ from . import views
 urlpatterns = [
     path("sessions/", views.create_session),
     path("progress/", views.progress),
+    path("practice/", views.practice),
 ]

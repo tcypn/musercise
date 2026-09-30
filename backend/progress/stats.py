@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.db.models import Count, Max, Q, Sum
 from django.utils import timezone
 
-from .models import Attempt, Session
+from .models import Attempt, PracticeLog, Session
 from .rules import EXERCISES, MIN_QUESTIONS, PASS_ACCURACY
 
 
@@ -61,7 +61,11 @@ def build_progress() -> dict:
         sessions=Count("id"), questions=Sum("question_count"), correct=Sum("correct_count")
     )
     seconds = sum((s.ended_at - s.started_at).total_seconds() for s in sessions)
-    days = {s.ended_at.date() for s in sessions}
+    # A practice day is one with an exercise session, or a daily-routine row that was timed or ticked.
+    logs = PracticeLog.objects.filter(date__gte=timezone.localdate() - timedelta(days=60))
+    days = {s.ended_at.date() for s in sessions} | {
+        log.date for log in PracticeLog.objects.filter(Q(seconds__gt=0) | Q(done=True))
+    }
 
     return {
         "totals": {
@@ -71,8 +75,16 @@ def build_progress() -> dict:
             "practice_seconds": int(seconds),
             "streak_days": streak_days(days),
             "last_practiced": sessions.aggregate(m=Max("ended_at"))["m"],
+            # Latest day with anything practised (a session or a routine row): the streak ends here.
+            "last_practice_day": max(days).isoformat() if days else None,
         },
         "exercises": {name: exercise_stats(name) for name in EXERCISES},
+        "practice": {
+            "logs": [
+                {"date": log.date.isoformat(), "item": log.item, "seconds": log.seconds, "done": log.done}
+                for log in logs
+            ]
+        },
         "history": [
             {
                 "id": s.id,

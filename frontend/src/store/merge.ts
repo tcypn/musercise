@@ -45,14 +45,20 @@ function close(work: Working): ExerciseProgress {
 }
 
 /** Server progress plus sessions that are still waiting to upload (so the UI never lags behind). */
-export function mergeProgress(server: Progress | null, pending: SessionPayload[], now = new Date()): Progress {
+export function mergeProgress(
+  server: Progress | null,
+  pending: SessionPayload[],
+  now = new Date(),
+  /** Days (YYYY-MM-DD) with routine practice that the server has not confirmed yet. */
+  extraDays: readonly string[] = [],
+): Progress {
   const base = server ?? emptyProgress()
-  if (pending.length === 0) return base
+  if (pending.length === 0 && extraDays.length === 0) return base
 
   const work = Object.fromEntries(EXERCISE_LIST.map((e) => [e.id, open(base.exercises[e.id])])) as Record<string, Working>
   const totals = { ...base.totals }
   const history: HistoryRow[] = [...base.history]
-  const pendingDays = new Set<string>()
+  const pendingDays = new Set<string>(extraDays)
   let latest = base.totals.last_practiced
 
   pending.forEach((session, index) => {
@@ -90,15 +96,19 @@ export function mergeProgress(server: Progress | null, pending: SessionPayload[]
   })
 
   const today = dayKey(now.toISOString())
-  const lastServerDay = base.totals.last_practiced ? dayKey(base.totals.last_practiced) : null
+  // The streak's last day: newer servers say it outright (sessions and routine rows), older ones only know sessions.
+  const lastServerDay = base.totals.last_practice_day ?? (base.totals.last_practiced ? dayKey(base.totals.last_practiced) : null)
   const serverDays = new Set<string>()
   if (lastServerDay) for (let i = 0; i < base.totals.streak_days; i++) serverDays.add(shiftDay(lastServerDay, -i))
   totals.streak_days = streakEndingAt(new Set([...serverDays, ...pendingDays]), today)
   totals.last_practiced = latest
+  const newest = [...pendingDays, ...(lastServerDay ? [lastServerDay] : [])].sort().pop() ?? null
+  totals.last_practice_day = newest
 
   return {
     totals,
     exercises: Object.fromEntries(EXERCISE_LIST.map((e) => [e.id, close(work[e.id])])) as Progress['exercises'],
     history: history.sort((a, b) => b.ended_at.localeCompare(a.ended_at)).slice(0, 60),
+    practice: base.practice,
   }
 }

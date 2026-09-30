@@ -4,9 +4,10 @@ export const emptyExercise = (): ExerciseProgress => ({ levels: [], items: [], c
 
 export function emptyProgress(): Progress {
   return {
-    totals: { sessions: 0, questions: 0, correct: 0, practice_seconds: 0, streak_days: 0, last_practiced: null },
+    totals: { sessions: 0, questions: 0, correct: 0, practice_seconds: 0, streak_days: 0, last_practiced: null, last_practice_day: null },
     exercises: { intervals: emptyExercise(), chords: emptyExercise() },
     history: [],
+    practice: { logs: [] },
   }
 }
 
@@ -31,6 +32,7 @@ export function normaliseProgress(raw: unknown): Progress {
       totals: data.totals ?? base.totals,
       exercises: { ...base.exercises, ...data.exercises },
       history: data.history ?? [],
+      practice: data.practice ?? base.practice,
     }
   }
   const base = emptyProgress()
@@ -45,6 +47,7 @@ export function normaliseProgress(raw: unknown): Progress {
       },
     },
     history: (data.history ?? []).map((h) => ({ ...h, exercise: 'intervals' as const })),
+    practice: base.practice,
   }
 }
 

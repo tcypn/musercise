@@ -1,13 +1,14 @@
 import uuid
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
-from django.test import TransactionTestCase, override_settings
+from django.conf import settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
-from .models import Session
+from .models import PracticeLog, Session
 
 TOKEN = "test-token"
 
@@ -125,16 +126,27 @@ class ApiTests(APITestCase):
         self.assertEqual({h["exercise"] for h in data["history"]}, {"intervals", "chords"})
 
 
-class MigrationTests(TransactionTestCase):
-    """The v1 -> v2 migration must keep the practice history that already exists."""
+class DatabaseSettingsTests(TestCase):
+    def test_sqlite_takes_the_write_lock_up_front_so_overlapping_uploads_wait_instead_of_failing(self):
+        options = settings.DATABASES["default"]["OPTIONS"]
+        self.assertEqual(options["transaction_mode"], "IMMEDIATE")
+        self.assertGreaterEqual(options["timeout"], 10)
 
+
+class MigrationTestBase(TransactionTestCase):
     def migrate(self, target):
         executor = MigrationExecutor(connection)
         executor.migrate([("progress", target)])
         return executor.loader.project_state([("progress", target)]).apps
 
     def tearDown(self):
-        self.migrate("0002_generalise_attempts")  # leave the database at the latest schema
+        # Leave the database at the latest schema so later tests find every table.
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
+
+
+class MigrationTests(MigrationTestBase):
+    """The v1 -> v2 migration must keep the practice history that already exists."""
 
     def test_interval_attempts_survive(self):
         old = self.migrate("0001_initial")
@@ -155,3 +167,103 @@ class MigrationTests(TransactionTestCase):
         back = self.migrate("0001_initial")  # and it can be reversed
         restored = list(back.get_model("progress", "Attempt").objects.order_by("id").values_list("interval_semitones", "answered_semitones"))
         self.assertEqual(restored, [(7, 7), (4, 3)])
+
+
+def practice_entry(item="scale", seconds=300, done=True, day=None):
+    return {"date": (day or timezone.localdate()).isoformat(), "item": item, "seconds": seconds, "done": done}
+
+
+@override_settings(API_TOKEN=TOKEN)
+class PracticeTests(APITestCase):
+    def setUp(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {TOKEN}")
+
+    def post(self, *entries):
+        return self.client.post("/api/practice/", {"entries": list(entries)}, format="json")
+
+    def logs(self, **params):
+        return self.client.get("/api/practice/", params).data["logs"]
+
+    def test_requires_token(self):
+        self.client.credentials()
+        self.assertEqual(self.client.get("/api/practice/").status_code, 403)
+        self.assertEqual(self.post(practice_entry()).status_code, 403)
+
+    def test_saves_and_lists_entries(self):
+        res = self.post(practice_entry("warmup", 120, False), practice_entry("scale", 300, True))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["saved"], 2)
+        rows = {row["item"]: row for row in self.logs()}
+        self.assertEqual(rows["warmup"], {"date": timezone.localdate().isoformat(), "item": "warmup", "seconds": 120, "done": False})
+        self.assertEqual(rows["scale"]["done"], True)
+
+    def test_upsert_merges_so_retries_and_two_devices_lose_nothing(self):
+        self.post(practice_entry("scale", 300, False))
+        self.post(practice_entry("scale", 120, True))  # less time, but now ticked
+        self.post(practice_entry("scale", 300, False))  # a stale retry must not untick it
+        self.assertEqual(PracticeLog.objects.count(), 1)
+        row = self.logs()[0]
+        self.assertEqual((row["seconds"], row["done"]), (300, True))
+
+    def test_validation(self):
+        bad_item = practice_entry("dance")
+        too_long = practice_entry("scale", 90_000)
+        negative = practice_entry("scale", -1)
+        future = practice_entry(day=timezone.localdate() + timedelta(days=30))
+        not_a_date = {**practice_entry(), "date": "yesterday"}
+        for bad in (bad_item, too_long, negative, future, not_a_date):
+            self.assertEqual(self.post(bad).status_code, 400, bad)
+        self.assertEqual(self.client.post("/api/practice/", {"entries": []}, format="json").status_code, 400)
+        self.assertEqual(self.client.post("/api/practice/", {"entries": "nope"}, format="json").status_code, 400)
+        self.assertEqual(self.client.post("/api/practice/", [practice_entry()], format="json").status_code, 400)
+        self.assertEqual(PracticeLog.objects.count(), 0)  # nothing is half-saved
+
+    def test_one_bad_entry_saves_nothing(self):
+        self.assertEqual(self.post(practice_entry("scale"), practice_entry("dance")).status_code, 400)
+        self.assertEqual(PracticeLog.objects.count(), 0)
+
+    def test_since_filters_and_defaults_to_60_days(self):
+        old = timezone.localdate() - timedelta(days=90)
+        self.post(practice_entry("scale", day=old), practice_entry("ear"))
+        self.assertEqual([row["item"] for row in self.logs()], ["ear"])
+        self.assertEqual(len(self.logs(since=old.isoformat())), 2)
+
+    def test_practice_only_day_counts_for_the_streak(self):
+        today = timezone.localdate()
+        # A session today, plus routine rows on the two days before: three days in a row.
+        self.client.post("/api/sessions/", make_payload(), format="json")
+        self.post(practice_entry("scale", 60, False, today - timedelta(days=1)), practice_entry("warmup", 0, True, today - timedelta(days=2)))
+        self.assertEqual(self.client.get("/api/progress/").data["totals"]["streak_days"], 3)
+
+    def test_last_practice_day_covers_sessions_and_routine_rows(self):
+        today = timezone.localdate()
+        self.assertIsNone(self.client.get("/api/progress/").data["totals"]["last_practice_day"])
+        self.post(practice_entry("scale", 60, True, today - timedelta(days=1)))
+        self.assertEqual(self.client.get("/api/progress/").data["totals"]["last_practice_day"], (today - timedelta(days=1)).isoformat())
+        self.client.post("/api/sessions/", make_payload(), format="json")
+        self.assertEqual(self.client.get("/api/progress/").data["totals"]["last_practice_day"], today.isoformat())
+
+    def test_an_untouched_row_does_not_count(self):
+        self.post(practice_entry("scale", 0, False, timezone.localdate() - timedelta(days=1)))
+        self.assertEqual(self.client.get("/api/progress/").data["totals"]["streak_days"], 0)
+
+    def test_progress_includes_recent_logs(self):
+        self.post(practice_entry("cadence", 200, True))
+        logs = self.client.get("/api/progress/").data["practice"]["logs"]
+        self.assertEqual([(row["item"], row["seconds"]) for row in logs], [("cadence", 200)])
+
+
+class PracticeMigrationTests(MigrationTestBase):
+    """0003 only adds a table: existing sessions must be untouched, and it must reverse cleanly."""
+
+    def test_adding_the_practice_table_keeps_sessions(self):
+        old = self.migrate("0002_generalise_attempts")
+        now = timezone.now()
+        old.get_model("progress", "Session").objects.create(
+            exercise="chords", level=2, started_at=now, ended_at=now, question_count=20, correct_count=18
+        )
+        new = self.migrate("0003_practicelog")
+        self.assertEqual(new.get_model("progress", "Session").objects.count(), 1)
+        new.get_model("progress", "PracticeLog").objects.create(date=date(2026, 9, 30), item="scale", seconds=60, done=True)
+        back = self.migrate("0002_generalise_attempts")
+        self.assertEqual(back.get_model("progress", "Session").objects.count(), 1)

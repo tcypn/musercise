@@ -201,5 +201,46 @@ h3 { font-family: var(--serif); font-weight: 400; font-size: 1.4rem; line-height
 .soon-tag { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; color: var(--ink-soft); margin: 0.75rem 0 0; }
 .notice .button { margin-top: 0.4rem; }
 
+/* Daily practice: a numbered sheet, since the rows are done in order. */
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.daily-key { margin-top: 1.5rem; padding: 1rem 1.1rem; background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--brass); border-radius: 0.5rem; }
+.daily-key .quiet { margin: 0; }
+.daily-key-name { font: 400 clamp(1.8rem, 6vw, 2.5rem)/1.1 var(--serif); margin: 0.15rem 0 0.7rem; }
+.key-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.7rem; }
+.key-controls select { font: inherit; padding: 0.6rem 0.7rem; min-height: 2.75rem; border: 1.5px solid var(--ink); border-radius: 0.5rem; background: var(--paper); color: var(--ink); max-width: 100%; }
+.daily-summary { margin: 1.25rem 0 0.5rem; max-width: 30rem; }
+.tempo { display: block; margin: 1rem 0 0.5rem; max-width: 30rem; }
+.tempo-label { display: flex; justify-content: space-between; gap: 1rem; font-weight: 600; margin-bottom: 0.3rem; }
+.tempo output { font-weight: 400; color: var(--ink-soft); }
+.tempo input { width: 100%; accent-color: var(--felt); min-height: 2rem; }
+.sheet { list-style: none; margin: 1.5rem 0; padding: 0; }
+.sheet-row { position: relative; padding: 0.4rem 0 1.4rem; }
+.sheet-row::before { content: ''; position: absolute; left: 1.55rem; top: 3.4rem; bottom: 0; width: 2px; background: var(--line); }
+.sheet-row:last-child::before { display: none; }
+.sheet-head { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; }
+.sheet-num {
+  position: relative; z-index: 1; flex: none; width: 3.1rem; height: 3.1rem; border-radius: 50%;
+  display: grid; place-items: center; font: 400 1.7rem/1 var(--serif); background: var(--paper); border: 2px solid var(--ink);
+}
+.sheet-row.done .sheet-num { background: var(--felt); border-color: var(--felt); color: var(--paper); }
+.sheet-title { flex: 1 1 10rem; min-width: 0; }
+.sheet-title h2 { font-size: 1.55rem; margin: 0; }
+.sheet-title .quiet { margin: 0; }
+.sheet-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
+.timer { display: flex; align-items: center; gap: 0.6rem; }
+.time { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 5.6rem; }
+.time.reached { color: var(--felt); }
+.done-box { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.75rem; cursor: pointer; font-weight: 600; }
+.done-box input { width: 1.3rem; height: 1.3rem; accent-color: var(--felt); }
+.sheet-body { margin: 0.4rem 0 0 4.1rem; }
+.sheet-body summary { cursor: pointer; font-weight: 600; padding: 0.35rem 0; color: var(--felt); min-height: 2rem; }
+.material { padding: 0.75rem 0; border-top: 1px solid var(--line); }
+.material h3 { margin: 0 0 0.4rem; }
+.notes-line { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; margin: 0 0 0.35rem; max-width: 40rem; }
+.dots { list-style: none; display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0; padding: 0; }
+.dots li { width: 1.4rem; height: 1.4rem; border-radius: 0.3rem; border: 1.5px solid var(--line); background: var(--paper); }
+.dots li.on { background: var(--felt); border-color: var(--felt); }
+
 @media (prefers-reduced-motion: reduce) { .progress-line span { transition: none; } }
-@media (max-width: 30rem) { .site-header nav { gap: 0.8rem; } .concepts { margin-left: 3.6rem; } .stage-name { font-size: 1.5rem; } }
+@media (max-width: 44rem) { .sheet-controls { margin-left: 4.1rem; } }
+@media (max-width: 30rem) { .site-header nav { gap: 0.8rem; } .concepts { margin-left: 3.6rem; } .stage-name { font-size: 1.5rem; } .sheet-body { margin-left: 3.6rem; } .sheet-controls { margin-left: 3.6rem; } }

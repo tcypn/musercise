@@ -1,4 +1,5 @@
 import type * as ToneNamespace from 'tone'
+import type { TimedEvent } from '../theory/practice'
 import type { PlayStyle } from '../theory/types'
 
 type ToneModule = typeof ToneNamespace
@@ -55,3 +56,52 @@ export async function playNotes(notes: readonly number[], style: PlayStyle): Pro
 }
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+export interface SequenceHandle {
+  /** Resolves when the sequence has finished or been stopped. */
+  done: Promise<void>
+  stop: () => void
+}
+
+/**
+ * Plays timed notes (seconds from the start). `onEvent` is called with the index of the event that
+ * is sounding right now, kept in step with the audio, and with null when it ends.
+ */
+export async function playSequence(events: readonly TimedEvent[], onEvent?: (index: number | null) => void): Promise<SequenceHandle> {
+  const { tone, sampler } = await loadPiano()
+  await tone.start()
+  const transport = tone.getTransport()
+  const draw = tone.getDraw()
+  transport.stop()
+  transport.cancel()
+  sampler.releaseAll()
+
+  let finished = false
+  let resolve!: () => void
+  const done = new Promise<void>((r) => {
+    resolve = r
+  })
+  const finish = () => {
+    if (finished) return
+    finished = true
+    transport.stop()
+    transport.cancel()
+    sampler.releaseAll()
+    onEvent?.(null)
+    resolve()
+  }
+
+  const lead = 0.05
+  events.forEach((event, index) => {
+    transport.schedule((time) => {
+      sampler.triggerAttackRelease(event.notes.map((n) => tone.Frequency(n, 'midi').toNote()), event.hold, time)
+      draw.schedule(() => {
+        if (!finished) onEvent?.(index)
+      }, time)
+    }, event.time + lead)
+  })
+  const end = Math.max(0, ...events.map((e) => e.time + e.hold)) + lead + 0.1
+  transport.schedule((time) => draw.schedule(finish, time), end)
+  transport.start()
+  return { done, stop: finish }
+}

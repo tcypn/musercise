@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Attempt, Session
-from .rules import EXERCISES
+from .rules import EXERCISES, MAX_PRACTICE_SECONDS, PRACTICE_ITEMS
 
 
 class AttemptSerializer(serializers.ModelSerializer):
@@ -64,3 +67,16 @@ class SessionSerializer(serializers.ModelSerializer):
         )
         Attempt.objects.bulk_create([Attempt(session=session, **a) for a in attempts])
         return session
+
+
+class PracticeEntrySerializer(serializers.Serializer):
+    date = serializers.DateField()
+    item = serializers.ChoiceField(choices=PRACTICE_ITEMS)
+    seconds = serializers.IntegerField(min_value=0, max_value=MAX_PRACTICE_SECONDS)
+    done = serializers.BooleanField()
+
+    def validate_date(self, value):
+        # The app sends the user's local date, which can be a day ahead of the server's.
+        if value > timezone.localdate() + timedelta(days=2):
+            raise serializers.ValidationError("The date is too far in the future.")
+        return value
