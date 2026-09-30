@@ -5,7 +5,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Attempt, Session
-from .rules import EXERCISES, MAX_PRACTICE_SECONDS, PRACTICE_ITEMS
+from .rules import EXERCISES, LESSON_ID_RE, MAX_PRACTICE_SECONDS, PRACTICE_ITEMS, TOKEN_RE
 
 
 class AttemptSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ def upgrade_legacy_attempt(attempt):
 
 class SessionSerializer(serializers.ModelSerializer):
     attempts = AttemptSerializer(many=True, allow_empty=False)
-    exercise = serializers.ChoiceField(choices=list(EXERCISES))
+    exercise = serializers.RegexField(LESSON_ID_RE, max_length=32)
     level = serializers.IntegerField(min_value=1, max_value=99)
 
     class Meta:
@@ -53,12 +53,15 @@ class SessionSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data["ended_at"] < data["started_at"]:
             raise serializers.ValidationError("ended_at must not be before started_at.")
-        rules = EXERCISES[data["exercise"]]
+        rules = EXERCISES.get(data["exercise"])
         for attempt in data["attempts"]:
-            if attempt["item"] not in rules["items"] or attempt["answered"] not in rules["items"]:
-                raise serializers.ValidationError(f"Unknown answer for exercise '{data['exercise']}'.")
-            if attempt["mode"] not in rules["modes"]:
-                raise serializers.ValidationError(f"Unknown mode for exercise '{data['exercise']}'.")
+            if rules is not None:
+                if attempt["item"] not in rules["items"] or attempt["answered"] not in rules["items"]:
+                    raise serializers.ValidationError(f"Unknown answer for exercise '{data['exercise']}'.")
+                if attempt["mode"] not in rules["modes"]:
+                    raise serializers.ValidationError(f"Unknown mode for exercise '{data['exercise']}'.")
+            elif not all(TOKEN_RE.match(attempt[key]) for key in ("item", "answered", "mode")):
+                raise serializers.ValidationError(f"Malformed answer for exercise '{data['exercise']}'.")
         return data
 
     @transaction.atomic

@@ -76,6 +76,12 @@ def daily_totals(sessions: list) -> list[dict]:
     return [rows[d] for d in sorted(rows)]
 
 
+def lesson_ids() -> list[str]:
+    """The two original lessons first, then every other lesson that has a session, alphabetically."""
+    seen = set(Session.objects.values_list("exercise", flat=True).distinct())
+    return [*EXERCISES, *sorted(seen - set(EXERCISES))]
+
+
 def build_progress() -> dict:
     sessions = Session.objects.all()
     all_sessions = list(sessions)
@@ -101,7 +107,7 @@ def build_progress() -> dict:
             # Latest day with anything practised (a session or a routine row): the streak ends here.
             "last_practice_day": max(days).isoformat() if days else None,
         },
-        "exercises": {name: exercise_stats(name) for name in EXERCISES},
+        "exercises": {name: exercise_stats(name) for name in lesson_ids()},
         # Every day with practice (last 120 days): the app works out the streak from this.
         "days": [d.isoformat() for d in sorted(days) if d >= cutoff],
         "daily": daily_totals(all_sessions),

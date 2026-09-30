@@ -6,6 +6,13 @@ Keep in sync with frontend/src/theory/ (exercise item ids and the pass rule).
 PASS_ACCURACY = 0.8
 MIN_QUESTIONS = 20
 
+# Lessons added after the first two are not listed here: the app owns their answer lists, so the server only
+# checks that ids look sane (and recomputes `correct` itself). Intervals and chords keep their strict lists.
+import re
+
+LESSON_ID_RE = re.compile(r"^[a-z][a-z0-9-]{1,31}$")
+TOKEN_RE = re.compile(r"^[A-Za-z0-9#b/+._-]{1,24}$")
+
 EXERCISES = {
     # Item ids are the interval size in semitones.
     "intervals": {

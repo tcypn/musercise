@@ -73,7 +73,7 @@ class ApiTests(APITestCase):
     def test_validation_errors(self):
         self.assertEqual(self.post({**make_payload(), "attempts": []}).status_code, 400)
         self.assertEqual(self.post({**make_payload(), "client_id": "junk"}).status_code, 400)
-        self.assertEqual(self.post({**make_payload(), "exercise": "scales"}).status_code, 400)
+        self.assertEqual(self.post({**make_payload(), "exercise": "Scales!"}).status_code, 400)
         bad = make_payload()
         bad["attempts"][0]["root_midi"] = 5
         self.assertEqual(self.post(bad).status_code, 400)
@@ -84,6 +84,28 @@ class ApiTests(APITestCase):
         self.assertEqual(self.post(make_payload(exercise="chords", item="7", wrong_answer="maj")).status_code, 400)
         self.assertEqual(self.post(make_payload(exercise="chords", item="maj", mode="harmonic", wrong_answer="min")).status_code, 400)
         self.assertEqual(self.post(make_payload(exercise="chords", item="maj", mode="block", wrong_answer="min")).status_code, 201)
+
+    def test_later_lessons_are_accepted_by_id_and_listed_in_progress(self):
+        response = self.post(make_payload(exercise="scale-degrees", item="5", mode="major", wrong_answer="3", total=20, wrong=4))
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["correct_count"], 16)  # recomputed by the server
+        data = self.progress()["exercises"]
+        self.assertEqual(list(data)[:2], ["intervals", "chords"])  # the original lessons come first
+        self.assertEqual(data["scale-degrees"]["items"], [{"item": "5", "asked": 20, "correct": 16}])
+        self.assertEqual(data["scale-degrees"]["levels"][0]["best_accuracy"], 0.8)
+        self.assertTrue(data["scale-degrees"]["levels"][0]["passed"])
+
+    def test_later_lessons_reject_malformed_ids_and_answers(self):
+        for bad in ("1scale", "x", "UPPER", "has space", "a" * 33):
+            self.assertEqual(self.post(make_payload(exercise=bad, item="5", mode="major")).status_code, 400, bad)
+        for field_value in ("", "a b", "x" * 25, "<script>"):
+            self.assertEqual(self.post(make_payload(exercise="scale-degrees", item=field_value, mode="major")).status_code, 400, field_value)
+        self.assertEqual(self.post(make_payload(exercise="scale-degrees", item="5", mode="ma jor")).status_code, 400)
+        # Flats, sharps and slashes are fine: b3, #4, C/E.
+        self.assertEqual(self.post(make_payload(exercise="extensions", item="b3", mode="block", wrong_answer="#4")).status_code, 201)
+
+    def test_progress_lists_only_known_and_used_lessons(self):
+        self.assertEqual(list(self.progress()["exercises"]), ["intervals", "chords"])
 
     def test_legacy_v1_payload_is_still_accepted(self):
         legacy = make_payload(total=20, wrong=2)

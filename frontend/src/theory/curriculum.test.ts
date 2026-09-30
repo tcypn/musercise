@@ -24,17 +24,17 @@ describe('curriculum map', () => {
     }
   })
 
-  it('links a built exercise to exactly one concept, and only intervals and chords are built', () => {
+  it('links a built exercise to exactly one concept, and every registered lesson is on the map', () => {
     const built = ALL_CONCEPTS.filter((c) => c.exerciseId)
-    expect(built.map((c) => c.exerciseId).sort()).toEqual(['chords', 'intervals'])
+    expect(built.map((c) => c.exerciseId).sort()).toEqual(Object.keys(EXERCISES).sort())
     for (const c of built) expect(EXERCISES[c.exerciseId!]).toBeDefined()
   })
 })
 
 describe('map progress', () => {
-  it('starts with two open concepts, nothing mastered, and points at intervals', () => {
+  it('starts with every built lesson open, nothing mastered, and points at intervals', () => {
     const map = summariseMap(emptyProgress())
-    expect(map.openCount).toBe(2)
+    expect(map.openCount).toBe(Object.keys(EXERCISES).length)
     expect(map.masteredCount).toBe(0)
     expect(map.percent).toBe(0)
     expect(map.here).toBe('intervals')
@@ -66,7 +66,7 @@ describe('map progress', () => {
 
   it('has no continue target once everything that is built is mastered', () => {
     const progress = emptyProgress()
-    for (const id of ['intervals', 'chords'] as const) {
+    for (const id of Object.keys(EXERCISES) as (keyof typeof EXERCISES)[]) {
       progress.exercises[id].levels = Array.from({ length: 10 }, (_, i) => ({ level: i + 1, sessions: 1, best_accuracy: 1, passed: true }))
     }
     expect(summariseMap(progress).here).toBeNull()

@@ -1,7 +1,9 @@
-export type ExerciseId = 'intervals' | 'chords'
+import type { TimedEvent } from './practice'
 
-/** How the notes of a question are played. Intervals use the first three, chords the last two. */
-export type Mode = 'ascending' | 'descending' | 'harmonic' | 'block' | 'arpeggio'
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions'
+
+/** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
+export type Mode = 'ascending' | 'descending' | 'harmonic' | 'block' | 'arpeggio' | 'major' | 'minor'
 
 /** One thing the learner can answer with (an interval size, a chord quality...). */
 export interface Item {
@@ -24,6 +26,8 @@ export interface Level {
   lowRange: readonly [number, number]
   /** Chords only: may triads be turned upside down? */
   inversions?: boolean
+  /** Scale degrees only: the whole I-IV-V-I before the note (default), or just the home chord. */
+  help?: 'full' | 'light'
 }
 
 export interface Question {
@@ -34,6 +38,10 @@ export interface Question {
   /** MIDI numbers, in the order they sound (lowest first for chords). */
   notes: number[]
   inversion?: number
+  /** Everything that sounds, when a question is more than one run of `notes` (a key first, then a note; a chord sequence). */
+  events?: TimedEvent[]
+  /** Keys to light once answered, when that differs from `notes`. The one equal to `root` lights first, the rest second. */
+  lit?: number[]
 }
 
 /** `gap` seconds between note starts (0 = all at once); each note rings for `hold` seconds. */
@@ -48,6 +56,8 @@ export interface ExerciseDef {
   blurb: string
   /** The question put to the learner on every screen of a session. */
   question: string
+  /** What the lit strip on the keyboard stands for in the intro: "lowest note" (default) or, for one-note questions, "note". */
+  rangeWord?: string
   /** Shown before answer hints: "Song:" or "Sounds:". */
   hintLabel: string
   items: readonly Item[]
@@ -59,5 +69,5 @@ export interface ExerciseDef {
   /** Used in "Not quite. That was ...". */
   phrase(item: Item): string
   /** Short word for the direction/way of playing, shown under the keyboard. */
-  modeLabel: Record<Mode, string>
+  modeLabel: Partial<Record<Mode, string>>
 }

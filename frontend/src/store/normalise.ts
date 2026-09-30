@@ -1,11 +1,12 @@
 import type { DailyRow, ExerciseProgress, HistoryRow, Progress, SessionPayload } from '../api/types'
+import { EXERCISE_LIST } from '../theory/exercises'
 
 export const emptyExercise = (): ExerciseProgress => ({ levels: [], items: [], confusions: [] })
 
 export function emptyProgress(): Progress {
   return {
     totals: { sessions: 0, questions: 0, correct: 0, practice_seconds: 0, streak_days: 0, last_practiced: null, last_practice_day: null },
-    exercises: { intervals: emptyExercise(), chords: emptyExercise() },
+    exercises: Object.fromEntries(EXERCISE_LIST.map((e) => [e.id, emptyExercise()])) as Progress['exercises'],
     history: [],
     practice: { logs: [] },
     days: [],

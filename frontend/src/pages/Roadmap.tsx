@@ -26,7 +26,7 @@ export function Roadmap() {
         <h1>{exercise.name}</h1>
         <p className="lede">{exercise.blurb}</p>
         <Keyboard range={next.lowRange} />
-        <p className="hero-caption">The lit strip is where level {next.id} places its lowest note.</p>
+        <p className="hero-caption">The lit strip is where level {next.id} places its {exercise.rangeWord ?? 'lowest note'}.</p>
         <div className="hero-actions">
           <Link className="button primary" to={`/practice/${exercise.id}/${next.id}`}>
             {allPassed ? `Practice level ${next.id} again` : !any ? 'Start level 1' : `Continue with level ${next.id}`}
@@ -61,7 +61,7 @@ export function Roadmap() {
                   {levelItems(exercise, level).map((item) => (
                     <span key={item.id} className="chip">{item.short}</span>
                   ))}
-                  <span className="chip mode">{level.modes.map((m) => exercise.modeLabel[m]).join(' / ')}</span>
+                  <span className="chip mode">{level.modes.map((m) => exercise.modeLabel[m]).filter(Boolean).join(' / ')}</span>
                 </span>
                 <span className="level-status">
                   {!open && `Pass level ${level.id - 1} with ${PASS_ACCURACY * 100}% to unlock.`}

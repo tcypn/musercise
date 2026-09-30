@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { Progress } from '../api/types'
 import { emptyProgress } from '../store/normalise'
+import type { ExerciseId } from './types'
 import { buildPath, defaultStage, windOffset } from './path'
 
-function withPassed(exercise: 'intervals' | 'chords', passed: number[], sessions = passed.length): Progress {
+function withPassed(exercise: ExerciseId, passed: number[], sessions = passed.length): Progress {
   const p = emptyProgress()
   p.exercises[exercise].levels = passed.map((level) => ({ level, sessions: 1, best_accuracy: 0.9, passed: true, first_passed: '2026-09-01' }))
   p.history = sessions > 0 ? [{ id: 1, exercise, level: passed[passed.length - 1] ?? 1, ended_at: '2026-09-01T10:00:00Z', day: '2026-09-01', question_count: 20, accuracy: 0.9 }] : []
@@ -70,14 +71,14 @@ describe('learning path', () => {
 
   it('reports ready counts per stage', () => {
     const path = buildPath(emptyProgress())
-    expect(path.map((s) => s.ready)).toEqual([1, 0, 1, 0, 0, 0, 0])
-    expect(path[1].nodes.every((n) => n.state === 'soon')).toBe(true)
+    expect(path.map((s) => s.ready)).toEqual([1, 1, 2, 0, 0, 0, 0])
+    expect(path[3].nodes.every((n) => n.state === 'soon')).toBe(true)
   })
 
   it('opens the first stage for a new learner and when everything is finished', () => {
     expect(defaultStage(buildPath(emptyProgress()))).toBe(1)
     const all = withPassed('intervals', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    all.exercises.chords.levels = all.exercises.intervals.levels
+    for (const id of ['chords', 'scale-degrees', 'extensions'] as const) all.exercises[id].levels = all.exercises.intervals.levels
     expect(buildPath(all)[0].finished).toBe(true)
     expect(defaultStage(buildPath(all))).toBe(1)
   })

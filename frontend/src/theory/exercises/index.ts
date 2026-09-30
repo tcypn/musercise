@@ -1,13 +1,17 @@
 import type { ExerciseDef, ExerciseId, Item, Level } from '../types'
 import { chordsExercise } from './chords'
+import { extensionsExercise } from './extensions'
 import { intervalsExercise } from './intervals'
+import { scaleDegreesExercise } from './scaleDegrees'
 
 export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   intervals: intervalsExercise,
   chords: chordsExercise,
+  'scale-degrees': scaleDegreesExercise,
+  extensions: extensionsExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)

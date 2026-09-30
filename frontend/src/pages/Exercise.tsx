@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import type { AttemptPayload, SessionPayload } from '../api/types'
-import { loadPiano, playNotes, stopSound } from '../audio/piano'
+import { loadPiano, playSequence, stopSound } from '../audio/piano'
 import { Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
+import { canSlow as questionCanSlow, eventsFor } from '../theory/playback'
 import { buildQuestions } from '../theory/questions'
 import { localDateString } from '../theory/practice'
 import { isPassing, isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
@@ -50,9 +51,8 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       const mine = ++playId.current
       setPlaying(true)
       try {
-        const style = exercise.playStyle(q.mode)
-        // Slow only stretches notes played one after another; chords sounded together have nothing to stretch.
-        await playNotes(q.notes, slow && style.gap > 0 ? { gap: style.gap * 2, hold: style.hold * 1.6 } : style)
+        const handle = await playSequence(eventsFor(exercise, q, slow))
+        await handle.done
       } catch {
         setLoadError('The piano could not play. Check your connection, then try again.')
       } finally {
@@ -177,7 +177,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
           <p className="lede" style={{ margin: 0 }}>{level.blurb}</p>
           <div>
             <Keyboard range={level.lowRange} />
-            <p className="hero-caption">The lit strip is where the lowest note will fall.</p>
+            <p className="hero-caption">The lit strip is where the {exercise.rangeWord ?? 'lowest note'} will fall.</p>
           </div>
           <ul className="anchors">
             {choices.map((item) => (
@@ -212,7 +212,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     for (let i = attempts.length - 1; i >= 0 && attempts[i].correct; i--) run++
     return run
   })()
-  const canSlow = exercise.playStyle(question.mode).gap > 0
+  const canSlow = questionCanSlow(exercise, question)
 
   return (
     <div className="lesson">
@@ -256,7 +256,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
 
         {checked && (
           <div className="lesson-keys">
-            <Keyboard range={level.lowRange} lit={question.notes.map((midi) => ({ midi, role: midi === question.root ? 'first' : 'second' }))} />
+            <Keyboard range={level.lowRange} lit={(question.lit ?? question.notes).map((midi) => ({ midi, role: midi === question.root ? 'first' : 'second' }))} />
             <p className="hero-caption">{exercise.describe(question)}</p>
           </div>
         )}

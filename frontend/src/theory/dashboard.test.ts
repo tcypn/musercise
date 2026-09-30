@@ -16,6 +16,7 @@ import {
   weekStrip,
 } from './dashboard'
 import { EXERCISES } from './exercises'
+import type { ExerciseId } from './types'
 
 // 30 September 2026 is a Wednesday. Weeks (Mon-Sun): 09-21..09-27, 09-28..10-04.
 const TODAY = '2026-09-30'
@@ -248,7 +249,7 @@ describe('ear profile radar', () => {
 })
 
 describe('recommendations', () => {
-  const session = (exercise: 'intervals' | 'chords', day: string): HistoryRow => ({ id: 1, exercise, level: 1, ended_at: `${day}T10:00:00Z`, day, question_count: 20, accuracy: 0.8 })
+  const session = (exercise: ExerciseId, day: string): HistoryRow => ({ id: 1, exercise, level: 1, ended_at: `${day}T10:00:00Z`, day, question_count: 20, accuracy: 0.8 })
   const level = (n: number, passed: boolean, best: number | null = passed ? 0.9 : null) => ({ level: n, sessions: 1, best_accuracy: best, passed, first_passed: passed ? '2026-09-01' : null })
 
   it('starts a brand-new learner at intervals level 1', () => {
@@ -295,12 +296,13 @@ describe('recommendations', () => {
     const p = emptyProgress()
     p.exercises.chords.levels = [level(1, true)]
     p.exercises.intervals.levels = [level(1, true)]
-    p.history = [session('chords', TODAY), session('intervals', '2026-09-27')]
+    const others = [session('scale-degrees', TODAY), session('extensions', TODAY)]
+    p.history = [session('chords', TODAY), ...others, session('intervals', '2026-09-27')]
     const recs = recommendations(p, TODAY)
     expect(recs.map((r) => r.kind)).toEqual(['next', 'stale'])
     expect(recs[1]).toMatchObject({ to: '/practice/intervals/2', reason: 'Last practised 3 days ago' })
     expect(new Set(recs.map((r) => r.to)).size).toBe(recs.length)
-    p.history = [session('chords', TODAY), session('intervals', '2026-09-29')]
+    p.history = [session('chords', TODAY), ...others, session('intervals', '2026-09-29')]
     expect(recommendations(p, TODAY)[1].reason).toBe('Last practised yesterday')
   })
 
