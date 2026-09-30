@@ -5,7 +5,7 @@
 #
 # It pulls the latest code, installs dependencies, backs up the database, applies
 # database changes, checks the settings, and reloads the site. If any step fails it
-# stops right there and the site keeps running the previous version.
+# stops right there without reloading; fix the problem and run it again.
 #
 # Optional settings (environment variables):
 #   VENV=<path>           virtualenv to use             (default ~/.virtualenvs/musercise)
@@ -22,7 +22,7 @@ KEEP_BACKUPS=5
 
 step() { printf '\n==> %s\n' "$1"; }
 
-trap 'status=$?; echo >&2; echo "Update stopped (see the error above). The site was NOT reloaded and keeps running the previous version." >&2; exit $status' ERR
+trap 'status=$?; echo >&2; echo "Update stopped (see the error above). The site was NOT reloaded. Fix the problem and run this script again." >&2; exit $status' ERR
 
 step "Getting the latest code"
 git -C "$REPO_DIR" pull --ff-only
