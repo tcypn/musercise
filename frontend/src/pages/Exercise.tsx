@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import type { AttemptPayload, SessionPayload } from '../api/types'
-import { loadPiano, playNotes } from '../audio/piano'
+import { loadPiano, playNotes, stopSound } from '../audio/piano'
 import { Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
@@ -43,8 +43,11 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const question = questions[index]
   const back = `/learn/${exercise.id}`
 
+  // Only the latest play() may touch `playing`, so a sound that was cut short cannot switch the button back on.
+  const playId = useRef(0)
   const play = useCallback(
     async (q: Question, slow = false) => {
+      const mine = ++playId.current
       setPlaying(true)
       try {
         const style = exercise.playStyle(q.mode)
@@ -53,11 +56,14 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       } catch {
         setLoadError('The piano could not play. Check your connection, then try again.')
       } finally {
-        setPlaying(false)
+        if (playId.current === mine) setPlaying(false)
       }
     },
     [exercise],
   )
+
+  // Leaving the lesson (Quit, the back button, another tab of the app) silences the piano.
+  useEffect(() => stopSound, [])
 
   async function start() {
     setLoadError(undefined)
@@ -95,11 +101,12 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     }
     setAttempts((prev) => [...prev, attempt])
     setPhase('checked')
-    void play(question) // replay so the ear can check the answer
+    void play(question) // replaces what is sounding, so the ear can check the answer
   }
 
   function next() {
     if (phase !== 'checked') return
+    stopSound() // the old question must not ring into the next one
     if (index + 1 >= questions.length) {
       void finish()
       return
@@ -113,6 +120,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   }
 
   async function finish() {
+    stopSound()
     const ended = new Date()
     setSeconds(Math.round((ended.getTime() - (startedAt.current ?? ended).getTime()) / 1000))
     setPhase('summary')
@@ -138,7 +146,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       const target = event.target as HTMLElement
       if (target.closest('a, input, select, textarea')) return
       const key = event.key.toLowerCase()
-      if (key === 'r' && (phase === 'question' || phase === 'checked') && !playing) {
+      if (key === 'r' && (phase === 'question' || phase === 'checked')) {
         void play(question)
       } else if (phase === 'question' && /^[1-9]$/.test(key) && choices[Number(key) - 1]) {
         setPicked(choices[Number(key) - 1].id)
@@ -222,11 +230,11 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
         </div>
 
         <div className="speak-row">
-          <button type="button" className="speak" onClick={() => void play(question)} disabled={playing} aria-label="Play the question again (R)">
+          <button type="button" className="speak" onClick={() => void play(question)} aria-busy={playing} aria-label="Play the question again (R)">
             <Speaker size={60} />
           </button>
           {canSlow && (
-            <button type="button" className="slow" onClick={() => void play(question, true)} disabled={playing} aria-label="Play it slower">
+            <button type="button" className="slow" onClick={() => void play(question, true)} aria-label="Play it slower">
               <Snail size={26} />
               SLOW
             </button>
