@@ -1,20 +1,25 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Home** is a dashboard (streak, accuracy, today's practice, recommendations, charts); the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Two are ready: **intervals** and **chord quality**, each with ten levels across all 88 piano keys and progress tracking.
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Two are ready: **intervals** and **chord quality**, each with ten levels across all 88 piano keys and progress tracking.
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
 
-## The home dashboard
+## Learn (home)
 
-**Home** answers "what should I do today?" first and "how am I doing?" second:
+**Learn** answers "what should I do today?" first and "how am I doing?" second. The look borrows from Duolingo: bright, rounded, with buttons that sit on a hard lower edge and sink when pressed.
 
-- **Day streak** with a Monday-Sunday strip. It is a daily streak with **one free rest day per Monday-Sunday week**: a single missed day does not break it, two in a row do, and only one rest day is allowed per week. Any exercise session, or any routine row you timed or ticked, counts as practice.
-- **Accuracy** for the last 7 days, with an arrow against the 7 days before (in whole percentage points, computed as total correct over total questions). With under 20 questions in either week it says "not enough data" instead of drawing a conclusion, and it shows how many levels you passed this week, because a new level is harder and a dip after moving up is normal.
-- **Today's practice** progress, and **Recommended today**: your weakest answer (with what you mistake it for), your next level, and the lesson you have left alone longest.
-- **This week and last week** chart, a **month calendar** (practised and rest days), an **ear profile** radar (or bars) per answer, and a summary of the map.
+- **The path.** Each curriculum stage is a banner; the stage you are in is open and the others fold to a "Jump here?" card. Intervals and Chord quality show their real ten levels as nodes (gold and ticked = passed, green with a ring and a START bubble = carry on here, grey with a lock = pass the level before it first). Lessons that are not built yet are grouped into one "coming soon" node. The ring shows how many of the lesson's levels you have passed. There are no gems or points: nothing on screen is invented.
+- **Around it:** **Recommended today** (your weakest answer, your next level, the lesson left alone longest), **Day streak** with a Monday-Sunday strip, **Today's practice**, **Accuracy** for the last 7 days with an arrow against the 7 days before, and **Your ear, answer by answer** (radar or bars per answer).
+- **Streak rule:** a daily streak with **one free rest day per Monday-Sunday week**: a single missed day does not break it, two in a row do, and only one rest day is allowed per week. Any exercise session, or any routine row you timed or ticked, counts as practice.
+- **Accuracy** is total correct over total questions. With under 20 questions in either week it says "not enough data" instead of drawing a conclusion, and it shows how many levels you passed this week, because a new level is harder and a dip after moving up is normal.
+- The **Progress** tab holds the longer views: this week versus last week, a month calendar, your route through the map, recent sessions and a table per answer. Every chart has a table version, works from the keyboard, and only uses colour together with a label, a shape or a line style.
 
-Every chart has a table version, works from the keyboard, and only uses colour together with a label, a shape or a line style. Streak, accuracy and charts include sessions that have not uploaded yet. Day boundaries use your own calendar day (the app sends it with each session), so a late-evening session lands on the right day. The logic is in `frontend/src/theory/dashboard.ts` and the components in `frontend/src/components/dash/`. Only the dashboard has the new look for now (rounded type, key-shaped buttons); the other pages keep the original style.
+Streak, accuracy and charts include sessions that have not uploaded yet. Day boundaries use your own calendar day (the app sends it with each session), so a late-evening session lands on the right day. The logic is in `frontend/src/theory/dashboard.ts` and `frontend/src/theory/path.ts`; the cards are in `frontend/src/components/dash/` and the path in `frontend/src/components/path/`.
+
+### A lesson
+
+A lesson is 20 questions. Press the speaker (or **R**) to hear it, **Slow** to hear it with the notes further apart, pick an answer (tap, or keys **1 to 9**) and press **Check** (or **Enter**). A green or red strip then slides up with the right answer and the song or sound that goes with it; **Continue** moves on. Score 80% to pass. Colours that carry text are deeper shades than the bright ones on shapes, so text stays readable (4.5:1 or more).
 
 ## The map
 

@@ -46,6 +46,8 @@ export interface ExerciseDef {
   id: ExerciseId
   name: string
   blurb: string
+  /** The question put to the learner on every screen of a session. */
+  question: string
   /** Shown before answer hints: "Song:" or "Sounds:". */
   hintLabel: string
   items: readonly Item[]

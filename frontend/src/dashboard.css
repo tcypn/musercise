@@ -4,21 +4,21 @@
  * greens and golds are only for shapes that carry a label or number next to them.
  */
 .dash {
-  --d-ink: #1b2137;
-  --d-soft: #565d73;
-  --d-border: #d5d9d2;
-  --d-lip: #c3c8bd;
-  --d-grid: #e3e5df;
-  --d-wash: #f7f8f5;
-  --d-green: #3a9d4a;
-  --d-green-deep: #2b7a38;
-  --d-green-lip: #1f5c2a;
-  --d-gold: #f0a91e;
-  --d-gold-mark: #c27c0a;
+  --d-ink: #3c3c3c;
+  --d-soft: #6f6f6f;
+  --d-border: #e5e5e5;
+  --d-lip: #d4d4d4;
+  --d-grid: #ececec;
+  --d-wash: #f7f7f7;
+  --d-green: #58cc02;
+  --d-green-deep: #3a8600;
+  --d-green-lip: #2a6100;
+  --d-gold: #ffc800;
+  --d-gold-mark: #e0a800;
   --d-gold-text: #8a6116;
-  --d-red: #e0525e;
-  --d-red-text: #b23a48;
-  --d-blue: #2a78d6;
+  --d-red: #ff4b4b;
+  --d-red-text: #c0272d;
+  --d-blue: #1899d6;
   --d-grey: #7b8497;
   font-family: 'Nunito', var(--sans);
   font-weight: 600;
@@ -52,7 +52,7 @@
 .d-row.mid, .d-row.bottom { align-items: start; }
 @media (max-width: 56rem) { .d-row.mid, .d-row.bottom { grid-template-columns: minmax(0, 1fr); } }
 
-.d-card { background: #fff; border: 2px solid var(--d-border); border-bottom-width: 4px; border-radius: 1.1rem; padding: 1.1rem 1.25rem 1.2rem; min-width: 0; }
+.d-card { background: #fff; border: 2px solid var(--d-border); border-bottom-width: 4px; border-radius: 1rem; padding: 1.1rem 1.25rem 1.2rem; min-width: 0; }
 .d-card-title { color: var(--d-soft); margin-bottom: 0.15rem !important; }
 .d-note { color: var(--d-soft); font-size: 0.92rem; margin-top: 0.45rem !important; }
 .d-empty { background: var(--d-wash); border-radius: 0.8rem; padding: 1.1rem; color: var(--d-soft); margin-top: 0.8rem !important; }
@@ -70,9 +70,9 @@
 .d-strip-day { display: grid; justify-items: center; gap: 0.3rem; }
 .d-strip-label { font-weight: 800; font-size: 0.8rem; color: var(--d-soft); }
 .d-strip-dot { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 2px solid var(--d-border); background: var(--d-wash); }
-.d-strip-day.practised .d-strip-dot { background: #fff3d1; border-color: var(--d-gold-mark); }
+.d-strip-day.practised .d-strip-dot { background: #fff4d6; border-color: var(--d-gold-mark); }
 .d-strip-day.rest .d-strip-dot { background: #dfe6f1; border-color: var(--d-grey); }
-.d-strip-day.today .d-strip-dot { background: #fff; border-color: var(--d-ink); }
+.d-strip-day.today .d-strip-dot { background: #fff; border-color: var(--d-blue); border-bottom-width: 4px; }
 .d-strip-day.today .d-strip-label { color: var(--d-ink); }
 .d-strip-day.future { opacity: 0.55; }
 .d-rest-note { display: flex; align-items: center; gap: 0.4rem; color: var(--d-soft); font-size: 0.86rem; margin-top: 0.5rem !important; }
@@ -105,7 +105,7 @@
 .d-rec-icon { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 0.9rem; }
 .d-rec-icon.weak { background: #fbe4e6; color: var(--d-red-text); }
 .d-rec-icon.next { background: #e3f2e6; color: var(--d-green-deep); }
-.d-rec-icon.stale { background: #e1ecfb; color: #1d5fb0; }
+.d-rec-icon.stale { background: #ddf4ff; color: #0b6fa0; }
 .d-rec-text { display: grid; gap: 0.1rem; min-width: 0; }
 .d-rec-kind { font-size: 0.8rem; font-weight: 700; color: var(--d-soft); }
 .d-rec-title { font-weight: 800; font-size: 1.05rem; line-height: 1.25; }
@@ -130,16 +130,16 @@
 .d-end-label { font: 800 13px 'Nunito', var(--sans); fill: var(--d-ink); }
 .d-cross { stroke: var(--d-soft); stroke-width: 1; }
 .d-hit, .d-hit-dot { fill: transparent; outline: none; cursor: crosshair; }
-.d-hit:focus-visible { fill: rgba(42, 120, 214, 0.08); stroke: var(--d-ink); stroke-width: 2; }
+.d-hit:focus-visible { fill: rgba(24, 153, 214, 0.1); stroke: var(--d-ink); stroke-width: 2; }
 .d-hit-dot:focus-visible { stroke: var(--d-ink); stroke-width: 2; }
-.d-shape { fill: rgba(42, 120, 214, 0.1); stroke: var(--d-blue); stroke-width: 2; stroke-linejoin: round; }
+.d-shape { fill: rgba(24, 153, 214, 0.12); stroke: var(--d-blue); stroke-width: 2; stroke-linejoin: round; }
 .d-readout { min-height: 1.6rem; text-align: center; font-weight: 700; color: var(--d-soft); margin-top: 0.3rem !important; }
 
 .d-tip { position: absolute; top: 0.25rem; transform: translateX(-50%); z-index: 2; min-width: 11.5rem; pointer-events: none; background: var(--d-ink); color: #fff; border-radius: 0.7rem; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-weight: 600; }
 .d-tip strong { font-weight: 800; }
 .d-tip-day { font-weight: 800; margin-bottom: 0.2rem !important; }
 .d-tip-row { display: flex; align-items: center; gap: 0.45rem; margin: 0.1rem 0 !important; }
-.d-tip .d-key-line.this { border-color: #8fbdf2; }
+.d-tip .d-key-line.this { border-color: #84d8ff; }
 .d-tip .d-key-line.last { border-color: #c3c9d6; }
 
 .d-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; list-style: none; margin: 0.7rem 0 0; padding: 0; font-weight: 700; font-size: 0.86rem; color: var(--d-soft); }
@@ -178,7 +178,7 @@
 .d-toggles { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.7rem 0; }
 .d-seg { display: inline-flex; border: 2px solid var(--d-border); border-radius: 0.85rem; overflow: hidden; }
 .d-seg button { min-height: 2.6rem; padding: 0 0.95rem; font: 800 0.9rem 'Nunito', var(--sans); background: #fff; color: var(--d-ink); border: 0; cursor: pointer; }
-.d-seg button[aria-pressed='true'] { background: var(--d-ink); color: #fff; }
+.d-seg button[aria-pressed='true'] { background: #ddf4ff; color: #0b6fa0; }
 .d-seg button + button { border-left: 2px solid var(--d-border); }
 .d-bars { list-style: none; margin: 0.5rem 0; padding: 0; display: grid; gap: 0.5rem; }
 .d-bars li { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 4.6rem; align-items: center; gap: 0.6rem; }

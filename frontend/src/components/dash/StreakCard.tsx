@@ -19,8 +19,8 @@ const STATE_WORD: Record<StripDay['state'], string> = {
 function note(streak: Streak): string {
   if (streak.count === 0) return streak.status === 'done' ? 'Practised today.' : 'Practise today to start a streak.'
   if (streak.status === 'done') return 'Practised today. See you tomorrow.'
-  if (streak.status === 'at-risk') return 'Yesterday was your rest day. Practise today to keep your streak.'
-  return 'Practise today to keep your streak.'
+  if (streak.status === 'at-risk') return `Yesterday was your rest day. Practise today to keep your ${streak.count}-day streak.`
+  return `Practise today to reach ${streak.count + 1}!`
 }
 
 export function StreakCard({ streak, strip, today }: Props) {

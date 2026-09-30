@@ -97,6 +97,7 @@ export const chordsExercise: ExerciseDef = {
   blurb:
     'Hear a chord and name its quality: major, minor, diminished and beyond. A chord is intervals stacked, so your interval training already helps.',
   hintLabel: 'Sounds:',
+  question: 'What chord did you hear?',
   items,
   levels,
   makeQuestion,

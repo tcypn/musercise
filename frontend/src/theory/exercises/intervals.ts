@@ -53,6 +53,7 @@ export const intervalsExercise: ExerciseDef = {
   blurb:
     'Hear two notes, name the distance between them. Ten levels take you from the fifth and octave to every interval across all 88 keys.',
   hintLabel: 'Song:',
+  question: 'What interval did you hear?',
   items,
   levels,
   makeQuestion,

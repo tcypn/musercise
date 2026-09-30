@@ -1,9 +1,14 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { MapCard } from '../components/dash/MapCard'
+import { MonthCalendar } from '../components/dash/MonthCalendar'
+import { TrendChart } from '../components/dash/TrendChart'
 import { SyncNotice } from '../components/SyncNotice'
 import { daySeconds, practiceDays } from '../store/practice'
 import { useProgress } from '../store/useProgress'
+import { computeStreak, weekSeries } from '../theory/dashboard'
 import { EXERCISE_LIST, EXERCISES } from '../theory/exercises'
+import { summariseMap } from '../theory/mapProgress'
 import { localDateString } from '../theory/practice'
 import { PASS_ACCURACY } from '../theory/rules'
 
@@ -49,6 +54,10 @@ function DailyPractice() {
 export function Progress() {
   const { progress, sync, message, pendingCount, rejectedCount } = useProgress()
   const { totals, history } = progress
+  const today = useMemo(() => localDateString(), [])
+  const streak = useMemo(() => computeStreak(progress.days, today), [progress.days, today])
+  const series = useMemo(() => weekSeries(progress.daily, today), [progress.daily, today])
+  const map = useMemo(() => summariseMap(progress), [progress])
 
   if (totals.sessions === 0) {
     return (
@@ -79,6 +88,12 @@ export function Progress() {
         <div><dt>Practice time</dt><dd>{duration(totals.practice_seconds)}</dd></div>
         <div><dt>Streak</dt><dd>{totals.streak_days} {totals.streak_days === 1 ? 'day' : 'days'}</dd></div>
       </dl>
+
+      <div className="dash progress-cards">
+        <TrendChart thisWeek={series.thisWeek} lastWeek={series.lastWeek} />
+        <MonthCalendar days={progress.days} restDays={streak.restDays} today={today} />
+        <MapCard map={map} />
+      </div>
 
       <h2>Recent sessions</h2>
       <svg className="chart" viewBox={`0 0 ${chartW} ${chartH + 24}`} role="img" aria-label={`Accuracy of your last ${recent.length} sessions`}>
