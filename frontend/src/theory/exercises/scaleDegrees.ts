@@ -1,6 +1,6 @@
-import { DEGREE_SEMITONES, keyContext, type Help, type KeyMode } from '../harmony'
+import { DEGREE_SEMITONES, keyContext, keyLabel, type Help, type KeyMode } from '../harmony'
 import { HIGHEST_MIDI, LOWEST_MIDI } from '../notes'
-import { KEYS_BY_FIFTHS, noteLabel, pitchClass, relativeMinorTonic, spellFrom, type Note } from '../spelling'
+import { noteLabel, spellFrom } from '../spelling'
 import type { ExerciseDef, Item, Level, Mode, Question } from '../types'
 
 /** Display order is pitch order, so neighbouring tiles are neighbouring notes. */
@@ -38,15 +38,6 @@ const levels: readonly Level[] = [
   { id: 9, name: 'Colour notes', blurb: 'Notes from outside the major scale, the ones that give pop and R&B their flavour: ♭3, ♯4, ♭6, ♭7.', items: ['1', '3', '5', 'b3', '#4', 'b6', 'b7'], modes: MAJOR, lowRange: WIDE, help: 'light' },
   { id: 10, name: 'Everything', blurb: 'All eleven notes, major and minor keys, every key, the whole keyboard.', items: DEGREES.map((d) => d.id), modes: ['major', 'minor'], lowRange: FULL, help: 'light' },
 ]
-
-/** The key's name for the text after an answer, spelled the usual way (A minor, F♯ major). */
-function keyLabel(tonicPc: number, mode: KeyMode): { tonic: Note; label: string } {
-  const major = KEYS_BY_FIFTHS.find((k) => pitchClass(k.tonic) === tonicPc)
-  if (mode === 'major' && major) return { tonic: major.tonic, label: `${noteLabel(major.tonic)} major` }
-  const relativeOf = KEYS_BY_FIFTHS.find((k) => pitchClass(relativeMinorTonic(k)) === tonicPc)!
-  const tonic = relativeMinorTonic(relativeOf)
-  return { tonic, label: `${noteLabel(tonic)} minor` }
-}
 
 function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number): Question {
   const keyMode = mode as KeyMode

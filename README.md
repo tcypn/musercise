@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Six are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **scale degrees** and **9ths, 6ths and added notes**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Eight are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes** and **chord function**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -124,6 +124,37 @@ A key is lit on the keyboard and you name it, using the pattern of black keys (p
 
 Quiz questions offer a few answers at a time, and never two spellings of the same key at once. After each answer the green or red strip says why ("D major has 2 sharps: F♯ and C♯.").
 
+### Chords on each scale note (a quiz)
+
+Every major key has seven chords, one on each note of its scale, written with Roman numerals: I ii iii IV V vi vii° (major, minor, minor, major, major, minor, diminished). The lesson drills them in all twelve keys, both ways, and after every answer the green or red strip shows the whole key ("A♭ major: A♭ B♭m Cm D♭ E♭ Fm Gdim. The IV chord is D♭ (D♭ F A♭).").
+
+| Level | Question |
+| --- | --- |
+| 1 | what kind of chord is on the 3rd note: major, minor or diminished |
+| 2 | "in F major, what is the iii chord?" in C, G and F |
+| 3 | the other way: "which number is the chord Am?" |
+| 4-7 | both ways in five keys, then the sharp keys, the flat keys, all twelve |
+| 8 | "A♭ is the IV chord of which major key?" |
+| 9 | seventh chords: Imaj7, ii7, iii7, IVmaj7, V7, vi7, viiø7 |
+| 10 | everything mixed |
+
+Wrong answers are always the same kind of chord as the right one, and never two spellings of one chord (F♯ and G♭ are one chord).
+
+### Chord function (ear)
+
+You hear a key (its home chord, or a short I-IV-V-I), a pause, then one chord, and say what it does: **home** (tonic: I, iii, vi), **away** (subdominant: ii, IV) or **tension** (dominant: V, vii°). After the answer the keyboard lights the chord and the text explains it, including the tritone in dominant chords ("Its B and F form a tritone that pulls toward the home chord (B up to C, F down to E).").
+
+| Level | Chords asked |
+| --- | --- |
+| 1 | I and V (home or tension) |
+| 2-4 | add IV, then vi, then ii |
+| 5 | all seven chords of the key |
+| 6 | seventh chords (the dominant 7th is the strongest tension) |
+| 7 | the chord played higher or lower than the key |
+| 8 | a minor key: i, VI, iv, V |
+| 9 | less help (only the home chord before the question), triads and sevenths |
+| 10 | major and minor keys, triads and sevenths, high and low |
+
 Levels live in `frontend/src/theory/exercises/`. The pass rule is also in `backend/progress/rules.py`. Intervals and chords keep strict answer lists on the server; every later lesson is accepted by id, so adding a lesson does not need a server update (the first lesson after intervals and chords needed one).
 
 ## Today's practice
@@ -238,10 +269,10 @@ Piano samples: Salamander Grand Piano by Alexander Holm, [CC BY 3.0](https://cre
 
 The remaining lessons are added in small batches, ear lessons toward pop and R&B first:
 
-1. Scale degrees, 9ths/6ths/added notes, keyboard map and note names, major scale and key signatures (done)
-2. Chord spelling and symbols, chords on each scale note
-3. Common progressions, pentatonic scale
-4. Meter and time signatures, comping rhythms (guided practice, in the style of Today's practice)
-5. Then the rest: inversions and slash chords, cadences, chord function, minor scales, key changes, naming a note by ear, finding a song's chords by ear, the staff, note values, circle of fifths, rhythm, melody and improvisation by ear, the other playing lessons, and the jazz-flavoured lessons last
+1. Scale degrees, 9ths/6ths/added notes, keyboard map and note names, major scale and key signatures, chords on each scale note, chord function (done)
+2. Common progressions, and speed tracking (how fast you answer, per answer)
+3. Pentatonic scale, chord spelling and symbols (including 9ths and slash chords)
+4. Cadences, inversions and slash chords by ear
+5. Then the rest, chosen for what you are missing: inversions and slash chords, cadences, chord function, minor scales, key changes, naming a note by ear, finding a song's chords by ear, the staff, note values, circle of fifths, rhythm, melody and improvisation by ear, the other playing lessons, and the jazz-flavoured lessons last
 
 Every lesson ships with property tests that check the notes by arithmetic (the question really plays what the answer says) and a browser run that checks one sound plays at a time.

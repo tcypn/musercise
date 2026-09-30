@@ -72,8 +72,8 @@ describe('learning path', () => {
 
   it('reports ready counts per stage', () => {
     const path = buildPath(emptyProgress())
-    expect(path.map((s) => s.ready)).toEqual([2, 2, 2, 0, 0, 0, 0])
-    expect(path[3].nodes.every((n) => n.state === 'soon')).toBe(true)
+    expect(path.map((s) => s.ready)).toEqual([2, 2, 3, 1, 0, 0, 0])
+    expect(path[4].nodes.every((n) => n.state === 'soon')).toBe(true)
   })
 
   it('opens the first stage for a new learner and when everything is finished', () => {

@@ -1,6 +1,6 @@
 import type { TimedEvent } from './practice'
 
-export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale'
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords'
 
 /** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
 export type Mode =
@@ -9,6 +9,7 @@ export type Mode =
   | 'major' | 'minor' // scale degrees: the key
   | 'name' | 'half' | 'whole' | 'octave' // note names: the kind of question
   | 'steps' | 'signature' | 'note' | 'key' | 'scale' // major scale: the kind of question
+  | 'quality' | 'chord' | 'numeral' | 'seventh' // chords on each scale note: the kind of question
 
 /** One thing the learner can answer with (an interval size, a chord quality...). */
 export interface Item {
