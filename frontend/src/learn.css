@@ -190,3 +190,11 @@
   .stage-card .button { width: 100%; }
   .stage-banner h2, .stage-card h2 { font-size: 1.25rem; }
 }
+
+/* The two parts of a question with a key first: tap one to hear just that part; it lights while it sounds. */
+.parts { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; }
+.part { min-height: 2.75rem; padding: 0 1rem; border-radius: 0.9rem; background: #fff; color: var(--ink-soft); cursor: pointer; font: 800 0.88rem/1 'Nunito', sans-serif;
+  border: 2px solid var(--line); border-bottom: 4px solid var(--lip); }
+.part:active { transform: translateY(2px); border-bottom-width: 2px; }
+.part.on { background: var(--blue-tint); border-color: var(--blue-edge); color: var(--blue-text); }
+.part.answer.on { background: var(--felt-tint); border-color: var(--felt-edge); color: var(--felt-text); }

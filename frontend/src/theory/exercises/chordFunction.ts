@@ -87,7 +87,8 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
   const { events: context, end } = keyContext(tonic, keyMode, help)
   return {
     root, item: item.id, mode: keyMode, notes,
-    events: [...context, chordEvent(end + 0.5, 2.6, notes)],
+    events: [...context, chordEvent(end + 0.9, 2.6, notes)],
+    answerFrom: context.length,
     lit: notes,
     // Spelled from the key, so the explanation uses the names a musician would write.
     explain: explain(tonicPc, keyMode, degree, type),
@@ -115,7 +116,8 @@ export const chordFunctionExercise: ExerciseDef = {
   name: 'Chord function',
   blurb: 'Every chord in a key has a job: some feel like home, some move away, some build tension that wants to go home. Hear the chord and name its job.',
   hintLabel: 'Feels:',
-  question: 'What does this chord do in the key?',
+  question: 'Listen to the key, then name the last chord. What does it do?',
+  partLabels: { key: 'The key', question: 'Name this chord' },
   items,
   levels,
   makeQuestion,

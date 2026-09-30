@@ -61,7 +61,7 @@ Only the four triads are ever inverted: an inverted sus2 has the same notes as a
 
 ### Scale degrees
 
-You hear a key (a short I-IV-V-I in a random one of the twelve keys), a pause, then one note, and name the note by its number in the scale. After you answer, the keyboard lights the note and the home note it is measured from, and the text spells it in the key ("In G major: the note was B, the 3rd.").
+You hear a key (a short I-IV-V-I in a random one of the twelve keys), a pause, then one note, and name the note by its number in the scale. The two parts are labelled on screen (**1 · The key**, **2 · Name this note**), you answer only about part 2, and you can tap either label to hear that part alone. After you answer, the keyboard lights the note and the home note it is measured from, and the text spells it in the key ("In G major: the note was B, the 3rd.").
 
 | Level | Notes | Help before the note |
 | --- | --- | --- |
@@ -142,7 +142,7 @@ Wrong answers are always the same kind of chord as the right one, and never two 
 
 ### Chord function (ear)
 
-You hear a key (its home chord, or a short I-IV-V-I), a pause, then one chord, and say what it does: **home** (tonic: I, iii, vi), **away** (subdominant: ii, IV) or **tension** (dominant: V, vii°). After the answer the keyboard lights the chord and the text explains it, including the tritone in dominant chords ("Its B and F form a tritone that pulls toward the home chord (B up to C, F down to E).").
+Each question has two parts, labelled on screen: **1 · The key** (its home chord, or a short I-IV-V-I) and, after a pause, **2 · Name this chord**. You only answer about part 2; tap either label to hear that part alone. You say what the chord does: **home** (tonic: I, iii, vi), **away** (subdominant: ii, IV) or **tension** (dominant: V, vii°). After the answer the keyboard lights the chord and the text explains it, including the tritone in dominant chords ("Its B and F form a tritone that pulls toward the home chord (B up to C, F down to E).").
 
 | Level | Chords asked |
 | --- | --- |

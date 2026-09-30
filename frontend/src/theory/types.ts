@@ -46,6 +46,8 @@ export interface Question {
   inversion?: number
   /** Everything that sounds, when a question is more than one run of `notes` (a key first, then a note; a chord sequence). */
   events?: TimedEvent[]
+  /** When the events start with a key to listen to first: the index of the first event the learner answers about. */
+  answerFrom?: number
   /** Keys to light once answered, when that differs from `notes`. The one equal to `root` lights first, the rest second. */
   lit?: number[]
   /** Quiz lessons: the question in words, with keys to show on the keyboard while it is asked. */
@@ -68,6 +70,8 @@ export interface ExerciseDef {
   blurb: string
   /** The question put to the learner on every screen of a session. */
   question: string
+  /** Lessons that play a key first: the names of the two parts on screen ("The key", "Name this chord"). */
+  partLabels?: { key: string; question: string }
   /** `quiz`: read and answer, no sound (unless a question carries `events`). Default `ear`. */
   kind?: 'ear' | 'quiz'
   /** What the lit strip on the keyboard stands for in the intro: "lowest note" (default) or, for one-note questions, "note". */

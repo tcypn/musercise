@@ -57,7 +57,8 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
     item: item.id,
     mode,
     notes: [target],
-    events: [...context, { time: end + 0.45, hold: 2.4, notes: [target] }],
+    events: [...context, { time: end + 0.9, hold: 2.4, notes: [target] }],
+    answerFrom: context.length,
     // After the answer: the note that was asked (first) and the home note it is measured from.
     lit: [target, target - semitones],
   }
@@ -70,7 +71,8 @@ export const scaleDegreesExercise: ExerciseDef = {
     'Hear a key, then one note, and name the note by its number in the scale. Hearing 1, 3, 5 and 7 as numbers is how you play a melody in any key.',
   rangeWord: 'note',
   hintLabel: 'Feels:',
-  question: 'Which note of the key was that?',
+  question: 'Listen to the key, then name the last note. Which note of the key is it?',
+  partLabels: { key: 'The key', question: 'Name this note' },
   items,
   levels,
   makeQuestion,

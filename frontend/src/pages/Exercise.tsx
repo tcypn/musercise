@@ -7,7 +7,7 @@ import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../component
 import { Keyboard } from '../components/Keyboard'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
-import { canSlow as questionCanSlow, eventsFor } from '../theory/playback'
+import { canSlow as questionCanSlow, eventsFor, type Part } from '../theory/playback'
 import { buildQuestions } from '../theory/questions'
 import { localDateString } from '../theory/practice'
 import { isPassing, isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
@@ -35,6 +35,8 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const [attempts, setAttempts] = useState<AttemptPayload[]>([])
   const [picked, setPicked] = useState<string | null>(null)
   const [playing, setPlaying] = useState(false)
+  /** Which part of a two-part question is sounding right now, for the labels on screen. */
+  const [heard, setHeard] = useState<'key' | 'question' | null>(null)
   const [loadError, setLoadError] = useState<string>()
   const [save, setSave] = useState<SaveState>('saving')
   const [seconds, setSeconds] = useState(0)
@@ -55,11 +57,15 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   // Only the latest play() may touch `playing`, so a sound that was cut short cannot switch the button back on.
   const playId = useRef(0)
   const play = useCallback(
-    async (q: Question, slow = false) => {
+    async (q: Question, slow = false, part: Part = 'all') => {
       const mine = ++playId.current
       setPlaying(true)
       try {
-        const handle = await playSequence(eventsFor(exercise, q, slow))
+        const from = q.answerFrom
+        const handle = await playSequence(eventsFor(exercise, q, slow, part), (i) => {
+          if (playId.current !== mine) return // a newer sound has taken over
+          setHeard(i === null || from === undefined ? null : part === 'question' || (part === 'all' && i >= from) ? 'question' : 'key')
+        })
         // A phone may still be holding the sound back; say so instead of leaving the learner in silence.
         setLoadError(soundBlocked() ? 'Your phone is holding the sound back. Tap the speaker button once to turn it on, and check that it is not on silent.' : undefined)
         await handle.done
@@ -199,6 +205,11 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
               </li>
             ))}
           </ul>
+          {exercise.partLabels && (
+            <p className="notice" style={{ margin: 0 }}>
+              Each question has two parts. First you hear the key, to set up what home sounds like; you do not answer about that. After a pause comes the one to answer about: <strong>{exercise.partLabels.question.toLowerCase()}</strong>. You can replay either part on its own.
+            </p>
+          )}
           <p className="quiet" style={{ margin: 0 }}>
             {QUESTIONS_PER_SESSION} questions. Score {PASS_ACCURACY * 100}% or more to unlock the next level. {quiz ? 'Press' : 'Press R to hear a question again,'} 1 to 9 to pick an answer and Enter to check it.
           </p>
@@ -259,6 +270,17 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
                 SLOW
               </button>
             )}
+          </div>
+        )}
+
+        {question.answerFrom !== undefined && exercise.partLabels && (
+          <div className="parts" role="group" aria-label="The two parts of the question">
+            <button type="button" className={`part ${heard === 'key' ? 'on' : ''}`} onClick={() => { prepareAudio(); void play(question, false, 'key') }} aria-label={`Hear only the key (part 1)`}>
+              1 · {exercise.partLabels.key}
+            </button>
+            <button type="button" className={`part answer ${heard === 'question' ? 'on' : ''}`} onClick={() => { prepareAudio(); void play(question, false, 'question') }} aria-label={`Hear only the part to answer about (part 2): ${exercise.partLabels.question}`}>
+              2 · {exercise.partLabels.question}
+            </button>
           </div>
         )}
 
