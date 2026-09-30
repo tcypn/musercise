@@ -1,3 +1,4 @@
+import { BackLink } from '../components/BackLink'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { getConcept, KIND_LABEL, stageOf } from '../theory/curriculum'
 
@@ -11,7 +12,7 @@ export function ComingSoon() {
 
   return (
     <section className="practice">
-      <Link className="back" to="/map">← Map</Link>
+      <BackLink to="/map">Map</BackLink>
       <p className="level-tag">Stage {stage?.id}: {stage?.name}</p>
       <h1>{concept.name}</h1>
       <p className="soon-tag">

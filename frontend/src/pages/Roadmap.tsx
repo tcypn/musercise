@@ -1,3 +1,4 @@
+import { BackLink } from '../components/BackLink'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Keyboard } from '../components/Keyboard'
 import { SyncNotice } from '../components/SyncNotice'
@@ -21,7 +22,7 @@ export function Roadmap() {
   return (
     <>
       <section className="hero">
-        <Link className="back" to="/map">← Map</Link>
+        <BackLink to="/map">Map</BackLink>
         <h1>{exercise.name}</h1>
         <p className="lede">{exercise.blurb}</p>
         <Keyboard range={next.lowRange} />

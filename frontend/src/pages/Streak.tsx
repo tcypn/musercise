@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { BackLink } from '../components/BackLink'
 import { MonthCalendar } from '../components/dash/MonthCalendar'
 import { StreakCard } from '../components/dash/StreakCard'
 import { SyncNotice } from '../components/SyncNotice'
@@ -16,7 +16,7 @@ export function Streak() {
 
   return (
     <div className="dash streak-page">
-      <Link className="back" to="/">← Learn</Link>
+      <BackLink to="/">Learn</BackLink>
       <h1>Day streak</h1>
       <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
       <div className="streak-grid">

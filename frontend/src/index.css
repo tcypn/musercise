@@ -157,7 +157,13 @@ a.level-link:hover .level-title { text-decoration: underline; text-decoration-co
 
 /* Practice */
 .practice.wide { max-width: none; }
-.back { display: inline-block; margin-bottom: 1rem; font-size: 0.92rem; }
+.back {
+  display: inline-flex; align-items: center; gap: 0.3rem; min-height: 2.75rem; margin-bottom: 1rem; padding: 0 1rem 0 0.6rem;
+  background: #fff; color: var(--blue-text); text-decoration: none; border: 2px solid var(--line); border-bottom: 4px solid var(--lip); border-radius: 0.9rem;
+  font: 800 0.85rem/1 var(--sans); letter-spacing: 0.07em; text-transform: uppercase;
+}
+.back:hover { background: #f7f7f7; }
+.back:active { transform: translateY(2px); border-bottom-width: 2px; }
 .level-tag { color: var(--brass-text); font-weight: 600; margin-bottom: 0.4rem; }
 .anchors { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 0.4rem; }
 .anchors li { padding: 0.45rem 0.7rem; background: var(--paper); border: 1px solid var(--line); border-radius: 0.4rem; }
@@ -325,7 +331,6 @@ a.level-link:hover .level-title, .concept-link:hover .concept-name { text-decora
 .form input:focus { background: #fff; border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px var(--blue-tint); }
 .key-controls select { border-bottom-width: 4px; }
 .level-tag { color: #8040c8; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.85rem; }
-.back { font-weight: 800; }
 
 /* ---- Small screens: the tab bar replaces the header links ---- */
 @media (max-width: 47.99rem) {
