@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SessionPayload } from '../api/types'
-import { addPending, flushPending, getPending, getRejected, requeueRejected } from './pending'
+import { addPending, flushPending, getCachedProgress, getPending, getRejected, requeueRejected } from './pending'
 
 function fakeStorage(seed: Record<string, string> = {}) {
   const data = new Map(Object.entries(seed))
@@ -75,5 +75,25 @@ describe('offline queue', () => {
     const fetchMock = respond()
     expect(await flushPending()).toEqual({ remaining: 1 })
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('progress cache', () => {
+  it('upgrades a cache written before the dashboard existed (no days or daily)', () => {
+    const old = {
+      totals: { sessions: 1, questions: 20, correct: 18, practice_seconds: 300, streak_days: 1, last_practiced: '2026-09-29T10:00:00Z' },
+      exercises: { intervals: { levels: [], items: [], confusions: [] } },
+      history: [{ id: 1, exercise: 'intervals', level: 1, ended_at: '2026-09-29T10:00:00Z', question_count: 20, accuracy: 0.9 }],
+    }
+    vi.stubGlobal('localStorage', fakeStorage({ 'musercise.progress-cache.v2': JSON.stringify(old) }))
+    const cached = getCachedProgress()
+    expect(Array.isArray(cached?.days)).toBe(true)
+    expect(Array.isArray(cached?.daily)).toBe(true)
+    expect(cached?.exercises.chords).toBeDefined()
+  })
+
+  it('ignores a cache that is not an object', () => {
+    vi.stubGlobal('localStorage', fakeStorage({ 'musercise.progress-cache.v2': '"junk"' }))
+    expect(getCachedProgress()).toBeNull()
   })
 })

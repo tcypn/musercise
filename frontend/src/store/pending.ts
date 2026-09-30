@@ -2,7 +2,7 @@ import { ApiError, isConfigured, postSession } from '../api/client'
 import type { Progress, SessionPayload } from '../api/types'
 import type { ExerciseId } from '../theory/types'
 import { mergeProgress } from './merge'
-import { upgradeSession } from './normalise'
+import { normaliseProgress, upgradeSession } from './normalise'
 import { readJson, writeJson } from './storage'
 
 const PENDING_KEY = 'musercise.pending'
@@ -18,7 +18,16 @@ export function addPending(session: SessionPayload): void {
   writeJson(PENDING_KEY, [...getPending(), session])
 }
 
-export const getCachedProgress = (): Progress | null => readJson<Progress | null>(CACHE_KEY, null)
+/** The cache may have been written by an older version of the app, so bring it up to the current shape. */
+export function getCachedProgress(): Progress | null {
+  const raw = readJson<unknown>(CACHE_KEY, null)
+  if (!raw || typeof raw !== 'object') return null
+  try {
+    return normaliseProgress(raw)
+  } catch {
+    return null
+  }
+}
 export const setCachedProgress = (progress: Progress): void => writeJson(CACHE_KEY, progress)
 
 /** Puts refused sessions back in the queue, for another try after the server has been fixed. */
