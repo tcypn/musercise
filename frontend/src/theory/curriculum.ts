@@ -49,7 +49,7 @@ export const STAGES: readonly Stage[] = [
     name: 'The keyboard and pitch',
     blurb: 'Know where every note lives, read it on the page, and hear the distance between two notes.',
     concepts: [
-      { id: 'keyboard-map', name: 'Keyboard map and note names', kind: 'theory', blurb: 'Find any note by name on the keyboard: white and black keys, sharps and flats, octaves.', why: 'Every other topic talks about notes by name. Fast note-finding also makes learning pieces quicker.' },
+      { id: 'keyboard-map', name: 'Keyboard map and note names', kind: 'theory', blurb: 'Find any note by name on the keyboard: white and black keys, sharps and flats, octaves.', why: 'Every other topic talks about notes by name. Fast note-finding also makes learning pieces quicker.', exerciseId: 'note-names' },
       { id: 'staff', name: 'Reading the staff and clefs', kind: 'theory', blurb: 'Read notes on the treble and bass staves, including ledger lines.', why: 'Classical pieces and lead sheets are written on the staff. Reading lets you learn music without a video.', before: ['keyboard-map'] },
       { id: 'note-values', name: 'Note values and rests', kind: 'theory', blurb: 'Whole, half, quarter and eighth notes, dots, ties and rests.', why: 'This is how a page of music tells you when to play, not just what to play.', before: ['staff'] },
       { id: 'markings', name: 'Dynamics, articulation and tempo words', kind: 'theory', blurb: 'Words like piano, crescendo, staccato and allegro, and what each asks of your hands.', why: 'They turn correct notes into music, especially in classical pieces.', before: ['note-values'] },
@@ -62,7 +62,7 @@ export const STAGES: readonly Stage[] = [
     name: 'Keys and scales',
     blurb: 'Learn which notes belong together, so a song has a home and you know where you are in it.',
     concepts: [
-      { id: 'major-scale', name: 'Major scale and key signatures', kind: 'theory', blurb: 'Build the major scale from its pattern of whole and half steps, and read the sharps and flats of each key.', why: 'Most pop and classical music lives in a major or minor key. The scale tells you which notes fit.', before: ['keyboard-map'] },
+      { id: 'major-scale', name: 'Major scale and key signatures', kind: 'theory', blurb: 'Build the major scale from its pattern of whole and half steps, and read the sharps and flats of each key.', why: 'Most pop and classical music lives in a major or minor key. The scale tells you which notes fit.', before: ['keyboard-map'], exerciseId: 'major-scale' },
       { id: 'circle-of-fifths', name: 'The circle of fifths', kind: 'theory', blurb: 'See how the 12 keys relate, and how key signatures grow by one sharp or flat at a time.', why: 'It shows which keys are close, which chords belong together, and how songs change key.', before: ['major-scale'] },
       { id: 'scale-degrees', name: 'Scale degrees', kind: 'ear', blurb: 'Hear a key, then a note, and say its number in the scale (1 to 7).', why: 'This is the core of playing by ear: you hear a melody as numbers, so you can play it in any key.', before: ['intervals', 'major-scale'], exerciseId: 'scale-degrees' },
       { id: 'minor-scales', name: 'Minor scales', kind: 'ear', blurb: 'Tell natural, harmonic and melodic minor apart, and hear how they differ from major.', why: 'Much of R&B, pop ballads and classical music is in minor keys.', before: ['major-scale'] },

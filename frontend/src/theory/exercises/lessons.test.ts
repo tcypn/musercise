@@ -6,6 +6,7 @@ import { QUESTIONS_PER_SESSION } from '../rules'
 import { DEGREE_SEMITONES } from '../harmony'
 import { EXERCISE_LIST, EXERCISES, levelItems } from './index'
 import { EXTENDED } from './extensions'
+import { HIGHEST_MIDI as TOP } from '../notes'
 import { chordById } from './chords'
 
 /** A seeded random number generator, so a failing case can be replayed. */
@@ -51,7 +52,7 @@ describe.each(EXERCISE_LIST.map((e) => [e.id, e] as const))('lesson %s', (_id, e
       for (const q of buildQuestions(exercise, level, 120, rand)) {
         expect(allowed.has(q.item), `level ${level.id} asked ${q.item}`).toBe(true)
         expect(level.modes).toContain(q.mode)
-        const sounding = [...q.notes, ...(q.lit ?? []), ...eventsFor(exercise, q).flatMap((e) => e.notes)]
+        const sounding = [...q.notes, ...(q.lit ?? []), ...(q.prompt?.lit ?? []), ...eventsFor(exercise, q).flatMap((e) => e.notes)]
         for (const midi of sounding) {
           expect(Number.isInteger(midi)).toBe(true)
           expect(midi, `level ${level.id} ${q.item}`).toBeGreaterThanOrEqual(LOWEST_MIDI)
@@ -59,6 +60,15 @@ describe.each(EXERCISE_LIST.map((e) => [e.id, e] as const))('lesson %s', (_id, e
         }
         expect(q.notes).toContain(q.root)
         expect(exercise.describe(q).length).toBeGreaterThan(5)
+        if (exercise.kind === 'quiz') {
+          expect(q.prompt?.text.length, `level ${level.id}`).toBeGreaterThan(5)
+          if (q.choices) {
+            expect(q.choices).toContain(q.item)
+            expect(new Set(q.choices).size).toBe(q.choices.length)
+            expect(q.choices.length).toBeGreaterThanOrEqual(2)
+            for (const c of q.choices) expect(allowed.has(c) || level.items.includes(c), `choice ${c}`).toBe(true)
+          }
+        }
         const events = eventsFor(exercise, q)
         expect(events.length).toBeGreaterThan(0)
         expect(eventsFor(exercise, q, true).length).toBe(events.length)
@@ -161,5 +171,187 @@ describe('9ths, 6ths and added notes', () => {
       const stacks = level.items.map((id) => stackOf(id).join(','))
       expect(new Set(stacks).size, `level ${level.id}`).toBe(stacks.length)
     }
+  })
+})
+
+describe('keyboard map and note names', () => {
+  const lesson = EXERCISES['note-names']
+  const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  const WHITE_PCS = [0, 2, 4, 5, 7, 9, 11]
+
+  it('lights the key it names (name questions) and the C it numbers (octave questions)', () => {
+    const rand = seeded(21)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 150, rand)) {
+        const lit = q.prompt!.lit!
+        expect(lit).toHaveLength(1)
+        if (q.mode === 'name') expect(NAMES[lit[0] % 12]).toBe(q.item)
+        if (q.mode === 'octave') expect(q.item).toBe(`C${Math.floor(lit[0] / 12) - 1}`)
+      }
+    }
+  })
+
+  it('answers half- and whole-step questions from a natural note, in the right direction', () => {
+    const rand = seeded(22)
+    for (const level of lesson.levels.filter((l) => l.modes.includes('half') || l.modes.includes('whole'))) {
+      for (const q of buildQuestions(lesson, level, 200, rand)) {
+        if (q.mode !== 'half' && q.mode !== 'whole') continue
+        const start = q.prompt!.lit![0] % 12
+        expect(WHITE_PCS, `start of "${q.prompt!.text}"`).toContain(start)
+        const size = q.mode === 'half' ? 1 : 2
+        const answer = NAMES.indexOf(q.item)
+        const above = q.prompt!.text.includes(' above ')
+        expect(((start + (above ? size : -size)) % 12 + 12) % 12, q.prompt!.text).toBe(answer)
+      }
+    }
+  })
+
+  it('only asks half and whole steps that have a natural starting note', () => {
+    const half = lesson.levels[6].items
+    const whole = lesson.levels[7].items
+    expect(half).not.toContain('D')
+    expect(half).not.toContain('G')
+    expect(half).not.toContain('A')
+    expect(whole).not.toContain('G#')
+    expect(half).toHaveLength(9)
+    expect(whole).toHaveLength(11)
+  })
+
+  it('numbers the Cs the standard way: middle C is C4 (MIDI 60), the top C is C8', () => {
+    const rand = seeded(23)
+    const level = lesson.levels[8]
+    const seen = new Map<string, number>()
+    for (const q of buildQuestions(lesson, level, 200, rand)) seen.set(q.item, q.root)
+    expect(seen.get('C4')).toBe(60)
+    expect(seen.get('C1')).toBe(24)
+    expect(seen.get('C8')).toBe(TOP)
+  })
+
+  it('gives the explanation with the answer in it', () => {
+    const rand = seeded(24)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const short = lesson.items.find((i) => i.id === q.item)!.short
+        expect(lesson.describe(q), q.prompt!.text).toContain(short)
+      }
+    }
+  })
+})
+
+describe('major scale and key signatures', () => {
+  const lesson = EXERCISES['major-scale']
+  const letters = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+  /** Independent of the lesson: a major scale from a tonic, each letter once, with the standard steps. */
+  const scale = (tonic: string): { label: string; pc: number }[] => {
+    const natural = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 } as const
+    const start = letters.indexOf(tonic[0])
+    const acc = tonic.slice(1) === '♯' ? 1 : tonic.slice(1) === '♭' ? -1 : 0
+    const tonicPc = (natural[tonic[0] as keyof typeof natural] + acc + 12) % 12
+    return [0, 2, 4, 5, 7, 9, 11].map((step, i) => {
+      const letter = letters[(start + i) % 7]
+      const pc = (tonicPc + step) % 12
+      const diff = ((pc - natural[letter as keyof typeof natural] + 18) % 12) - 6
+      return { label: letter + (diff === 0 ? '' : diff > 0 ? '♯'.repeat(diff) : '♭'.repeat(-diff)), pc }
+    })
+  }
+  const short = (id: string) => lesson.items.find((i) => i.id === id)!.short
+
+  it('names the scale note asked for, spelled with each letter once', () => {
+    const rand = seeded(31)
+    let asked = 0
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 200, rand)) {
+        if (q.mode !== 'note') continue
+        const m = /the (\d)(?:st|nd|rd|th) note of (.+) major\?/.exec(q.prompt!.text)!
+        expect(scale(m[2])[Number(m[1]) - 1].label, q.prompt!.text).toBe(short(q.item))
+        asked++
+      }
+    }
+    expect(asked).toBeGreaterThan(300)
+  })
+
+  it('counts the sharps or flats of the key asked about, and of the key named from a count', () => {
+    const rand = seeded(32)
+    const count = (tonic: string) => scale(tonic).reduce((sum, n) => sum + (n.label.includes('♯') ? 1 : n.label.includes('♭') ? -1 : 0), 0)
+    const sigWords = (n: number) => (n === 0 ? 'no sharps or flats' : `${Math.abs(n)} ${n > 0 ? 'sharp' : 'flat'}${Math.abs(n) === 1 ? '' : 's'}`)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 200, rand)) {
+        if (q.mode === 'signature') {
+          const tonic = /does (.+) major have/.exec(q.prompt!.text)![1]
+          expect(sigWords(count(tonic)), q.prompt!.text).toBe(lesson.items.find((i) => i.id === q.item)!.name.toLowerCase())
+        }
+        if (q.mode === 'key') {
+          const words = /Which major key has (.+)\?/.exec(q.prompt!.text)![1]
+          const tonic = short(q.item).replace(' major', '')
+          expect(sigWords(count(tonic)), q.prompt!.text).toBe(words)
+        }
+      }
+    }
+  })
+
+  it('lights exactly the notes of the scale it names, tonic to octave', () => {
+    const rand = seeded(33)
+    let lit = 0
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 200, rand)) {
+        if (q.mode !== 'scale') continue
+        const tonic = short(q.item).replace(' major', '')
+        const expected = scale(tonic).map((n) => n.pc)
+        const pcs = q.prompt!.lit!.slice(0, 7).map((m) => m % 12)
+        expect(pcs, q.prompt!.text).toEqual(expected)
+        expect(q.prompt!.lit![7] - q.prompt!.lit![0]).toBe(12)
+        lit++
+      }
+    }
+    expect(lit).toBeGreaterThan(100)
+  })
+
+  it('asks whole and half steps on the keys that show them (C major: half steps are E-F and B-C)', () => {
+    const rand = seeded(34)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 200, rand)) {
+        if (q.mode !== 'steps') continue
+        const [a, b] = q.prompt!.lit!
+        expect(b - a).toBe(q.item === 'half' ? 1 : 2)
+        const m = /from note (\d) to note (\d)/.exec(q.prompt!.text)!
+        expect(Number(m[2]) - Number(m[1])).toBe(1)
+      }
+    }
+    // Level 1 only asks three of the steps.
+    const first = new Set(buildQuestions(lesson, lesson.levels[0], 100, seeded(35)).map((q) => q.prompt!.text))
+    expect(first.size).toBe(3)
+  })
+
+  it('never offers two spellings of the same key, and always includes the right answer', () => {
+    const rand = seeded(36)
+    const pcOf = (id: string) => {
+      const m = /^n-([A-G])(#|b)?$/.exec(id)
+      if (!m) return null
+      return ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 } as Record<string, number>)[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0)
+    }
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 200, rand)) {
+        if (!q.choices) continue
+        expect(q.choices).toContain(q.item)
+        const pcs = q.choices.map(pcOf).filter((p) => p !== null).map((p) => ((p! % 12) + 12) % 12)
+        expect(new Set(pcs).size, `level ${level.id}: ${q.choices.join(' ')}`).toBe(pcs.length)
+      }
+    }
+  })
+
+  it('has the expected answers for the early levels', () => {
+    const names = (level: number) => lesson.levels[level - 1].items.map(short)
+    expect(names(3)).toEqual(['C', 'D', 'E', 'F', 'F♯', 'G', 'A', 'B♭', 'B'])
+    expect(names(5)).toEqual(['0', '1♯', '2♯', '1♭'])
+    expect(names(6)).toHaveLength(12)
+    expect(names(7)).toHaveLength(12)
+  })
+
+  it('explains the answer in words', () => {
+    const rand = seeded(37)
+    const q = buildQuestions(lesson, lesson.levels[5], 40, rand).find((x) => x.item === 'sig2s')!
+    expect(lesson.describe(q)).toBe('D major has 2 sharps: F♯ and C♯.')
+    const c = buildQuestions(lesson, lesson.levels[5], 40, rand).find((x) => x.item === 'sig0')!
+    expect(lesson.describe(c)).toBe('C major has no sharps or flats: all white keys.')
   })
 })

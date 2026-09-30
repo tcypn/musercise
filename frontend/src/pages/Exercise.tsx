@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import type { AttemptPayload, SessionPayload } from '../api/types'
 import { loadPiano, playSequence, stopSound } from '../audio/piano'
-import { Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
+import { Book, Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
 import { addPending, flushPending, passedLevels } from '../store/pending'
@@ -40,8 +40,16 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const [seconds, setSeconds] = useState(0)
   const startedAt = useRef<Date | null>(null)
   const heardAt = useRef(0)
-  const choices = useMemo(() => levelItems(exercise, level), [exercise, level])
+  const quiz = exercise.kind === 'quiz'
+  const levelChoices = useMemo(() => levelItems(exercise, level), [exercise, level])
   const question = questions[index]
+  // A quiz question may offer just a few of the level's answers; the order is always the lesson's own.
+  const choices = useMemo(
+    () => (question?.choices ? exercise.items.filter((i) => question.choices!.includes(i.id)) : levelChoices),
+    [exercise, levelChoices, question],
+  )
+  /** Does this question make a sound? Ear lessons always do; quiz questions only when they carry events. */
+  const sounds = (q: Question) => !quiz || !!q.events
   const back = `/learn/${exercise.id}`
 
   // Only the latest play() may touch `playing`, so a sound that was cut short cannot switch the button back on.
@@ -81,7 +89,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     setPicked(null)
     setPhase('question')
     heardAt.current = performance.now()
-    void play(qs[0])
+    if (sounds(qs[0])) void play(qs[0])
   }
 
   /** Choosing only selects; nothing is recorded until Check. */
@@ -101,7 +109,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     }
     setAttempts((prev) => [...prev, attempt])
     setPhase('checked')
-    void play(question) // replaces what is sounding, so the ear can check the answer
+    if (sounds(question)) void play(question) // replaces what is sounding, so the ear can check the answer
   }
 
   function next() {
@@ -116,7 +124,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     setPicked(null)
     setPhase('question')
     heardAt.current = performance.now()
-    void play(questions[nextIndex])
+    if (sounds(questions[nextIndex])) void play(questions[nextIndex])
   }
 
   async function finish() {
@@ -146,7 +154,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       const target = event.target as HTMLElement
       if (target.closest('a, input, select, textarea')) return
       const key = event.key.toLowerCase()
-      if (key === 'r' && (phase === 'question' || phase === 'checked')) {
+      if (key === 'r' && (phase === 'question' || phase === 'checked') && sounds(question)) {
         void play(question)
       } else if (phase === 'question' && /^[1-9]$/.test(key) && choices[Number(key) - 1]) {
         setPicked(choices[Number(key) - 1].id)
@@ -172,7 +180,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       <div className="lesson lesson-intro">
         <LessonHeader done={0} total={QUESTIONS_PER_SESSION} combo={0} quitTo={back} />
         <div className="lesson-main">
-          <p className="lesson-label"><Ear size={20} />{exercise.name}, level {level.id}</p>
+          <p className="lesson-label">{quiz ? <Book size={20} /> : <Ear size={20} />}{exercise.name}, level {level.id}</p>
           <h1 className="lesson-title">{level.name}</h1>
           <p className="lede" style={{ margin: 0 }}>{level.blurb}</p>
           <div>
@@ -180,14 +188,14 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
             <p className="hero-caption">The lit strip is where the {exercise.rangeWord ?? 'lowest note'} will fall.</p>
           </div>
           <ul className="anchors">
-            {choices.map((item) => (
+            {levelChoices.map((item) => (
               <li key={item.id}>
                 <strong>{item.short}</strong> {item.name} <span className="quiet">· {item.hint}</span>
               </li>
             ))}
           </ul>
           <p className="quiet" style={{ margin: 0 }}>
-            {QUESTIONS_PER_SESSION} questions. Score {PASS_ACCURACY * 100}% or more to unlock the next level. Press R to hear a question again, 1 to 9 to pick an answer and Enter to check it.
+            {QUESTIONS_PER_SESSION} questions. Score {PASS_ACCURACY * 100}% or more to unlock the next level. {quiz ? 'Press' : 'Press R to hear a question again,'} 1 to 9 to pick an answer and Enter to check it.
           </p>
           {loadError && <p className="notice warn" role="alert">{loadError}</p>}
         </div>
@@ -225,21 +233,29 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       />
       <div className="lesson-main">
         <div>
-          <p className="lesson-label"><Ear size={20} />{exercise.name}, level {level.id} · question {index + 1} of {questions.length}</p>
-          <h1 className="lesson-title" style={{ marginTop: '0.5rem' }}>{exercise.question}</h1>
+          <p className="lesson-label">{quiz ? <Book size={20} /> : <Ear size={20} />}{exercise.name}, level {level.id} · question {index + 1} of {questions.length}</p>
+          <h1 className="lesson-title" style={{ marginTop: '0.5rem' }}>{question.prompt?.text ?? exercise.question}</h1>
         </div>
 
-        <div className="speak-row">
-          <button type="button" className="speak" onClick={() => void play(question)} aria-busy={playing} aria-label="Play the question again (R)">
-            <Speaker size={60} />
-          </button>
-          {canSlow && (
-            <button type="button" className="slow" onClick={() => void play(question, true)} aria-label="Play it slower">
-              <Snail size={26} />
-              SLOW
+        {question.prompt?.lit && (
+          <div className="lesson-keys">
+            <Keyboard range={level.lowRange} lit={question.prompt.lit.map((midi) => ({ midi, role: 'first' as const }))} />
+          </div>
+        )}
+
+        {sounds(question) && (
+          <div className="speak-row">
+            <button type="button" className="speak" onClick={() => void play(question)} aria-busy={playing} aria-label="Play the question again (R)">
+              <Speaker size={60} />
             </button>
-          )}
-        </div>
+            {canSlow && (
+              <button type="button" className="slow" onClick={() => void play(question, true)} aria-label="Play it slower">
+                <Snail size={26} />
+                SLOW
+              </button>
+            )}
+          </div>
+        )}
 
         {loadError && <p className="notice warn" role="alert">{loadError}</p>}
 
@@ -254,7 +270,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
           })}
         </div>
 
-        {checked && (
+        {checked && !quiz && (
           <div className="lesson-keys">
             <Keyboard range={level.lowRange} lit={(question.lit ?? question.notes).map((midi) => ({ midi, role: midi === question.root ? 'first' : 'second' }))} />
             <p className="hero-caption">{exercise.describe(question)}</p>
@@ -265,8 +281,12 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       {checked ? (
         <FeedbackBanner
           correct={correct}
-          title={correct ? 'Nice ear!' : 'Not quite'}
-          detail={correct ? <>{exercise.phrase(truth)}</> : <>That was {exercise.phrase(truth)}. {exercise.hintLabel} {truth.hint}.</>}
+          title={correct ? (quiz ? 'Correct!' : 'Nice ear!') : 'Not quite'}
+          detail={
+            quiz ? exercise.describe(question)
+            : correct ? <>{exercise.phrase(truth)}</>
+            : <>That was {exercise.phrase(truth)}. {exercise.hintLabel} {truth.hint}.</>
+          }
           cta={index + 1 >= questions.length ? 'See results' : 'Continue'}
           onNext={next}
         />
@@ -312,7 +332,7 @@ function Complete({ exercise, level, attempts, save, seconds, onAgain }: { exerc
         </div>
         {missed.size > 0 && (
           <>
-            <h2 style={{ margin: 0, fontSize: '1.15rem' }}>Worth another listen</h2>
+            <h2 style={{ margin: 0, fontSize: '1.15rem' }}>{exercise.kind === 'quiz' ? 'Worth another look' : 'Worth another listen'}</h2>
             <ul className="anchors">
               {[...missed.entries()].sort((a, b) => b[1] - a[1]).map(([id, count]) => {
                 const item = getItem(exercise, id)

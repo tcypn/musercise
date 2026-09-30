@@ -1,9 +1,14 @@
 import type { TimedEvent } from './practice'
 
-export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions'
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale'
 
 /** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
-export type Mode = 'ascending' | 'descending' | 'harmonic' | 'block' | 'arpeggio' | 'major' | 'minor'
+export type Mode =
+  | 'ascending' | 'descending' | 'harmonic' // intervals
+  | 'block' | 'arpeggio' // chords
+  | 'major' | 'minor' // scale degrees: the key
+  | 'name' | 'half' | 'whole' | 'octave' // note names: the kind of question
+  | 'steps' | 'signature' | 'note' | 'key' | 'scale' // major scale: the kind of question
 
 /** One thing the learner can answer with (an interval size, a chord quality...). */
 export interface Item {
@@ -42,6 +47,12 @@ export interface Question {
   events?: TimedEvent[]
   /** Keys to light once answered, when that differs from `notes`. The one equal to `root` lights first, the rest second. */
   lit?: number[]
+  /** Quiz lessons: the question in words, with keys to show on the keyboard while it is asked. */
+  prompt?: { text: string; lit?: number[] }
+  /** Quiz lessons: why the answer is right, in a sentence, shown after the answer. */
+  explain?: string
+  /** Quiz lessons: offer only these answers (ids, always including the right one) instead of every answer of the level. */
+  choices?: string[]
 }
 
 /** `gap` seconds between note starts (0 = all at once); each note rings for `hold` seconds. */
@@ -56,6 +67,8 @@ export interface ExerciseDef {
   blurb: string
   /** The question put to the learner on every screen of a session. */
   question: string
+  /** `quiz`: read and answer, no sound (unless a question carries `events`). Default `ear`. */
+  kind?: 'ear' | 'quiz'
   /** What the lit strip on the keyboard stands for in the intro: "lowest note" (default) or, for one-note questions, "note". */
   rangeWord?: string
   /** Shown before answer hints: "Song:" or "Sounds:". */

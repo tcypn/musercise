@@ -296,7 +296,7 @@ describe('recommendations', () => {
     const p = emptyProgress()
     p.exercises.chords.levels = [level(1, true)]
     p.exercises.intervals.levels = [level(1, true)]
-    const others = [session('scale-degrees', TODAY), session('extensions', TODAY)]
+    const others = (Object.keys(EXERCISES) as ExerciseId[]).filter((id) => id !== 'intervals' && id !== 'chords').map((id) => session(id, TODAY))
     p.history = [session('chords', TODAY), ...others, session('intervals', '2026-09-27')]
     const recs = recommendations(p, TODAY)
     expect(recs.map((r) => r.kind)).toEqual(['next', 'stale'])

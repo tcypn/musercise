@@ -20,12 +20,14 @@ describe('learning path', () => {
     expect(buildPath(emptyProgress())).toHaveLength(7)
   })
 
-  it('starts a new learner at level 1 of intervals, with later levels locked', () => {
+  it('starts a new learner at level 1 of the first lesson, with later levels locked', () => {
     const stage = buildPath(emptyProgress())[0]
-    const levels = stage.nodes.filter((n) => n.id.startsWith('intervals-'))
+    const levels = stage.nodes.filter((n) => n.id.startsWith('note-names-'))
     expect(levels).toHaveLength(10)
     expect(levels[0].state).toBe('current')
-    expect(levels[0].to).toBe('/practice/intervals/1')
+    expect(levels[0].to).toBe('/practice/note-names/1')
+    // the next lesson in the stage is open but not the one to carry on with
+    expect(stage.nodes.find((n) => n.id === 'intervals-1')).toMatchObject({ state: 'open', to: '/practice/intervals/1' })
     expect(levels.slice(1).every((n) => n.state === 'locked' && n.to === undefined)).toBe(true)
     expect(stage.current).toBe(true)
   })
@@ -56,10 +58,9 @@ describe('learning path', () => {
   })
 
   it('groups consecutive unbuilt lessons into one node', () => {
-    const first = buildPath(emptyProgress())[0].nodes[0]
-    expect(first.state).toBe('soon')
-    expect(first.lessons).toBe(4)
-    expect(first.caption).toBe('4 lessons coming soon')
+    const first = buildPath(emptyProgress())[0].nodes.find((n) => n.state === 'soon')!
+    expect(first.lessons).toBe(3) // reading the staff, note values, dynamics and tempo words
+    expect(first.caption).toBe('3 lessons coming soon')
     expect(first.to).toBe('/map')
   })
 
@@ -71,14 +72,14 @@ describe('learning path', () => {
 
   it('reports ready counts per stage', () => {
     const path = buildPath(emptyProgress())
-    expect(path.map((s) => s.ready)).toEqual([1, 1, 2, 0, 0, 0, 0])
+    expect(path.map((s) => s.ready)).toEqual([2, 2, 2, 0, 0, 0, 0])
     expect(path[3].nodes.every((n) => n.state === 'soon')).toBe(true)
   })
 
   it('opens the first stage for a new learner and when everything is finished', () => {
     expect(defaultStage(buildPath(emptyProgress()))).toBe(1)
     const all = withPassed('intervals', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    for (const id of ['chords', 'scale-degrees', 'extensions'] as const) all.exercises[id].levels = all.exercises.intervals.levels
+    for (const id of Object.keys(all.exercises) as ExerciseId[]) all.exercises[id].levels = all.exercises.intervals.levels
     expect(buildPath(all)[0].finished).toBe(true)
     expect(defaultStage(buildPath(all))).toBe(1)
   })

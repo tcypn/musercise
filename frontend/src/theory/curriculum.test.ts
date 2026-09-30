@@ -32,12 +32,12 @@ describe('curriculum map', () => {
 })
 
 describe('map progress', () => {
-  it('starts with every built lesson open, nothing mastered, and points at intervals', () => {
+  it('starts with every built lesson open, nothing mastered, and points at the first lesson on the map', () => {
     const map = summariseMap(emptyProgress())
     expect(map.openCount).toBe(Object.keys(EXERCISES).length)
     expect(map.masteredCount).toBe(0)
     expect(map.percent).toBe(0)
-    expect(map.here).toBe('intervals')
+    expect(map.here).toBe('keyboard-map')
     expect(map.conceptCount).toBe(ALL_CONCEPTS.length)
   })
 
@@ -56,7 +56,7 @@ describe('map progress', () => {
 
     progress.exercises.chords.levels = Array.from({ length: 10 }, (_, i) => ({ level: i + 1, sessions: 1, best_accuracy: 1, passed: true }))
     expect(conceptStatus(chords, progress).state).toBe('mastered')
-    expect(summariseMap(progress).here).toBe('intervals') // chords finished: fall back to the first unfinished
+    expect(summariseMap(progress).here).toBe('keyboard-map') // chords finished: fall back to the first unfinished
     expect(summariseMap(progress).masteredCount).toBe(1)
   })
 
