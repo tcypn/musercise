@@ -9,21 +9,24 @@
   --ink-soft: #6f6f6f; /* 5.0:1 on white */
   --line: #e5e5e5;
   --lip: #d4d4d4; /* the hard lower edge of cards and buttons */
-  --felt: #3a8600; /* green for text and fills that carry white text, 4.6:1 */
+  --felt: #58cc02;
   --felt-tint: #d7ffb8;
   --felt-edge: #a5ed6e;
-  --felt-text: #3d7a00; /* on the tint, 4.7:1 */
-  --green: #58cc02; /* shapes only */
+  --felt-text: #3d7a00; /* green for small text: 5.3:1 on white, 4.7:1 on the tint */
+  --green: #58cc02;
   --green-lip: #58a700;
+  --orange: #ff9600;
+  --orange-lip: #e07f00;
+  --orange-tint: #fff4e5;
   --brass: #ffc800; /* gold: shapes only */
   --brass-lip: #e0a800;
   --brass-tint: #fff4d6;
   --brass-text: #8a6116;
   --madder: #c0272d;
   --madder-tint: #ffdfe0;
-  --blue: #1899d6; /* 3.2:1, for shapes and large icons */
-  --blue-lip: #1580b5;
-  --blue-text: #0b6fa0;
+  --blue: #1cb0f6;
+  --blue-lip: #1899d6;
+  --blue-text: #1899d6;
   --blue-tint: #ddf4ff;
   --blue-edge: #84d8ff;
   --serif: 'Nunito', system-ui, sans-serif;
@@ -44,10 +47,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 #root { display: flex; flex-direction: column; min-height: 100vh; }
-/* The page width comes from .shell so Home can be wider than the reading pages. */
-.shell { display: contents; --page: 46rem; }
-.shell.wide { --page: 70rem; }
+/* The side bar, then the page. The page width comes from .shell so Home can be wider than the reading pages. */
+.shell { display: flex; flex: 1; width: 100%; --page: 46rem; }
+.shell.wide { --page: 66rem; }
+.app-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 main { flex: 1; width: 100%; max-width: var(--page); margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+@media (min-width: 48rem) { main { padding: 2rem 2rem 3rem; } }
 h1, h2, h3 { font-family: var(--serif); font-weight: 800; line-height: 1.15; margin: 0; color: var(--ink); }
 h1 { font-size: clamp(1.9rem, 6vw, 2.6rem); }
 h2 { font-size: 1.45rem; margin: 2.25rem 0 0.75rem; }
@@ -55,20 +60,35 @@ p { margin: 0 0 0.75rem; }
 a { color: var(--blue-text); text-underline-offset: 0.18em; }
 :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
 
-.site-header {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  max-width: var(--page); width: 100%; margin: 0 auto; padding: 0.9rem 1rem;
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 1rem; border-bottom: 2px solid var(--line); }
+.brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--green); }
+.brand-mark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; background: var(--green); color: #fff; box-shadow: 0 3px 0 var(--green-lip); }
+.brand-name { font: 900 1.75rem/1 var(--sans); letter-spacing: -0.05em; }
+.sidenav { display: none; }
+.side-link {
+  display: flex; align-items: center; gap: 1.1rem; min-height: 3.5rem; padding: 0 1rem; border-radius: 0.9rem; border: 2px solid transparent;
+  color: var(--ink-soft); text-decoration: none; font: 800 0.95rem/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase;
 }
-.wordmark { font: 900 1.7rem/1 var(--sans); letter-spacing: -0.02em; color: var(--green); text-decoration: none; }
-.site-header nav { display: flex; gap: 0.25rem; flex-wrap: wrap; }
-.site-header nav a {
-  color: var(--ink-soft); text-decoration: none; padding: 0.55rem 0.9rem; border-radius: 0.85rem;
-  border: 2px solid transparent; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase;
+.side-link:hover { background: #f7f7f7; }
+.side-link.active { color: var(--blue-text); background: var(--blue-tint); border-color: var(--blue-edge); font-weight: 900; }
+.side-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (min-width: 48rem) {
+  .site-header { display: none; }
+  .sidenav { display: flex; flex-direction: column; gap: 2.25rem; flex: none; position: sticky; top: 0; align-self: flex-start; height: 100vh; width: 5.75rem; padding: 2rem 0.75rem; border-right: 2px solid var(--line); }
+  .sidenav nav { display: flex; flex-direction: column; gap: 0.5rem; }
+  .sidenav .brand { justify-content: center; }
+  .sidenav .brand-name { display: none; }
+  .side-link { justify-content: center; padding: 0; }
 }
-.site-header nav a:hover { background: #f7f7f7; }
-.site-header nav a.active { color: var(--blue-text); background: var(--blue-tint); border-color: var(--blue-edge); }
+@media (min-width: 75rem) {
+  .sidenav { width: 16rem; padding: 2rem 1.1rem; }
+  .sidenav .brand { justify-content: flex-start; padding-left: 0.5rem; }
+  .sidenav .brand-name { display: inline; }
+  .side-link { justify-content: flex-start; padding: 0 1rem; }
+  .side-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
+}
 .site-footer { text-align: center; color: var(--ink-soft); font-size: 0.8rem; padding: 1rem; }
-.shell.focus .site-header, .shell.focus .site-footer, .shell.focus .tabbar { display: none; }
+.shell.focus .site-header, .shell.focus .site-footer, .shell.focus .tabbar, .shell.focus .sidenav { display: none; }
 .shell.focus main { max-width: none; padding: 0; }
 
 .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 36rem; margin-top: 0.75rem; }
@@ -97,9 +117,9 @@ a { color: var(--blue-text); text-underline-offset: 0.18em; }
 }
 .button:hover:not(:disabled) { background: #f7f7f7; }
 .button:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
-.button.primary { background: var(--felt); color: #fff; border-color: var(--felt); border-bottom-color: #2a6100; }
-.button.primary:hover:not(:disabled) { background: #317200; }
-.button.blue { background: var(--blue-text); color: #fff; border-color: var(--blue-text); border-bottom-color: #07557a; }
+.button.primary { background: var(--green); color: #fff; border-color: var(--green); border-bottom-color: var(--green-lip); }
+.button.primary:hover:not(:disabled) { background: #61d406; }
+.button.blue { background: var(--blue); color: #fff; border-color: var(--blue); border-bottom-color: var(--blue-lip); }
 .button:disabled { background: var(--line); color: #7d7d7d; border-color: var(--line); border-bottom-color: #c4c4c4; cursor: default; }
 
 .notice { background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--felt); padding: 0.7rem 0.9rem; border-radius: 0.4rem; font-size: 0.95rem; margin: 1rem 0; }
@@ -309,8 +329,6 @@ a.level-link:hover .level-title, .concept-link:hover .concept-name { text-decora
 
 /* ---- Small screens: the tab bar replaces the header links ---- */
 @media (max-width: 47.99rem) {
-  .site-header { padding: 0.6rem 1rem; border-bottom: 2px solid var(--line); }
-  .site-header nav { display: none; }
   main { padding-bottom: 6.5rem; }
   .site-footer { padding-bottom: 6rem; }
 }

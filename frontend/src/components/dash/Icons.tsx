@@ -229,3 +229,15 @@ export function Gear({ size = 24, className, title }: IconProps) {
     </svg>
   )
 }
+
+/** The course icon: a little keyboard. */
+export function PianoIcon({ size = 24, className, title }: IconProps) {
+  return (
+    <svg {...stroke(size, className, title, 2.4)}>
+      <rect x="3" y="4" width="18" height="16" rx="2.5" />
+      <path d="M9 13v7M15 13v7" />
+      <rect x="7.2" y="4" width="3.6" height="9" rx="1" fill="currentColor" stroke="none" />
+      <rect x="13.2" y="4" width="3.6" height="9" rx="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}

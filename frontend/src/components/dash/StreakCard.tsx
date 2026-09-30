@@ -1,6 +1,6 @@
 import type { Streak, StripDay } from '../../theory/dashboard'
 import { weekStart } from '../../theory/dashboard'
-import { Flame, Moon } from './Icons'
+import { CheckBold, Flame, Moon } from './Icons'
 
 interface Props {
   streak: Streak
@@ -29,7 +29,7 @@ export function StreakCard({ streak, strip, today }: Props) {
     <section className="d-card d-streak" aria-labelledby="d-streak-title">
       <h2 id="d-streak-title" className="d-card-title">Day streak</h2>
       <p className="d-hero-row">
-        <Flame size={44} className={streak.count === 0 ? 'd-flame off' : 'd-flame'} />
+        <Flame size={52} className={streak.count === 0 ? 'd-flame off' : 'd-flame'} />
         <span className="d-hero-num">{streak.count}</span>
         <span className="d-unit">{streak.count === 1 ? 'day' : 'days'}</span>
       </p>
@@ -39,7 +39,8 @@ export function StreakCard({ streak, strip, today }: Props) {
           <li key={d.date} className={`d-strip-day ${d.state}`}>
             <span className="d-strip-label">{d.label.slice(0, 1)}</span>
             <span className="d-strip-dot">
-              {d.state === 'practised' && <Flame size={22} />}
+              {d.state === 'practised' && <CheckBold size={20} className="d-strip-check" />}
+              {d.state === 'today' && <Flame size={20} />}
               {d.state === 'rest' && <Moon size={20} />}
             </span>
             <span className="visually-hidden">{d.label}: {STATE_WORD[d.state]}</span>

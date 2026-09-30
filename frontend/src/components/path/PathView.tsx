@@ -15,9 +15,9 @@ const STATE_WORD: Record<NodeState, string> = {
 }
 
 function NodeIcon({ state }: { state: NodeState }) {
-  if (state === 'done') return <CheckBold size={32} />
-  if (state === 'locked' || state === 'soon') return <Lock size={28} />
-  return <Ear size={state === 'current' ? 38 : 32} />
+  if (state === 'done') return <CheckBold size={34} />
+  if (state === 'locked' || state === 'soon') return <Lock size={30} />
+  return <Ear size={state === 'current' ? 42 : 34} />
 }
 
 function NodeBody({ node }: { node: PathNode }) {
@@ -106,17 +106,22 @@ export function PathView({ stages, openId, onOpen }: Props) {
                   </p>
                   <h2 id={`stage-${s.stage.id}`}>{s.stage.name}</h2>
                 </div>
-                <Link to="/map" className="guide-btn" aria-label={`Open the map to read about stage ${s.stage.id}`}>
+                <Link to="/map" className="guide-btn" aria-label={`Guidebook: open the map to read about stage ${s.stage.id}`}>
                   <Book size={24} />
+                  <span className="guide-text" aria-hidden="true">Guidebook</span>
                 </Link>
               </header>
             ) : (
               <header className="stage-card">
-                <div>
-                  <p className="stage-eyebrow">
-                    Stage {s.stage.id} · {s.ready === 0 ? 'coming soon' : `${s.ready} of ${s.total} lessons ready`}
-                  </p>
-                  <h2 id={`stage-${s.stage.id}`}>{s.stage.name}</h2>
+                <div className="stage-card-main">
+                  <span className="stage-icon" aria-hidden="true">{s.ready === 0 ? <Lock size={22} /> : <Ear size={24} />}</span>
+                  <div>
+                    <p className="stage-eyebrow">
+                      Stage {s.stage.id}{s.ready === 0 ? ' · coming soon' : ` · ${s.ready} of ${s.total} lessons ready`}
+                    </p>
+                    <h2 id={`stage-${s.stage.id}`}>{s.stage.name}</h2>
+                    <p className="stage-blurb">{s.stage.blurb}</p>
+                  </div>
                 </div>
                 <button type="button" className="button" onClick={() => onOpen(s.stage.id)} aria-label={`Show stage ${s.stage.id}: ${s.stage.name}`}>
                   Jump here?

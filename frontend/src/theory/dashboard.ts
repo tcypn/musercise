@@ -166,6 +166,16 @@ export function weekSeries(daily: readonly DailyRow[], today: string): { thisWee
   return { thisWeek: build(monday), lastWeek: build(addDays(monday, -7)) }
 }
 
+/** The 7 days ending today (oldest first), the same days the headline accuracy covers. */
+export function last7(daily: readonly DailyRow[], today: string): SeriesPoint[] {
+  const byDate = new Map(daily.map((r) => [r.date, r]))
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(today, i - 6)
+    const row = byDate.get(date)
+    return { date, label: WEEKDAYS[weekdayIndex(date)], questions: row?.questions ?? 0, accuracy: row && row.questions > 0 ? row.correct / row.questions : null }
+  })
+}
+
 // ---- Calendar ----------------------------------------------------------------------------------
 
 export interface CalendarCell {

@@ -6,6 +6,7 @@ import {
   addDays,
   computeStreak,
   daysBetween,
+  last7,
   monthGrid,
   radarData,
   recommendations,
@@ -321,5 +322,24 @@ describe('recommendations', () => {
     p.exercises.chords.levels = all(10)
     p.history = [session('chords', TODAY)]
     expect(recommendations(p, TODAY)).toEqual([])
+  })
+})
+
+describe('last 7 days', () => {
+  const row = (date: string, questions: number, correct: number): DailyRow => ({ date, sessions: 1, questions, correct, seconds: 60 })
+
+  it('covers the 7 days ending today, oldest first, labelled by weekday', () => {
+    const days = last7([], TODAY)
+    expect(days.map((d) => d.date)).toEqual(['2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29', '2026-09-30'])
+    expect(days.map((d) => d.label)).toEqual(['Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed'])
+    expect(days.every((d) => d.accuracy === null && d.questions === 0)).toBe(true)
+  })
+
+  it('gives each day its own accuracy and leaves days without questions empty', () => {
+    const days = last7([row('2026-09-30', 20, 17), row('2026-09-28', 10, 5), row('2026-09-23', 20, 20)], TODAY)
+    expect(days[6]).toMatchObject({ questions: 20, accuracy: 0.85 })
+    expect(days[4]).toMatchObject({ questions: 10, accuracy: 0.5 })
+    expect(days[5].accuracy).toBeNull()
+    expect(days.some((d) => d.date === '2026-09-23')).toBe(false) // eight days back is out
   })
 })

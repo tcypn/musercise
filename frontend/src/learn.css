@@ -1,67 +1,80 @@
 /*
- * Home (the lesson path), the bottom tab bar and the lesson screens.
- * Shapes use the bright brand colours; anything that carries text uses the deeper shades from index.css.
+ * Home (the lesson path), the bottom tab bar and the lesson screens. Colours are the design's own:
+ * green #58cc02, gold #ffc800, orange #ff9600, blue #1cb0f6, each with a darker lower edge.
  */
 
-/* ---- Home layout: one column on phones, path plus a side column on wide screens ---- */
+/* ---- Home layout: one column on phones; the path, then a column of cards beside it on wide screens ---- */
 .learn { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); max-width: 42rem; margin: 0 auto;
-  grid-template-areas: 'head' 'notice' 'streak' 'today' 'accuracy' 'rec' 'path' 'ear'; }
+  grid-template-areas: 'top' 'notice' 'today' 'rec' 'accuracy' 'path' 'ear'; }
 .learn > * { min-width: 0; }
-.learn-head { grid-area: head; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0.25rem 0 0; }
+.learn-top { grid-area: top; display: flex; justify-content: flex-end; }
 .learn-notice { grid-area: notice; }
 .learn-notice:empty { display: none; }
 .learn-notice .notice { margin: 0; }
-.learn-streak { grid-area: streak; } .learn-today { grid-area: today; } .learn-accuracy { grid-area: accuracy; }
-.learn-rec { grid-area: rec; } .learn-path { grid-area: path; } .learn-ear { grid-area: ear; }
-.streak-chip { display: flex; align-items: center; gap: 0.3rem; margin: 0; font: 900 1.5rem/1 'Nunito', sans-serif; color: #b8530a; }
-@media (min-width: 60rem) {
-  .learn { max-width: none; grid-template-columns: minmax(0, 1fr) 22rem; column-gap: 1.5rem; grid-template-rows: auto auto auto auto auto 1fr;
-    grid-template-areas: 'head head' 'notice notice' 'rec streak' 'path today' 'path accuracy' 'path ear'; }
-  .streak-chip { display: none; }
+.learn-today { grid-area: today; } .learn-rec { grid-area: rec; } .learn-accuracy { grid-area: accuracy; }
+.learn-path { grid-area: path; } .learn-ear { grid-area: ear; }
+@media (min-width: 62rem) {
+  .learn { max-width: none; grid-template-columns: minmax(0, 1fr) 24rem; column-gap: 2.5rem; grid-template-rows: auto auto auto auto auto auto 1fr;
+    grid-template-areas: 'notice notice' 'path top' 'path today' 'path rec' 'path accuracy' 'path ear' 'path .'; }
 }
 
+/* Streak, top right: just the flame and the number. It opens the streak page. */
+.streak-chip { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0 0.75rem; border-radius: 0.9rem; text-decoration: none;
+  font: 900 1.4rem/1 'Nunito', sans-serif; color: var(--orange-lip); border: 2px solid transparent; }
+.streak-chip:hover { background: var(--orange-tint); border-color: #ffd9a8; }
+.streak-chip.idle { color: var(--ink-soft); }
+
 /* ---- The path ---- */
-.path-view { display: flex; flex-direction: column; gap: 1.25rem; }
-.stage-banner, .stage-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-radius: 1rem; padding: 0.9rem 1rem 0.9rem 1.2rem; }
-.stage-banner { background: var(--felt); color: #fff; box-shadow: 0 4px 0 #2a6100; }
-.stage-banner h2, .stage-card h2 { margin: 0; font-size: 1.25rem; }
+.path-view { display: flex; flex-direction: column; gap: 1.25rem; max-width: 37.5rem; margin: 0 auto; }
+.stage-banner, .stage-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-radius: 1rem; }
+.stage-banner { background: var(--green); color: #fff; box-shadow: 0 4px 0 var(--green-lip); padding: 1.1rem 1.1rem 1.1rem 1.4rem; }
+.stage-card { background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; padding: 1.1rem 1.25rem; }
+.stage-banner h2, .stage-card h2 { margin: 0; font-size: 1.45rem; font-weight: 900; }
 .stage-banner h2 { color: #fff; }
-.stage-eyebrow { margin: 0 0 0.15rem; font: 800 0.78rem/1.2 'Nunito', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
-.stage-card { background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; }
+.stage-eyebrow { margin: 0 0 0.2rem; font: 800 0.8rem/1.2 'Nunito', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+.stage-banner .stage-eyebrow { opacity: 0.92; }
 .stage-card .stage-eyebrow { color: var(--ink-soft); }
-.guide-btn { flex: none; display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 0.9rem; color: #fff; background: var(--felt);
-  border: 2px solid rgba(0, 0, 0, 0.18); border-bottom-width: 4px; }
+.stage-card-main { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
+.stage-icon { flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; background: #f2f2f2; color: #8c8c8c; }
+.stage-card .button { flex: none; min-height: 2.9rem; padding: 0 1rem; font-size: 0.85rem; }
+.stage-blurb { margin: 0.2rem 0 0; color: var(--ink-soft); font-weight: 700; font-size: 0.95rem; }
+.guide-btn { flex: none; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3rem; padding: 0 1rem; border-radius: 1rem; color: #fff; background: var(--green); text-decoration: none;
+  border: 2px solid rgba(0, 0, 0, 0.14); border-bottom-width: 4px; font: 800 0.9rem/1 'Nunito', sans-serif; letter-spacing: 0.07em; text-transform: uppercase; }
 .guide-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
+.guide-text { display: none; }
+@media (min-width: 30rem) { .guide-text { display: inline; } }
 .stage-block.open .path { margin-top: 0.5rem; }
 
-.path { position: relative; width: 100%; max-width: 22.4rem; margin: 0 auto; }
+.path { position: relative; width: 100%; max-width: 37.5rem; margin: 0 auto; overflow-x: clip; }
 .path-lines { position: absolute; left: 0; top: 0; }
 .path-line { fill: none; stroke: var(--line); stroke-width: 10; stroke-linecap: round; }
 .path-line.done { stroke: #ffe27a; }
 .path-nodes { list-style: none; margin: 0; padding: 0; }
 .path-node { position: absolute; left: calc(50% + var(--dx, 0px)); width: 0; height: 0; }
-.node-link { position: absolute; left: -40px; top: -40px; width: 80px; height: 80px; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; text-decoration: none; }
+.node-link { position: absolute; left: -50px; top: -50px; width: 100px; height: 100px; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; text-decoration: none; }
 .node-link:disabled { cursor: default; }
-.node-face { display: grid; place-items: center; width: 66px; height: 60px; border-radius: 50%; transition: transform 0.08s, box-shadow 0.08s; }
-.node-face.done { background: var(--brass); box-shadow: 0 7px 0 var(--brass-lip); color: var(--ink); }
-.node-face.current, .node-face.open { background: var(--green); box-shadow: 0 7px 0 var(--green-lip); color: #1f4d00; }
-.node-face.current { width: 76px; height: 70px; }
-.node-face.locked { background: var(--line); box-shadow: 0 7px 0 #cfcfcf; color: #6f6f6f; }
-.node-face.soon { background: #f2f2f2; box-shadow: 0 7px 0 #dcdcdc; color: #6f6f6f; border: 2px dashed #b5b5b5; }
+.node-face { display: grid; place-items: center; width: 70px; height: 64px; border-radius: 50%; transition: transform 0.08s, box-shadow 0.08s; color: #fff; }
+.node-face.done { background: var(--brass); box-shadow: 0 7px 0 var(--brass-lip); }
+.node-face.current, .node-face.open { background: var(--green); box-shadow: 0 7px 0 var(--green-lip); }
+.node-face.current { width: 86px; height: 80px; }
+.node-face.locked { background: var(--line); box-shadow: 0 7px 0 #cecece; color: #9a9a9a; }
+.node-face.soon { background: #f2f2f2; box-shadow: 0 7px 0 #dcdcdc; color: #9a9a9a; border: 2px dashed #c4c4c4; }
 .node-link:not(:disabled):active .node-face { transform: translateY(5px); box-shadow: 0 2px 0 var(--green-lip); }
 .node-link:not(:disabled):active .node-face.done { box-shadow: 0 2px 0 var(--brass-lip); }
-.node-ring { position: absolute; left: -15px; top: -15px; pointer-events: none; }
+.node-ring { position: absolute; left: -5px; top: -5px; pointer-events: none; }
 .node-ring-track { fill: none; stroke: var(--line); stroke-width: 7; }
 .node-ring-fill { fill: none; stroke: var(--green); stroke-width: 7; stroke-linecap: round; }
-.node-caption { position: absolute; left: -76px; top: 48px; width: 152px; text-align: center; font: 800 0.8rem/1.25 'Nunito', sans-serif; color: var(--ink-soft);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; pointer-events: none; }
+.node-caption { position: absolute; left: -64px; top: 52px; width: 128px; text-align: center; font: 800 0.82rem/1.25 'Nunito', sans-serif; color: var(--ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; pointer-events: none;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff; }
 .path-node.done .node-caption, .path-node.current .node-caption { color: var(--ink); }
-.path-node.current .node-caption { top: 58px; }
+.path-node.current .node-caption { top: 62px; }
+
 /* The bubble sits beside the node (on the side with room), so it never covers the caption of the node above. */
-.start-bubble { position: absolute; top: -20px; background: #fff; border: 2px solid var(--line); border-radius: 0.9rem; padding: 0.5rem 0.9rem;
-  font: 900 1rem/1 'Nunito', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--felt-text); animation: bob 1.6s ease-in-out infinite; }
-.start-bubble.right { left: 56px; }
-.start-bubble.left { right: 56px; }
+.start-bubble { position: absolute; top: -22px; background: #fff; border: 2px solid var(--line); border-radius: 0.9rem; padding: 0.5rem 1rem;
+  font: 900 1rem/1 'Nunito', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green-lip); animation: bob 1.6s ease-in-out infinite; }
+.start-bubble.right { left: 62px; }
+.start-bubble.left { right: 62px; }
 .start-bubble::after { content: ''; position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px; background: #fff; }
 .start-bubble.right::after { left: -8px; border-left: 2px solid var(--line); border-bottom: 2px solid var(--line); transform: rotate(45deg); }
 .start-bubble.left::after { right: -8px; border-right: 2px solid var(--line); border-top: 2px solid var(--line); transform: rotate(45deg); }
@@ -84,7 +97,7 @@
 .lesson-bar { position: relative; flex: 1; height: 1.15rem; border-radius: 999px; background: var(--line); overflow: hidden; }
 .lesson-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--green); transition: width 0.3s; }
 .lesson-bar-fill::after { content: ''; position: absolute; left: 0.6rem; right: 0.6rem; top: 0.25rem; height: 0.3rem; border-radius: 999px; background: rgba(255, 255, 255, 0.4); }
-.lesson-combo { display: flex; align-items: center; gap: 0.2rem; font: 900 1.1rem/1 'Nunito', sans-serif; color: #b8530a; }
+.lesson-combo { display: flex; align-items: center; gap: 0.2rem; font: 900 1.15rem/1 'Nunito', sans-serif; color: var(--orange-lip); }
 .lesson-main { width: 100%; max-width: 40rem; margin: 1.5rem auto 0; padding: 0 1rem 12rem; display: flex; flex-direction: column; gap: 1.5rem; }
 .lesson-label { display: flex; align-items: center; gap: 0.5rem; margin: 0; font: 900 0.85rem/1 'Nunito', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: #8040c8; }
 .lesson-title { font-size: clamp(1.6rem, 5vw, 2.1rem); }
@@ -123,15 +136,15 @@
 .lesson-foot-in { width: 100%; max-width: 62rem; margin: 0 auto; display: flex; flex-direction: column; gap: 0.9rem; }
 .verdict-row { display: flex; align-items: center; gap: 0.9rem; }
 .verdict-badge { flex: none; display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: #fff; }
-.lesson-foot.right .verdict-badge { color: var(--felt); }
+.lesson-foot.right .verdict-badge { color: var(--green); }
 .lesson-foot.wrong .verdict-badge { color: var(--madder); }
 .verdict-title { margin: 0; font: 900 1.6rem/1.1 'Nunito', sans-serif; }
 .lesson-foot.right .verdict-title, .lesson-foot.right .verdict-detail { color: var(--felt-text); }
 .lesson-foot.wrong .verdict-title, .lesson-foot.wrong .verdict-detail { color: #b42318; }
 .verdict-detail { margin: 0.1rem 0 0; font: 800 1rem/1.35 'Nunito', sans-serif; }
 .big-btn { width: 100%; min-height: 3.4rem; font-size: 1rem; }
-.button.danger { background: var(--madder); color: #fff; border-color: var(--madder); border-bottom-color: #8f1a1f; }
-.button.danger:hover:not(:disabled) { background: #a81f25; }
+.button.danger { background: #ff4b4b; color: #fff; border-color: #ff4b4b; border-bottom-color: #ea2b2b; }
+.button.danger:hover:not(:disabled) { background: #ff5d5d; }
 @media (min-width: 48rem) {
   .lesson-foot-in { flex-direction: row; align-items: center; justify-content: space-between; }
   .lesson-foot-in.end { justify-content: flex-end; }
@@ -153,7 +166,7 @@
 .stat { border: 2px solid var(--stat, var(--line)); border-radius: 1rem; overflow: hidden; background: #fff; }
 .stat-label { display: block; padding: 0.3rem 0.4rem; background: var(--stat); color: #fff; font: 900 0.68rem/1.2 'Nunito', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
 .stat-value { display: block; padding: 0.7rem 0.3rem; font: 900 1.5rem/1 'Nunito', sans-serif; color: var(--stat); }
-.stat.acc { --stat: var(--felt); } .stat.time { --stat: var(--blue-text); } .stat.qs { --stat: var(--brass-text); }
+.stat.acc { --stat: var(--felt-text); } .stat.time { --stat: var(--blue-text); } .stat.qs { --stat: var(--brass-text); }
 .complete .anchors { width: 100%; max-width: 30rem; text-align: left; }
 .complete-sub { color: var(--ink-soft); max-width: 28rem; margin: 0; font-weight: 700; }
 .confetti { position: absolute; inset: 0 0 auto 0; height: 14rem; overflow: hidden; pointer-events: none; }
@@ -169,3 +182,11 @@
 
 /* Progress: the charts moved here from Home */
 .progress-cards { display: grid; gap: 1rem; margin: 1.5rem 0 0; }
+
+/* Phones: a folded stage becomes a compact card with the button underneath, so titles are not squeezed. */
+@media (max-width: 36rem) {
+  .stage-card { flex-direction: column; align-items: stretch; gap: 0.8rem; padding: 1rem; }
+  .stage-card .stage-blurb { display: none; }
+  .stage-card .button { width: 100%; }
+  .stage-banner h2, .stage-card h2 { font-size: 1.25rem; }
+}

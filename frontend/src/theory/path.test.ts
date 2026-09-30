@@ -12,7 +12,7 @@ function withPassed(exercise: 'intervals' | 'chords', passed: number[], sessions
 
 describe('learning path', () => {
   it('winds back and forth and repeats', () => {
-    expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map(windOffset)).toEqual([0, 52, 76, 52, 0, -52, -76, -52, 0])
+    expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map(windOffset)).toEqual([0, 56, 84, 56, 0, -56, -84, -56, 0])
   })
 
   it('has one stage per curriculum stage', () => {

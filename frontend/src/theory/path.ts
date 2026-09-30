@@ -40,7 +40,7 @@ export interface PathStage {
 }
 
 /** The sideways shift of the nth node: a gentle S-curve that repeats. */
-const WIND = [0, 52, 76, 52, 0, -52, -76, -52] as const
+const WIND = [0, 56, 84, 56, 0, -56, -84, -56] as const
 export const windOffset = (index: number): number => WIND[index % WIND.length]
 
 export function buildPath(progress: Progress): PathStage[] {
