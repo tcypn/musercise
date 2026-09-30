@@ -121,16 +121,21 @@ Alternative: Render's free web service also runs Django, but it sleeps after 15 
 
 ### Updating after new versions
 
-The frontend redeploys by itself when `main` changes. The backend does not, so after each update:
+The frontend redeploys by itself when `main` changes. The backend does not, so after each update open a **Bash console** on PythonAnywhere and run one command:
 
 ```bash
-cd ~/musercise && git pull
-cd backend && . ~/.virtualenvs/musercise/bin/activate
-python -m pip install -r requirements.txt
-SECRET_KEY=temp DATABASE_PATH=$HOME/musercise-data/db.sqlite3 python manage.py migrate
+bash ~/musercise/backend/update.sh
 ```
 
-then click **Reload** on the Web tab. Do this soon after the site updates. If you practise in between, the app keeps your finished sessions on your device and uploads them once the server is updated (Settings shows a "Try uploading again" button if the server refused any).
+It pulls the latest code, installs dependencies, **backs up your database** (the last 5 copies are kept in `~/musercise-data/backups/`), applies database changes, checks the settings and reloads the site. If a step fails it stops without reloading and says which step failed; fix the problem and run it again. Running it twice does no harm.
+
+The very first time, the script is not on your server yet, so fetch it first: `cd ~/musercise && git pull && bash backend/update.sh`.
+
+If your username or paths differ from the guide, set `VENV=...`, `DATABASE_PATH=...` or `WSGI_FILE=...` in front of the command. If the last line says it could not reload automatically, click the green **Reload** button on the Web tab.
+
+Do this soon after the site updates. If you practise in between, the app keeps your finished sessions on your device and uploads them once the server is updated (Settings shows a "Try uploading again" button if the server refused any).
+
+To restore a backup, copy one of the files in `~/musercise-data/backups/` over `~/musercise-data/db.sqlite3` and reload.
 
 ### About the access token
 
