@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone as dt_timezone
 
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
@@ -13,8 +13,8 @@ from .models import PracticeLog, Session
 TOKEN = "test-token"
 
 
-def make_payload(exercise="intervals", level=1, total=20, wrong=0, client_id=None, item="7", mode="ascending", wrong_answer="5"):
-    now = timezone.now()
+def make_payload(exercise="intervals", level=1, total=20, wrong=0, client_id=None, item="7", mode="ascending", wrong_answer="5", ended=None, **extra):
+    now = ended or timezone.now()
     attempts = [
         {
             "root_midi": 60,
@@ -33,6 +33,7 @@ def make_payload(exercise="intervals", level=1, total=20, wrong=0, client_id=Non
         "started_at": (now - timedelta(minutes=5)).isoformat(),
         "ended_at": now.isoformat(),
         "attempts": attempts,
+        **extra,
     }
 
 
@@ -124,6 +125,89 @@ class ApiTests(APITestCase):
         self.assertEqual(data["exercises"]["intervals"]["confusions"], [{"asked": "7", "answered": "5", "count": 2}])
         self.assertEqual(data["exercises"]["chords"]["items"], [{"item": "min", "asked": 10, "correct": 10}])
         self.assertEqual({h["exercise"] for h in data["history"]}, {"intervals", "chords"})
+
+
+@override_settings(API_TOKEN=TOKEN)
+class DashboardDataTests(APITestCase):
+    """The extra data the home dashboard reads: local dates, practice days, per-day totals, first pass."""
+
+    def setUp(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {TOKEN}")
+        self.today = timezone.localdate()
+
+    def post(self, **kwargs):
+        res = self.client.post("/api/sessions/", make_payload(**kwargs), format="json")
+        self.assertEqual(res.status_code, 201, res.data)
+        return res
+
+    def progress(self):
+        return self.client.get("/api/progress/").data
+
+    def at(self, days_ago, hour=12):
+        day = self.today - timedelta(days=days_ago)
+        return datetime(day.year, day.month, day.day, hour, 0, 0, tzinfo=dt_timezone.utc)
+
+    def test_local_date_is_optional_and_validated(self):
+        self.post()  # an old client sends none
+        self.post(local_date=self.today.isoformat())
+        bad = self.client.post("/api/sessions/", make_payload(local_date=(self.today + timedelta(days=30)).isoformat()), format="json")
+        self.assertEqual(bad.status_code, 400)
+        junk = self.client.post("/api/sessions/", make_payload(local_date="tomorrow"), format="json")
+        self.assertEqual(junk.status_code, 400)
+        self.assertEqual(Session.objects.count(), 2)
+
+    def test_the_local_date_decides_the_day_not_the_utc_date(self):
+        # 23:30 UTC on the 10th, but the user is ahead of UTC and it is already the 11th for them.
+        ended = self.at(5, hour=23) + timedelta(minutes=30)
+        local = ended.date() + timedelta(days=1)
+        self.post(ended=ended, local_date=local.isoformat())
+        data = self.progress()
+        self.assertEqual(data["days"], [local.isoformat()])
+        self.assertEqual(data["daily"][0]["date"], local.isoformat())
+        self.assertEqual(data["history"][0]["day"], local.isoformat())
+
+    def test_old_sessions_without_a_local_date_fall_back_to_the_utc_date(self):
+        ended = self.at(3)
+        self.post(ended=ended)
+        self.assertEqual(self.progress()["days"], [ended.date().isoformat()])
+
+    def test_days_includes_routine_only_days_and_ignores_untouched_rows(self):
+        self.post(ended=self.at(2))
+        practice = lambda days_ago, seconds, done: {"date": (self.today - timedelta(days=days_ago)).isoformat(), "item": "scale", "seconds": seconds, "done": done}
+        self.client.post("/api/practice/", {"entries": [practice(1, 90, False), practice(4, 0, True), practice(6, 0, False)]}, format="json")
+        expected = sorted((self.today - timedelta(days=n)).isoformat() for n in (2, 1, 4))
+        self.assertEqual(self.progress()["days"], expected)
+
+    def test_days_only_cover_the_last_120_days(self):
+        self.post(ended=self.at(200))
+        self.post(ended=self.at(10))
+        data = self.progress()
+        self.assertEqual(len(data["days"]), 1)
+        self.assertEqual(len(data["daily"]), 1)
+
+    def test_daily_adds_up_sessions_per_day(self):
+        self.post(ended=self.at(1), total=20, wrong=4)  # 16 right
+        self.post(ended=self.at(1), total=10, wrong=0, exercise="chords", item="maj", wrong_answer="min", mode="block")
+        self.post(ended=self.at(3), total=20, wrong=10)
+        daily = {row["date"]: row for row in self.progress()["daily"]}
+        yesterday = daily[(self.today - timedelta(days=1)).isoformat()]
+        self.assertEqual((yesterday["sessions"], yesterday["questions"], yesterday["correct"], yesterday["seconds"]), (2, 30, 26, 600))
+        three = daily[(self.today - timedelta(days=3)).isoformat()]
+        self.assertEqual((three["sessions"], three["questions"], three["correct"]), (1, 20, 10))
+        self.assertEqual(list(daily), sorted(daily))  # oldest first
+
+    def test_first_passed_is_the_day_a_level_was_first_beaten(self):
+        self.post(ended=self.at(6), total=20, wrong=8)  # 60%: not a pass
+        self.post(ended=self.at(4), total=10, wrong=0)  # perfect but too short
+        self.post(ended=self.at(3), total=20, wrong=3)  # 85%: first pass
+        self.post(ended=self.at(1), total=20, wrong=0)  # a later, better one
+        level = self.progress()["exercises"]["intervals"]["levels"][0]
+        self.assertEqual(level["first_passed"], (self.today - timedelta(days=3)).isoformat())
+        self.assertTrue(level["passed"])
+
+    def test_first_passed_is_empty_until_a_level_is_passed(self):
+        self.post(total=20, wrong=10)
+        self.assertIsNone(self.progress()["exercises"]["intervals"]["levels"][0]["first_passed"])
 
 
 class DatabaseSettingsTests(TestCase):
@@ -251,6 +335,24 @@ class PracticeTests(APITestCase):
         self.post(practice_entry("cadence", 200, True))
         logs = self.client.get("/api/progress/").data["practice"]["logs"]
         self.assertEqual([(row["item"], row["seconds"]) for row in logs], [("cadence", 200)])
+
+
+class LocalDateMigrationTests(MigrationTestBase):
+    """0004 only adds a nullable column: existing sessions stay as they are and it reverses cleanly."""
+
+    def test_existing_sessions_survive(self):
+        old = self.migrate("0003_practicelog")
+        now = timezone.now()
+        old.get_model("progress", "Session").objects.create(
+            exercise="intervals", level=1, started_at=now, ended_at=now, question_count=20, correct_count=17
+        )
+        new = self.migrate("0004_session_local_date")
+        session = new.get_model("progress", "Session").objects.get()
+        self.assertIsNone(session.local_date)
+        session.local_date = date(2026, 9, 30)
+        session.save()
+        back = self.migrate("0003_practicelog")
+        self.assertEqual(back.get_model("progress", "Session").objects.count(), 1)
 
 
 class PracticeMigrationTests(MigrationTestBase):

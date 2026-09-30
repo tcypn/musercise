@@ -138,7 +138,7 @@ describe('uploading', () => {
 })
 
 describe('streak with routine practice', () => {
-  const NOW = new Date('2026-10-03T12:00:00Z')
+  const NOW = new Date(2026, 9, 3, 12, 0, 0) // local noon on 3 October
   const server = (): Progress => ({
     ...emptyProgress(),
     totals: { sessions: 1, questions: 20, correct: 18, practice_seconds: 300, streak_days: 2, last_practiced: '2026-10-01T09:00:00Z', last_practice_day: '2026-10-02' },
@@ -152,12 +152,14 @@ describe('streak with routine practice', () => {
 
   it('starts a new streak of 1 after a gap', () => {
     // Practised on the 5th, but nothing on the 3rd or 4th: the streak starts again.
-    expect(mergeProgress(server(), [], new Date('2026-10-05T12:00:00Z'), ['2026-10-05']).totals.streak_days).toBe(1)
+    expect(mergeProgress(server(), [], new Date(2026, 9, 5, 12), ['2026-10-05']).totals.streak_days).toBe(1)
   })
 
-  it('does nothing when there is nothing extra', () => {
+  it('leaves the numbers alone when there is nothing extra', () => {
     const s = server()
-    expect(mergeProgress(s, [], NOW, [])).toBe(s)
+    const merged = mergeProgress(s, [], NOW, [])
+    expect(merged.totals.sessions).toBe(s.totals.sessions)
+    expect(merged.daily).toEqual(s.daily)
   })
 
   it('works with an older server that only reports the last session', () => {

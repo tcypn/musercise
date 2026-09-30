@@ -9,7 +9,7 @@ import { keyForDate, localDateString, ROUTINE } from '../theory/practice'
 
 const STATE_LABEL = { soon: 'Coming soon', ready: 'Ready', progress: 'In progress', mastered: 'Mastered' } as const
 
-export function Home() {
+export function MapPage() {
   const { progress, sync, message, pendingCount, rejectedCount } = useProgress()
   const map = summariseMap(progress)
   const here = getConcept(map.here ?? undefined)

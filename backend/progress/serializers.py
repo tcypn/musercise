@@ -37,12 +37,18 @@ class SessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Session
-        fields = ["client_id", "exercise", "level", "started_at", "ended_at", "attempts"]
+        fields = ["client_id", "exercise", "level", "started_at", "ended_at", "local_date", "attempts"]
+        extra_kwargs = {"local_date": {"required": False, "allow_null": True}}
 
     def to_internal_value(self, data):
         if hasattr(data, "get") and isinstance(data.get("attempts"), list):
             data = {**data, "attempts": [upgrade_legacy_attempt(a) for a in data["attempts"]]}
         return super().to_internal_value(data)
+
+    def validate_local_date(self, value):
+        if value is not None and value > timezone.localdate() + timedelta(days=2):
+            raise serializers.ValidationError("The date is too far in the future.")
+        return value
 
     def validate(self, data):
         if data["ended_at"] < data["started_at"]:

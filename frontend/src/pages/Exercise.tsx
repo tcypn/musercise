@@ -6,6 +6,7 @@ import { Keyboard } from '../components/Keyboard'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
 import { buildQuestions } from '../theory/questions'
+import { localDateString } from '../theory/practice'
 import { isPassing, isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
 import type { ExerciseDef, Level, Question } from '../theory/types'
 
@@ -109,6 +110,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       level: level.id,
       started_at: (startedAt.current ?? new Date()).toISOString(),
       ended_at: new Date().toISOString(),
+      local_date: localDateString(),
       attempts,
     }
     addPending(session)

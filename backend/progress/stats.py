@@ -16,12 +16,15 @@ def level_stats(exercise: str) -> list[dict]:
         at_level = sessions.filter(level=level)
         qualifying = [s for s in at_level if s.question_count >= MIN_QUESTIONS]
         best = max((s.accuracy for s in qualifying), default=None)
+        passing_days = [s.day for s in qualifying if s.accuracy >= PASS_ACCURACY]
         rows.append(
             {
                 "level": level,
                 "sessions": at_level.count(),
                 "best_accuracy": best,
                 "passed": best is not None and best >= PASS_ACCURACY,
+                # The day the level was first passed (for "levels passed this week").
+                "first_passed": min(passing_days).isoformat() if passing_days else None,
             }
         )
     return rows
@@ -55,17 +58,37 @@ def streak_days(days: set) -> int:
     return streak
 
 
+HISTORY_DAYS = 120
+
+
+def daily_totals(sessions: list) -> list[dict]:
+    """Per calendar day: sessions, questions, correct answers and seconds spent, for the last 120 days."""
+    cutoff = timezone.localdate() - timedelta(days=HISTORY_DAYS)
+    rows: dict = {}
+    for s in sessions:
+        if s.day < cutoff:
+            continue
+        row = rows.setdefault(s.day, {"date": s.day.isoformat(), "sessions": 0, "questions": 0, "correct": 0, "seconds": 0})
+        row["sessions"] += 1
+        row["questions"] += s.question_count
+        row["correct"] += s.correct_count
+        row["seconds"] += int((s.ended_at - s.started_at).total_seconds())
+    return [rows[d] for d in sorted(rows)]
+
+
 def build_progress() -> dict:
     sessions = Session.objects.all()
+    all_sessions = list(sessions)
     totals = sessions.aggregate(
         sessions=Count("id"), questions=Sum("question_count"), correct=Sum("correct_count")
     )
-    seconds = sum((s.ended_at - s.started_at).total_seconds() for s in sessions)
+    seconds = sum((s.ended_at - s.started_at).total_seconds() for s in all_sessions)
     # A practice day is one with an exercise session, or a daily-routine row that was timed or ticked.
     logs = PracticeLog.objects.filter(date__gte=timezone.localdate() - timedelta(days=60))
-    days = {s.ended_at.date() for s in sessions} | {
+    days = {s.day for s in all_sessions} | {
         log.date for log in PracticeLog.objects.filter(Q(seconds__gt=0) | Q(done=True))
     }
+    cutoff = timezone.localdate() - timedelta(days=HISTORY_DAYS)
 
     return {
         "totals": {
@@ -79,6 +102,9 @@ def build_progress() -> dict:
             "last_practice_day": max(days).isoformat() if days else None,
         },
         "exercises": {name: exercise_stats(name) for name in EXERCISES},
+        # Every day with practice (last 120 days): the app works out the streak from this.
+        "days": [d.isoformat() for d in sorted(days) if d >= cutoff],
+        "daily": daily_totals(all_sessions),
         "practice": {
             "logs": [
                 {"date": log.date.isoformat(), "item": log.item, "seconds": log.seconds, "done": log.done}
@@ -91,9 +117,10 @@ def build_progress() -> dict:
                 "exercise": s.exercise,
                 "level": s.level,
                 "ended_at": s.ended_at,
+                "day": s.day.isoformat(),
                 "question_count": s.question_count,
                 "accuracy": s.accuracy,
             }
-            for s in sessions[:60]
+            for s in all_sessions[:60]
         ],
     }

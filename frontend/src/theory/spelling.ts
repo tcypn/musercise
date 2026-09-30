@@ -84,3 +84,6 @@ export function signatureOf(k: KeyDef): number {
   const scale = spellFrom(k.tonic, MAJOR_SCALE)
   return scale.reduce((sum, n) => sum + n.accidental, 0)
 }
+
+/** "D major · B minor" */
+export const keyName = (k: KeyDef): string => `${k.label} major · ${noteLabel(relativeMinorTonic(k))} minor`

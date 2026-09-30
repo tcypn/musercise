@@ -28,7 +28,10 @@ body {
   flex-direction: column;
 }
 #root { display: flex; flex-direction: column; min-height: 100vh; }
-main { flex: 1; width: 100%; max-width: 46rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+/* The page width comes from .shell so the dashboard can be wider than the reading pages. */
+.shell { display: contents; --page: 46rem; }
+.shell.wide { --page: 68rem; }
+main { flex: 1; width: 100%; max-width: var(--page); margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 h1, h2 { font-family: var(--serif); font-weight: 400; line-height: 1.05; margin: 0; }
 h1 { font-size: clamp(2.4rem, 7vw, 3.6rem); letter-spacing: -0.01em; }
 h2 { font-size: 1.7rem; margin: 2.25rem 0 0.75rem; }
@@ -38,10 +41,10 @@ a { color: var(--felt); text-underline-offset: 0.18em; }
 
 .site-header {
   display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
-  max-width: 46rem; width: 100%; margin: 0 auto; padding: 1.1rem 1rem 0;
+  max-width: var(--page); width: 100%; margin: 0 auto; padding: 1.1rem 1rem 0;
 }
 .wordmark { font: italic 400 1.7rem/1 var(--serif); color: var(--ink); text-decoration: none; }
-.site-header nav { display: flex; gap: 1.1rem; }
+.site-header nav { display: flex; gap: 1.1rem; flex-wrap: wrap; }
 .site-header nav a { color: var(--ink-soft); text-decoration: none; padding: 0.25rem 0; border-bottom: 2px solid transparent; }
 .site-header nav a.active { color: var(--ink); border-bottom-color: var(--brass); }
 .site-footer { text-align: center; color: var(--ink-soft); font-size: 0.8rem; padding: 1rem; }
@@ -243,4 +246,5 @@ h3 { font-family: var(--serif); font-weight: 400; font-size: 1.4rem; line-height
 
 @media (prefers-reduced-motion: reduce) { .progress-line span { transition: none; } }
 @media (max-width: 44rem) { .sheet-controls { margin-left: 4.1rem; } }
+@media (max-width: 36rem) { .site-header { flex-wrap: wrap; row-gap: 0.5rem; } .site-header nav { width: 100%; justify-content: space-between; gap: 0.5rem; } }
 @media (max-width: 30rem) { .site-header nav { gap: 0.8rem; } .concepts { margin-left: 3.6rem; } .stage-name { font-size: 1.5rem; } .sheet-body { margin-left: 3.6rem; } .sheet-controls { margin-left: 3.6rem; } }

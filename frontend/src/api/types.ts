@@ -18,6 +18,8 @@ export interface SessionPayload {
   level: number
   started_at: string
   ended_at: string
+  /** The user's own calendar date when the session ended (YYYY-MM-DD). Missing on sessions queued by older versions. */
+  local_date?: string
   attempts: AttemptPayload[]
 }
 
@@ -26,6 +28,8 @@ export interface LevelStat {
   sessions: number
   best_accuracy: number | null
   passed: boolean
+  /** Day the level was first passed (YYYY-MM-DD). Missing on servers older than v4. */
+  first_passed?: string | null
 }
 
 export interface ExerciseProgress {
@@ -39,8 +43,19 @@ export interface HistoryRow {
   exercise: ExerciseId
   level: number
   ended_at: string
+  /** The calendar day the session counts for. Missing on servers older than v4. */
+  day?: string
   question_count: number
   accuracy: number
+}
+
+/** One day of exercise sessions. */
+export interface DailyRow {
+  date: string
+  sessions: number
+  questions: number
+  correct: number
+  seconds: number
 }
 
 export interface Progress {
@@ -56,6 +71,10 @@ export interface Progress {
   }
   exercises: Record<ExerciseId, ExerciseProgress>
   practice: { logs: PracticeEntry[] }
+  /** Every day with practice (a session or a routine row), oldest first. */
+  days: string[]
+  /** Exercise sessions added up per day, oldest first. */
+  daily: DailyRow[]
   history: HistoryRow[]
 }
 

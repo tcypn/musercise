@@ -9,13 +9,12 @@ import { readJson, writeJson } from '../store/storage'
 import { useProgress } from '../store/useProgress'
 import { EXERCISE_LIST, nextLevel } from '../theory/exercises'
 import { keyForDate, localDateString, ROUTINE, ROUTINE_MINUTES, sectionsFor, toTimed, type PracticeItem, type RoutineRow, type Section } from '../theory/practice'
-import { getKey, KEYS_BY_FIFTHS, noteLabel, relativeMinorTonic, type KeyDef } from '../theory/spelling'
+import { getKey, keyName, KEYS_BY_FIFTHS } from '../theory/spelling'
 
 const KEY_STORAGE = 'musercise.daily.key'
 const BPM_STORAGE = 'musercise.daily.bpm'
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
-const keyName = (k: KeyDef) => `${k.label} major · ${noteLabel(relativeMinorTonic(k))} minor`
 
 interface Playing {
   row: PracticeItem

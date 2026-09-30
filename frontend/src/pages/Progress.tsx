@@ -56,7 +56,7 @@ export function Progress() {
         <h1>Progress</h1>
         <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
         <p className="lede">Nothing here yet. Finish a session and your accuracy, streak and trouble spots show up here.</p>
-        <Link className="button primary" to="/">Open the map</Link>
+        <Link className="button primary" to="/map">Open the map</Link>
         <DailyPractice />
       </section>
     )

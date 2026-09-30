@@ -21,7 +21,7 @@ export function Roadmap() {
   return (
     <>
       <section className="hero">
-        <Link className="back" to="/">← Map</Link>
+        <Link className="back" to="/map">← Map</Link>
         <h1>{exercise.name}</h1>
         <p className="lede">{exercise.blurb}</p>
         <Keyboard range={next.lowRange} />

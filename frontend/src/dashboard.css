@@ -1,0 +1,196 @@
+/*
+ * Home dashboard. Everything here lives under .dash so the rest of the app keeps its look until
+ * the restyle is agreed. Colours were checked for contrast: text uses the deep variants, the brighter
+ * greens and golds are only for shapes that carry a label or number next to them.
+ */
+.dash {
+  --d-ink: #1b2137;
+  --d-soft: #565d73;
+  --d-border: #d5d9d2;
+  --d-lip: #c3c8bd;
+  --d-grid: #e3e5df;
+  --d-wash: #f7f8f5;
+  --d-green: #3a9d4a;
+  --d-green-deep: #2b7a38;
+  --d-green-lip: #1f5c2a;
+  --d-gold: #f0a91e;
+  --d-gold-mark: #c27c0a;
+  --d-gold-text: #8a6116;
+  --d-red: #e0525e;
+  --d-red-text: #b23a48;
+  --d-blue: #2a78d6;
+  --d-grey: #7b8497;
+  font-family: 'Nunito', var(--sans);
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.dash h1, .dash h2, .dash h3 { font-family: 'Nunito', var(--sans); font-weight: 800; letter-spacing: 0; }
+.dash h1 { font-size: clamp(2rem, 6vw, 2.7rem); line-height: 1.1; margin: 0; }
+.dash h2 { margin: 0; font-size: 1.05rem; line-height: 1.2; }
+.dash p { margin: 0; }
+
+.d-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 0.25rem 0 1rem; }
+.d-sub { color: var(--d-soft); margin-top: 0.3rem !important; }
+
+/* Key-shaped buttons: a white face and a hard lower edge that sinks when pressed. */
+.d-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  min-height: 2.75rem; padding: 0 1.2rem; border-radius: 0.85rem; cursor: pointer; text-decoration: none;
+  font: 800 1rem/1 'Nunito', var(--sans); color: var(--d-ink); background: #fff;
+  border: 2px solid var(--d-border); border-bottom: 4px solid var(--d-lip);
+  transition: transform 0.06s, border-bottom-width 0.06s;
+}
+.d-btn:hover { background: var(--d-wash); }
+.d-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
+.d-btn.primary { background: var(--d-green-deep); border-color: var(--d-green-deep); border-bottom-color: var(--d-green-lip); color: #fff; }
+.d-btn.primary:hover { background: #26702f; }
+.d-btn.big { min-height: 3.25rem; padding: 0 1.6rem; font-size: 1.05rem; }
+
+.d-row { display: grid; gap: 1rem; margin: 1rem 0; }
+.d-row.top { grid-template-columns: repeat(auto-fit, minmax(16.5rem, 1fr)); }
+.d-row.mid, .d-row.bottom { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+.d-row.mid, .d-row.bottom { align-items: start; }
+@media (max-width: 56rem) { .d-row.mid, .d-row.bottom { grid-template-columns: minmax(0, 1fr); } }
+
+.d-card { background: #fff; border: 2px solid var(--d-border); border-bottom-width: 4px; border-radius: 1.1rem; padding: 1.1rem 1.25rem 1.2rem; min-width: 0; }
+.d-card-title { color: var(--d-soft); margin-bottom: 0.15rem !important; }
+.d-note { color: var(--d-soft); font-size: 0.92rem; margin-top: 0.45rem !important; }
+.d-empty { background: var(--d-wash); border-radius: 0.8rem; padding: 1.1rem; color: var(--d-soft); margin-top: 0.8rem !important; }
+
+/* Big numbers: the reward. Same rounded sans as the rest, proportional figures. */
+.d-hero-row { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 0.15rem !important; }
+.d-hero-num { font: 800 clamp(3.4rem, 9vw, 4.6rem)/1 'Nunito', var(--sans); letter-spacing: -0.01em; }
+.d-hero-row.small .d-hero-num { font-size: 3rem; }
+.d-unit { font: 800 1.35rem/1 'Nunito', var(--sans); color: var(--d-soft); align-self: flex-end; padding-bottom: 0.5rem; }
+.d-flame { flex: none; }
+.d-flame.off { filter: grayscale(1); opacity: 0.45; }
+
+/* Streak week strip */
+.d-strip { display: flex; justify-content: space-between; gap: 0.3rem; list-style: none; margin: 0.9rem 0 0.5rem; padding: 0; }
+.d-strip-day { display: grid; justify-items: center; gap: 0.3rem; }
+.d-strip-label { font-weight: 800; font-size: 0.8rem; color: var(--d-soft); }
+.d-strip-dot { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 2px solid var(--d-border); background: var(--d-wash); }
+.d-strip-day.practised .d-strip-dot { background: #fff3d1; border-color: var(--d-gold-mark); }
+.d-strip-day.rest .d-strip-dot { background: #dfe6f1; border-color: var(--d-grey); }
+.d-strip-day.today .d-strip-dot { background: #fff; border-color: var(--d-ink); }
+.d-strip-day.today .d-strip-label { color: var(--d-ink); }
+.d-strip-day.future { opacity: 0.55; }
+.d-rest-note { display: flex; align-items: center; gap: 0.4rem; color: var(--d-soft); font-size: 0.86rem; margin-top: 0.5rem !important; }
+
+/* Accuracy */
+.d-delta { display: flex; align-items: center; gap: 0.4rem; font-weight: 800; margin-top: 0.3rem !important; }
+.d-delta.up { color: var(--d-green-deep); }
+.d-delta.down { color: var(--d-red-text); }
+.d-delta.flat, .d-delta.muted { color: var(--d-soft); font-weight: 700; }
+.d-chip { display: inline-block; margin-top: 0.6rem !important; padding: 0.2rem 0.75rem; border-radius: 999px; background: #e3f2e6; color: var(--d-green-deep); font-weight: 800; font-size: 0.85rem; }
+
+/* Today */
+.d-key { font: 800 1.5rem/1.15 'Nunito', var(--sans); margin: 0.6rem 0 0.9rem !important; }
+.d-meter { height: 0.75rem; border-radius: 999px; background: var(--d-grid); overflow: hidden; }
+.d-meter span { display: block; height: 100%; border-radius: 999px; background: var(--d-green); }
+.d-today .d-btn, .d-map .d-btn { margin-top: 0.9rem; }
+.d-next { margin-top: 0.7rem !important; font-size: 0.92rem; }
+.d-note.center { text-align: center; }
+.d-stages { list-style: none; margin: 0.9rem 0 0.2rem; padding: 0; display: grid; gap: 0.7rem; }
+.d-stages li { display: grid; gap: 0.15rem; }
+.d-stage-name { font-weight: 800; font-size: 0.95rem; }
+.d-stage-count { color: var(--d-soft); font-size: 0.82rem; }
+.d-stage-meter { height: 0.5rem; border-radius: 999px; background: var(--d-grid); overflow: hidden; margin-top: 0.15rem; }
+.d-stage-meter span { display: block; height: 100%; border-radius: 999px; background: var(--d-green); }
+
+/* Recommended today */
+.d-rec-list { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+.d-rec { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.9rem; padding: 0.85rem 0; border-top: 2px solid var(--d-grid); }
+.d-rec:first-child { border-top: 0; padding-top: 0.3rem; }
+.d-rec-icon { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 0.9rem; }
+.d-rec-icon.weak { background: #fbe4e6; color: var(--d-red-text); }
+.d-rec-icon.next { background: #e3f2e6; color: var(--d-green-deep); }
+.d-rec-icon.stale { background: #e1ecfb; color: #1d5fb0; }
+.d-rec-text { display: grid; gap: 0.1rem; min-width: 0; }
+.d-rec-kind { font-size: 0.8rem; font-weight: 700; color: var(--d-soft); }
+.d-rec-title { font-weight: 800; font-size: 1.05rem; line-height: 1.25; }
+.d-rec-reason { color: var(--d-soft); font-size: 0.9rem; }
+
+/* Charts */
+.d-chart-wrap { position: relative; margin-top: 0.5rem; }
+.d-chart { width: 100%; height: auto; display: block; }
+.d-chart.radar { max-width: 26rem; margin: 0 auto; }
+.d-chart.radar .d-axis { font-size: 14px; }
+.d-grid { stroke: var(--d-grid); stroke-width: 1; }
+.d-axis { font: 700 12px 'Nunito', var(--sans); fill: var(--d-soft); }
+.d-axis.muted { fill: var(--d-grey); font-weight: 600; }
+.d-pass, .d-pass-ring { stroke: var(--d-gold-mark); stroke-width: 1; }
+.d-pass-label { font: 800 11px 'Nunito', var(--sans); fill: var(--d-gold-text); }
+.d-line { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.d-line.this { stroke: var(--d-blue); }
+.d-line.last { stroke: var(--d-grey); stroke-dasharray: 6 5; }
+.d-dot { stroke: #fff; stroke-width: 2; }
+.d-dot.this { fill: var(--d-blue); }
+.d-dot.last { fill: var(--d-grey); }
+.d-end-label { font: 800 13px 'Nunito', var(--sans); fill: var(--d-ink); }
+.d-cross { stroke: var(--d-soft); stroke-width: 1; }
+.d-hit, .d-hit-dot { fill: transparent; outline: none; cursor: crosshair; }
+.d-hit:focus-visible { fill: rgba(42, 120, 214, 0.08); stroke: var(--d-ink); stroke-width: 2; }
+.d-hit-dot:focus-visible { stroke: var(--d-ink); stroke-width: 2; }
+.d-shape { fill: rgba(42, 120, 214, 0.1); stroke: var(--d-blue); stroke-width: 2; stroke-linejoin: round; }
+.d-readout { min-height: 1.6rem; text-align: center; font-weight: 700; color: var(--d-soft); margin-top: 0.3rem !important; }
+
+.d-tip { position: absolute; top: 0.25rem; transform: translateX(-50%); z-index: 2; min-width: 11.5rem; pointer-events: none; background: var(--d-ink); color: #fff; border-radius: 0.7rem; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-weight: 600; }
+.d-tip strong { font-weight: 800; }
+.d-tip-day { font-weight: 800; margin-bottom: 0.2rem !important; }
+.d-tip-row { display: flex; align-items: center; gap: 0.45rem; margin: 0.1rem 0 !important; }
+.d-tip .d-key-line.this { border-color: #8fbdf2; }
+.d-tip .d-key-line.last { border-color: #c3c9d6; }
+
+.d-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; list-style: none; margin: 0.7rem 0 0; padding: 0; font-weight: 700; font-size: 0.86rem; color: var(--d-soft); }
+.d-legend li { display: flex; align-items: center; gap: 0.45rem; }
+.d-key-line { display: inline-block; width: 1.5rem; height: 0; border-top: 3px solid; flex: none; }
+.d-key-line.this { border-color: var(--d-blue); }
+.d-key-line.last { border-color: var(--d-grey); border-top-style: dashed; }
+.d-swatch { display: inline-block; width: 1.05rem; height: 1.05rem; border-radius: 50%; border: 2px solid; }
+.d-swatch.practised { background: var(--d-gold); border-color: var(--d-gold-mark); }
+.d-swatch.rest { background: #dfe6f1; border-color: var(--d-grey); }
+.d-swatch.today { background: #fff; border-color: var(--d-ink); }
+
+.d-table-twin { margin-top: 0.8rem; font-size: 0.9rem; }
+.d-table-twin summary { cursor: pointer; font-weight: 800; color: var(--d-green-deep); min-height: 2rem; display: flex; align-items: center; }
+.d-table-twin table { border-collapse: collapse; width: 100%; margin-top: 0.4rem; }
+.d-table-twin th, .d-table-twin td { text-align: left; padding: 0.35rem 0.4rem; border-bottom: 1px solid var(--d-grid); font-weight: 600; }
+.d-table-twin thead th { color: var(--d-soft); font-weight: 800; }
+
+/* Calendar */
+.d-cal-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.d-cal-nav { display: flex; gap: 0.4rem; }
+.d-icon-btn { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 0.8rem; background: #fff; color: var(--d-ink); cursor: pointer; border: 2px solid var(--d-border); border-bottom-width: 4px; }
+.d-icon-btn:disabled { opacity: 0.4; cursor: default; }
+.d-icon-btn:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
+.d-cal-grid { width: 100%; border-collapse: separate; border-spacing: 0.15rem; margin-top: 0.6rem; table-layout: fixed; }
+.d-cal-grid th { font-weight: 800; font-size: 0.8rem; color: var(--d-soft); padding-bottom: 0.2rem; }
+.d-cal-grid td { text-align: center; padding: 0; }
+.d-cal-day { display: grid; place-items: center; width: 2.35rem; height: 2.35rem; margin: 0 auto; border-radius: 50%; font-weight: 700; font-size: 0.9rem; border: 2px solid transparent; }
+.d-cal-grid td.outside .d-cal-day { opacity: 0.35; }
+.d-cal-grid td.future .d-cal-day { opacity: 0.5; }
+.d-cal-grid td.practised .d-cal-day { background: var(--d-gold); border-color: var(--d-gold-mark); font-weight: 800; }
+.d-cal-grid td.rest .d-cal-day { background: #dfe6f1; border-color: var(--d-grey); }
+.d-cal-grid td.is-today .d-cal-day { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--d-ink); font-weight: 800; }
+
+/* Radar toggles and bars */
+.d-toggles { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.7rem 0; }
+.d-seg { display: inline-flex; border: 2px solid var(--d-border); border-radius: 0.85rem; overflow: hidden; }
+.d-seg button { min-height: 2.6rem; padding: 0 0.95rem; font: 800 0.9rem 'Nunito', var(--sans); background: #fff; color: var(--d-ink); border: 0; cursor: pointer; }
+.d-seg button[aria-pressed='true'] { background: var(--d-ink); color: #fff; }
+.d-seg button + button { border-left: 2px solid var(--d-border); }
+.d-bars { list-style: none; margin: 0.5rem 0; padding: 0; display: grid; gap: 0.5rem; }
+.d-bars li { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 4.6rem; align-items: center; gap: 0.6rem; }
+.d-bar-label { font-weight: 800; }
+.d-bar-track { position: relative; height: 0.7rem; border-radius: 999px; background: var(--d-grid); }
+.d-bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--d-blue); }
+.d-bar-pass { position: absolute; left: 80%; top: -0.25rem; width: 2px; height: 1.2rem; background: var(--d-gold-mark); }
+.d-bar-value { text-align: right; font-weight: 700; color: var(--d-soft); font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) { .d-btn, .d-icon-btn { transition: none; } }
+@media (max-width: 30rem) {
+  .d-card { padding: 1rem; }
+  .d-rec { gap: 0.7rem; }
+  .d-cal-day { width: 2.1rem; height: 2.1rem; }
+}

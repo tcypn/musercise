@@ -11,7 +11,7 @@ export function ComingSoon() {
 
   return (
     <section className="practice">
-      <Link className="back" to="/">← Map</Link>
+      <Link className="back" to="/map">← Map</Link>
       <p className="level-tag">Stage {stage?.id}: {stage?.name}</p>
       <h1>{concept.name}</h1>
       <p className="soon-tag">

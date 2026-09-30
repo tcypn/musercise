@@ -1,4 +1,4 @@
-import type { ExerciseProgress, Progress, SessionPayload } from '../api/types'
+import type { DailyRow, ExerciseProgress, HistoryRow, Progress, SessionPayload } from '../api/types'
 
 export const emptyExercise = (): ExerciseProgress => ({ levels: [], items: [], confusions: [] })
 
@@ -8,7 +8,32 @@ export function emptyProgress(): Progress {
     exercises: { intervals: emptyExercise(), chords: emptyExercise() },
     history: [],
     practice: { logs: [] },
+    days: [],
+    daily: [],
   }
+}
+
+const localDay = (iso: string): string => {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/**
+ * A server older than v4 does not send `days` or `daily`. The last 60 sessions in `history` are enough to
+ * draw a useful dashboard, so build them from that (dates in this device's own calendar).
+ */
+export function deriveFromHistory(history: readonly HistoryRow[]): { days: string[]; daily: DailyRow[] } {
+  const rows = new Map<string, DailyRow>()
+  for (const h of history) {
+    const date = h.day ?? localDay(h.ended_at)
+    const row = rows.get(date) ?? { date, sessions: 0, questions: 0, correct: 0, seconds: 0 }
+    row.sessions++
+    row.questions += h.question_count
+    row.correct += Math.round(h.accuracy * h.question_count)
+    rows.set(date, row)
+  }
+  const daily = [...rows.values()].sort((a, b) => a.date.localeCompare(b.date))
+  return { days: daily.map((r) => r.date), daily }
 }
 
 interface V1Progress {
@@ -28,14 +53,19 @@ export function normaliseProgress(raw: unknown): Progress {
   const data = raw as Partial<Progress> & Partial<V1Progress>
   if (data.exercises) {
     const base = emptyProgress()
+    const history = data.history ?? []
+    const derived = data.days && data.daily ? null : deriveFromHistory(history)
     return {
       totals: data.totals ?? base.totals,
       exercises: { ...base.exercises, ...data.exercises },
-      history: data.history ?? [],
+      history,
       practice: data.practice ?? base.practice,
+      days: data.days ?? derived!.days,
+      daily: data.daily ?? derived!.daily,
     }
   }
   const base = emptyProgress()
+  const history = (data.history ?? []).map((h) => ({ ...h, exercise: 'intervals' as const }))
   return {
     totals: data.totals ?? base.totals,
     exercises: {
@@ -46,8 +76,9 @@ export function normaliseProgress(raw: unknown): Progress {
         confusions: (data.confusions ?? []).map((c) => ({ asked: String(c.asked), answered: String(c.answered), count: c.count })),
       },
     },
-    history: (data.history ?? []).map((h) => ({ ...h, exercise: 'intervals' as const })),
+    history,
     practice: base.practice,
+    ...deriveFromHistory(history),
   }
 }
 

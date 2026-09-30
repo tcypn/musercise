@@ -13,9 +13,16 @@ class Session(models.Model):
     ended_at = models.DateTimeField()
     question_count = models.PositiveSmallIntegerField()
     correct_count = models.PositiveSmallIntegerField()
+    # The user's own calendar date when the session ended. Older sessions have none (see `day`).
+    local_date = models.DateField(null=True, blank=True)
 
     class Meta:
         ordering = ["-ended_at"]
+
+    @property
+    def day(self):
+        """The calendar day this session counts for: the user's local date, or the UTC date for old rows."""
+        return self.local_date or self.ended_at.date()
 
     @property
     def accuracy(self) -> float:
