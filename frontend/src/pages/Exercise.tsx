@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import type { AttemptPayload, SessionPayload } from '../api/types'
-import { loadPiano, playSequence, stopSound } from '../audio/piano'
+import { loadPiano, playSequence, prepareAudio, soundBlocked, stopSound, warmUp } from '../audio/piano'
 import { Book, Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
@@ -60,6 +60,8 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       setPlaying(true)
       try {
         const handle = await playSequence(eventsFor(exercise, q, slow))
+        // A phone may still be holding the sound back; say so instead of leaving the learner in silence.
+        setLoadError(soundBlocked() ? 'Your phone is holding the sound back. Tap the speaker button once to turn it on, and check that it is not on silent.' : undefined)
         await handle.done
       } catch {
         setLoadError('The piano could not play. Check your connection, then try again.')
@@ -72,8 +74,11 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
 
   // Leaving the lesson (Quit, the back button, another tab of the app) silences the piano.
   useEffect(() => stopSound, [])
+  // Fetch the piano while the intro is on screen, so the tap on Start can unlock sound straight away.
+  useEffect(() => warmUp(), [])
 
   async function start() {
+    prepareAudio() // first, inside the tap: phones only allow sound to start here
     setLoadError(undefined)
     try {
       await loadPiano() // inside the click, so the browser allows audio
@@ -245,11 +250,11 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
 
         {sounds(question) && (
           <div className="speak-row">
-            <button type="button" className="speak" onClick={() => void play(question)} aria-busy={playing} aria-label="Play the question again (R)">
+            <button type="button" className="speak" onClick={() => { prepareAudio(); void play(question) }} aria-busy={playing} aria-label="Play the question again (R)">
               <Speaker size={60} />
             </button>
             {canSlow && (
-              <button type="button" className="slow" onClick={() => void play(question, true)} aria-label="Play it slower">
+              <button type="button" className="slow" onClick={() => { prepareAudio(); void play(question, true) }} aria-label="Play it slower">
                 <Snail size={26} />
                 SLOW
               </button>

@@ -54,7 +54,7 @@ vi.mock('tone', () => {
   }
 })
 
-import { loadPiano, playNotes, playSequence, stopSound } from './piano'
+import { loadPiano, playNotes, playSequence, prepareAudio, soundBlocked, stopSound } from './piano'
 
 /** Plays every scheduled callback whose time has come, as the transport would. */
 function runTransportUntil(time: number) {
@@ -170,5 +170,43 @@ describe('piano playback', () => {
     await vi.waitFor(() => expect(fake.starts).toBe(1))
     expect(fake.toneStarts).toBe(1)
     stopSound()
+  })
+
+  it('prepareAudio starts the audio clock at once, inside the tap, without waiting for anything', () => {
+    fake.toneStarts = 0
+    prepareAudio()
+    expect(fake.toneStarts).toBe(1) // called synchronously, before any await
+  })
+
+  it('prepareAudio asks for playback audio where the browser supports it', () => {
+    const session = { type: 'auto' }
+    vi.stubGlobal('navigator', { audioSession: session })
+    prepareAudio()
+    expect(session.type).toBe('playback')
+    vi.unstubAllGlobals()
+  })
+
+  it('prepareAudio never throws, even where audioSession is missing or refuses', () => {
+    vi.stubGlobal('navigator', { get audioSession() { throw new Error('nope') } })
+    expect(() => prepareAudio()).not.toThrow()
+    vi.unstubAllGlobals()
+  })
+
+  it('says when the browser is holding the sound back', () => {
+    fake.contextState = 'suspended'
+    expect(soundBlocked()).toBe(true)
+    fake.contextState = 'running'
+    expect(soundBlocked()).toBe(false)
+  })
+
+  it('carries on when a phone never answers the request to start, so the page can say so', async () => {
+    vi.useFakeTimers()
+    fake.contextState = 'suspended'
+    const pending = playSequence([{ time: 0, hold: 0.3, notes: [60] }])
+    await vi.advanceTimersByTimeAsync(1600)
+    const handle = await pending
+    expect(fake.starts).toBe(1)
+    handle.stop()
+    vi.useRealTimers()
   })
 })

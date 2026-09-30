@@ -14,6 +14,32 @@ for (let octave = 1; octave <= 7; octave++) {
   SAMPLE_URLS[`A${octave}`] = `A${octave}.mp3`
 }
 
+/** Start loading the library and the samples now (for example while a lesson's intro is on screen), so the first tap has nothing to wait for. */
+export function warmUp(): void {
+  loadPiano().catch(() => {})
+}
+
+/**
+ * Call this first thing in a tap or click handler, before any waiting. Phones (iPhones especially) only let
+ * sound start from inside the tap itself, not after a download has finished, and they keep the ringer switch
+ * from silencing music apps when the page asks for "playback" audio.
+ */
+export function prepareAudio(): void {
+  try {
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession
+    if (session) session.type = 'playback'
+  } catch {
+    // not supported: nothing to do
+  }
+  if (toneModule) void toneModule.start().catch(() => {})
+  else warmUp()
+}
+
+/** True when the browser is holding the sound back (it has not allowed the audio clock to run). */
+export function soundBlocked(): boolean {
+  return toneModule !== null && toneModule.getContext().state !== 'running'
+}
+
 /** Seconds a note takes to die away after it is released. Short, so a cut-off never leaves a long tail. */
 const RELEASE = 0.12
 /** Seconds to fade everything out before a stop, so stopping does not click. */
@@ -32,13 +58,18 @@ interface Engine {
 }
 
 let loading: Promise<Engine> | null = null
+/** Set as soon as the Tone library has loaded, so a tap can unlock sound without waiting for anything. */
+let toneModule: ToneModule | null = null
 
-/** Loads Tone.js and the piano samples once. Call from a click so the AudioContext may start. */
+/**
+ * Loads Tone.js and the piano samples once. This does not start the audio clock: phones only allow that from
+ * inside a tap, so `prepareAudio` does it at the start of each tap handler, and playback starts it again if needed.
+ */
 export function loadPiano() {
   if (!loading) {
     loading = (async () => {
       const tone = await import('tone')
-      await tone.start()
+      toneModule = tone
       const master = new tone.Gain(1).toDestination()
       const sampler = await new Promise<ToneNamespace.Sampler>((resolve, reject) => {
         const s: ToneNamespace.Sampler = new tone.Sampler({
@@ -103,7 +134,8 @@ export async function playSequence(events: readonly TimedEvent[], onEvent?: (ind
   active?.stop()
   const piano = await loadPiano()
   const { tone, sampler } = piano
-  if (tone.getContext().state !== 'running') await tone.start()
+  // A phone that has not allowed sound may never answer this: wait a moment, then carry on so the page can say so.
+  if (tone.getContext().state !== 'running') await Promise.race([tone.start(), new Promise<void>((resolve) => setTimeout(resolve, 1500))])
   if (mine !== epoch) return INERT // stopped, or replaced by a newer playback, while the piano was loading
 
   const transport = tone.getTransport()

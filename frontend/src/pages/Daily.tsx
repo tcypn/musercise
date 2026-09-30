@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { loadPiano, playSequence, type SequenceHandle } from '../audio/piano'
+import { loadPiano, playSequence, prepareAudio, warmUp, type SequenceHandle } from '../audio/piano'
 import { Keyboard, type LitKey } from '../components/Keyboard'
 import { SyncNotice } from '../components/SyncNotice'
 import { TempoSlider } from '../components/TempoSlider'
@@ -52,6 +52,7 @@ export function Daily() {
     setLoading(null)
   }, [])
   useEffect(() => stop, [stop])
+  useEffect(() => warmUp(), [])
 
   function chooseKey(id: string) {
     stop()
@@ -68,6 +69,7 @@ export function Daily() {
   }
 
   async function hear(row: PracticeItem, section: Section) {
+    prepareAudio() // first, inside the tap: phones only allow sound to start here
     stop()
     const mine = ++run.current
     setError(undefined)
