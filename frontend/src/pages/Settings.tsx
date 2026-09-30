@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { fetchProgress, getSettings, isConfigured, saveSettings } from '../api/client'
-import { flushPending, getPending } from '../store/pending'
+import { flushPending, getPending, getRejected, requeueRejected } from '../store/pending'
 
 export function Settings() {
   const [form, setForm] = useState(getSettings)
@@ -27,6 +27,17 @@ export function Settings() {
   }
 
   const waiting = getPending().length
+  const [refused, setRefused] = useState(() => getRejected().length)
+
+  async function retryRefused() {
+    setBusy(true)
+    requeueRejected()
+    const flushed = await flushPending()
+    setRefused(getRejected().length)
+    setStatus(flushed.remaining === 0 && getRejected().length === 0 ? { ok: true, text: 'All sessions uploaded.' } : { ok: false, text: flushed.error ?? 'Some sessions were refused again. Make sure the server is updated to the latest version.' })
+    setBusy(false)
+  }
+
   return (
     <section className="practice">
       <h1>Settings</h1>
@@ -46,6 +57,12 @@ export function Settings() {
         <button className="button primary" disabled={busy}>{busy ? 'Testing…' : 'Save and test'}</button>
       </form>
       {status && <p className={`notice ${status.ok ? '' : 'warn'}`} role="status">{status.text}</p>}
+      {refused > 0 && (
+        <div className="notice warn">
+          <p>The server refused {refused} {refused === 1 ? 'session' : 'sessions'}, most likely because it has not been updated yet. They are kept on this device.</p>
+          <button className="button" onClick={() => void retryRefused()} disabled={busy}>Try uploading again</button>
+        </div>
+      )}
       {waiting > 0 && <p className="quiet">{waiting} {waiting === 1 ? 'session is' : 'sessions are'} saved on this device and not uploaded yet.</p>}
     </section>
   )

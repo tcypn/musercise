@@ -23,10 +23,12 @@ class Session(models.Model):
 
 
 class Attempt(models.Model):
+    """One answered question. `item` and `answered` are exercise item ids (see rules.EXERCISES)."""
+
     session = models.ForeignKey(Session, related_name="attempts", on_delete=models.CASCADE)
     root_midi = models.PositiveSmallIntegerField()
-    interval_semitones = models.PositiveSmallIntegerField()
-    mode = models.CharField(max_length=16)  # ascending | descending | harmonic
-    answered_semitones = models.PositiveSmallIntegerField()
+    item = models.CharField(max_length=16)
+    mode = models.CharField(max_length=16)
+    answered = models.CharField(max_length=16)
     correct = models.BooleanField()
     response_ms = models.PositiveIntegerField()

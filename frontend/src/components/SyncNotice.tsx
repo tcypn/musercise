@@ -5,9 +5,17 @@ interface Props {
   sync: SyncState
   message?: string
   pendingCount: number
+  rejectedCount?: number
 }
 
-export function SyncNotice({ sync, message, pendingCount }: Props) {
+export function SyncNotice({ sync, message, pendingCount, rejectedCount = 0 }: Props) {
+  if (rejectedCount > 0) {
+    return (
+      <p className="notice warn" role="status">
+        The server refused {rejectedCount} {rejectedCount === 1 ? 'session' : 'sessions'}, most likely because it is not updated yet. They are kept on this device. <Link to="/settings">Try again in Settings</Link>
+      </p>
+    )
+  }
   if (sync === 'local') {
     return (
       <p className="notice">

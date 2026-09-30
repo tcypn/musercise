@@ -1,13 +1,17 @@
 # Musercise
 
-A personal ear-training app. First exercise: **interval recognition** across all 88 piano keys, with a ten-level roadmap and progress tracking.
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. The home screen is a **map of everything to learn** (7 stages, 42 lessons); lessons that are not built yet are marked *Coming soon*. Two are ready: **intervals** and **chord quality**, each with ten levels across all 88 piano keys and progress tracking.
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
 
-## The roadmap
+## The map
 
-Each level is 20 questions. Score 80% or more to unlock the next one.
+`frontend/src/theory/curriculum.ts` lists every stage and lesson: keyboard and pitch, keys and scales, chords, harmony and progressions, rhythm and song form, melody and improvisation, accompaniment. A lesson becomes *Ready* when it has an exercise (`exerciseId`); the map shows progress per lesson, a "You are here" marker, and a suggested route to accompanying a pop or R&B song. Nothing is locked between lessons.
+
+Each exercise has ten levels of 20 questions. Score 80% or more to unlock the next level.
+
+### Intervals
 
 | Level | Intervals | Direction |
 | --- | --- | --- |
@@ -22,7 +26,24 @@ Each level is 20 questions. Score 80% or more to unlock the next one.
 | 9 | all 12 | together |
 | 10 | all 12 | everything, all 88 keys |
 
-Levels live in `frontend/src/theory/roadmap.ts`. The pass rule is also in `backend/progress/rules.py`; keep the two in sync.
+### Chord quality
+
+| Level | Chords | How they are played |
+| --- | --- | --- |
+| 1 | major, minor | together |
+| 2 | adds diminished | together |
+| 3 | adds augmented (the four triads) | together |
+| 4 | the four triads | broken, one note at a time |
+| 5 | the four triads, also turned upside down | together |
+| 6 | adds sus2, sus4 | together |
+| 7 | major 7th, dominant 7th, minor 7th | together |
+| 8 | adds half-diminished and diminished 7th | together |
+| 9 | triads, sus chords and sevenths mixed | together and broken |
+| 10 | everything | all 88 keys |
+
+Only the four triads are ever inverted: an inverted sus2 has the same notes as a sus4 on another root, and an inverted minor 7th matches a 6th chord, so those answers would be ambiguous.
+
+Levels live in `frontend/src/theory/exercises/`. The pass rule is also in `backend/progress/rules.py`, together with the list of answers the server accepts; keep the two in sync.
 
 ## Run it locally
 
@@ -77,6 +98,7 @@ It uses hash routes (`/#/progress`), so refreshing any page works on Pages witho
    ```python
    import os, sys
    sys.path.insert(0, '/home/<username>/musercise/backend')
+   os.environ['DJANGO_SETTINGS_MODULE'] = 'musercise.settings'
    os.environ['SECRET_KEY'] = '<long random string>'
    os.environ['API_TOKEN'] = '<another long random string, your password>'
    os.environ['ALLOWED_HOSTS'] = '<username>.pythonanywhere.com'
@@ -96,6 +118,19 @@ Things to know about the free tier:
 - Updating: `cd ~/musercise && git pull`, then **Reload** on the Web tab (run `manage.py migrate` when models change).
 
 Alternative: Render's free web service also runs Django, but it sleeps after 15 minutes idle and its free disk resets, so SQLite data would not survive. PythonAnywhere fits this app better.
+
+### Updating after new versions
+
+The frontend redeploys by itself when `main` changes. The backend does not, so after each update:
+
+```bash
+cd ~/musercise && git pull
+cd backend && . ~/.virtualenvs/musercise/bin/activate
+python -m pip install -r requirements.txt
+SECRET_KEY=temp DATABASE_PATH=$HOME/musercise-data/db.sqlite3 python manage.py migrate
+```
+
+then click **Reload** on the Web tab. Do this soon after the site updates. If you practise in between, the app keeps your finished sessions on your device and uploads them once the server is updated (Settings shows a "Try uploading again" button if the server refused any).
 
 ### About the access token
 

@@ -1,24 +1,4 @@
-import { HIGHEST_MIDI, LOWEST_MIDI } from './notes'
-import type { Level, Mode } from './roadmap'
-
-export interface Question {
-  /** The note played first (the top note for descending intervals). */
-  root: number
-  semitones: number
-  mode: Mode
-  /** Notes in the order they sound. */
-  notes: [number, number]
-}
-
-export function makeQuestion(level: Level, semitones: number, mode: Mode, rand: () => number): Question {
-  const min = Math.max(level.lowRange[0], LOWEST_MIDI)
-  const max = Math.min(level.lowRange[1], HIGHEST_MIDI - semitones)
-  const low = min + Math.floor(rand() * (max - min + 1))
-  const high = low + semitones
-  return mode === 'descending'
-    ? { root: high, semitones, mode, notes: [high, low] }
-    : { root: low, semitones, mode, notes: [low, high] }
-}
+import type { ExerciseDef, Level, Question } from './types'
 
 function shuffle<T>(items: T[], rand: () => number): T[] {
   const out = [...items]
@@ -30,22 +10,34 @@ function shuffle<T>(items: T[], rand: () => number): T[] {
 }
 
 /**
- * Builds a session's questions. Intervals are drawn from shuffled bags so every
- * interval in the level shows up about equally often, never twice in a row.
+ * Builds a session's questions. Items are drawn from shuffled bags so every item
+ * in the level shows up about equally often.
+ *
+ * With three or more items the same one never comes twice in a row. With one or two, that
+ * rule would make the order predictable (major, minor, major, minor...) and the learner could
+ * score full marks without listening, so repeats are allowed and each bag holds two of each.
  */
-export function buildQuestions(level: Level, count: number, rand: () => number = Math.random): Question[] {
+export function buildQuestions(
+  exercise: ExerciseDef,
+  level: Level,
+  count: number,
+  rand: () => number = Math.random,
+): Question[] {
+  const byId = new Map(exercise.items.map((item) => [item.id, item]))
   const questions: Question[] = []
-  let bag: number[] = []
-  let previous = -1
+  const avoidRepeats = level.items.length >= 3
+  const copies = avoidRepeats ? 1 : 2
+  let bag: string[] = []
+  let previous = ''
   while (questions.length < count) {
     if (bag.length === 0) {
-      bag = shuffle([...level.semitones], rand)
-      if (bag.length > 1 && bag[bag.length - 1] === previous) bag.reverse() // pop() takes the end
+      bag = shuffle(level.items.flatMap((id) => Array<string>(copies).fill(id)), rand)
+      if (avoidRepeats && bag[bag.length - 1] === previous) bag.reverse() // pop() takes the end
     }
-    const semitones = bag.pop() as number
-    previous = semitones
+    const id = bag.pop() as string
+    previous = id
     const mode = level.modes[Math.floor(rand() * level.modes.length)]
-    questions.push(makeQuestion(level, semitones, mode, rand))
+    questions.push(exercise.makeQuestion(level, byId.get(id)!, mode, rand))
   }
   return questions
 }

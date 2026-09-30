@@ -1,3 +1,4 @@
+import { normaliseProgress } from '../store/normalise'
 import { readJson, writeJson } from '../store/storage'
 import type { Progress, SessionPayload } from './types'
 
@@ -54,7 +55,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return (await response.json()) as T
 }
 
-export const fetchProgress = () => request<Progress>('/progress/')
+export const fetchProgress = async (): Promise<Progress> => normaliseProgress(await request<unknown>('/progress/'))
 
 export const postSession = (payload: SessionPayload) =>
   request<unknown>('/sessions/', { method: 'POST', body: JSON.stringify(payload) })

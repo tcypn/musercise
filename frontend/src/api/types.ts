@@ -1,17 +1,19 @@
-import type { Mode } from '../theory/roadmap'
+import type { ExerciseId, Mode } from '../theory/types'
 
 export interface AttemptPayload {
   root_midi: number
-  interval_semitones: number
+  /** Id of the correct answer (see the exercise's items). */
+  item: string
   mode: Mode
-  answered_semitones: number
+  /** Id of the answer that was chosen. */
+  answered: string
   correct: boolean
   response_ms: number
 }
 
 export interface SessionPayload {
   client_id: string
-  exercise: 'intervals'
+  exercise: ExerciseId
   level: number
   started_at: string
   ended_at: string
@@ -25,6 +27,21 @@ export interface LevelStat {
   passed: boolean
 }
 
+export interface ExerciseProgress {
+  levels: LevelStat[]
+  items: { item: string; asked: number; correct: number }[]
+  confusions: { asked: string; answered: string; count: number }[]
+}
+
+export interface HistoryRow {
+  id: number | string
+  exercise: ExerciseId
+  level: number
+  ended_at: string
+  question_count: number
+  accuracy: number
+}
+
 export interface Progress {
   totals: {
     sessions: number
@@ -34,8 +51,6 @@ export interface Progress {
     streak_days: number
     last_practiced: string | null
   }
-  levels: LevelStat[]
-  intervals: { semitones: number; asked: number; correct: number }[]
-  confusions: { asked: number; answered: number; count: number }[]
-  history: { id: number | string; level: number; ended_at: string; question_count: number; accuracy: number }[]
+  exercises: Record<ExerciseId, ExerciseProgress>
+  history: HistoryRow[]
 }

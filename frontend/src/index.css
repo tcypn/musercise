@@ -8,6 +8,7 @@
   --felt-tint: #dcebe5;
   --brass: #b5832a;
   --brass-tint: #f3e6c8;
+  --brass-text: #8a6116; /* brass dark enough for small text on ivory */
   --madder: #b23a48;
   --madder-tint: #f5dcdf;
   --serif: 'Instrument Serif', Georgia, serif;
@@ -99,7 +100,7 @@ a.level-link:hover .level-title { text-decoration: underline; text-decoration-co
 .level-status { font-size: 0.88rem; color: var(--ink-soft); }
 .badge { font: 600 0.72rem var(--sans); border-radius: 999px; padding: 0.12rem 0.55rem; border: 1px solid currentColor; }
 .badge.passed { color: var(--felt); }
-.badge.open { color: var(--brass); }
+.badge.open, .badge.progress { color: var(--brass-text); }
 .badge.locked { color: #8b90a3; }
 .chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.15rem 0; }
 .chip { font: 600 0.78rem var(--sans); background: var(--paper); border: 1px solid var(--line); border-radius: 0.3rem; padding: 0.08rem 0.4rem; }
@@ -109,7 +110,7 @@ a.level-link:hover .level-title { text-decoration: underline; text-decoration-co
 /* Practice */
 .practice.wide { max-width: none; }
 .back { display: inline-block; margin-bottom: 1rem; font-size: 0.92rem; }
-.level-tag { color: var(--brass); font-weight: 600; margin-bottom: 0.4rem; }
+.level-tag { color: var(--brass-text); font-weight: 600; margin-bottom: 0.4rem; }
 .anchors { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 0.4rem; }
 .anchors li { padding: 0.45rem 0.7rem; background: var(--paper); border: 1px solid var(--line); border-radius: 0.4rem; }
 .progress-line { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
@@ -158,5 +159,47 @@ a.level-link:hover .level-title { text-decoration: underline; text-decoration-co
 .form label { display: grid; gap: 0.3rem; font-weight: 600; }
 .form input { font: 400 1rem var(--sans); padding: 0.65rem 0.75rem; border: 1.5px solid var(--line); border-radius: 0.5rem; background: var(--paper); min-height: 2.75rem; }
 
+/* Curriculum map: the stages are a real sequence, so the numbered rail is information. */
+h3 { font-family: var(--serif); font-weight: 400; font-size: 1.4rem; line-height: 1.1; margin: 1.5rem 0 0.5rem; }
+.prose { max-width: 36rem; }
+.map-summary { margin-top: 1.25rem; max-width: 30rem; }
+.map-meter { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
+.map-meter span { display: block; height: 100%; background: var(--felt); }
+.route-legend { margin: 0.5rem 0 0; }
+.route-mark { color: var(--brass); font-size: 0.7rem; margin-right: 0.15rem; vertical-align: 0.1em; }
+.stages { list-style: none; margin: 1.5rem 0 0; padding: 0; }
+.stage { position: relative; padding-bottom: 1.75rem; }
+.stage::before { content: ''; position: absolute; left: 1.55rem; top: 3.4rem; bottom: 0; width: 2px; background: var(--line); }
+.stage:last-child::before { display: none; }
+.stage-head { display: flex; gap: 1rem; align-items: flex-start; }
+.stage-num {
+  position: relative; z-index: 1; flex: none; width: 3.1rem; height: 3.1rem; border-radius: 50%;
+  display: grid; place-items: center; font: 400 1.7rem/1 var(--serif);
+  background: var(--paper); border: 2px solid var(--ink);
+}
+.stage-name { font-size: 1.75rem; margin: 0; }
+.stage-blurb { color: var(--ink-soft); margin: 0.25rem 0 0.15rem; max-width: 34rem; }
+.stage-count { font-size: 0.85rem; color: var(--ink-soft); margin: 0; }
+.concepts { list-style: none; margin: 0.9rem 0 0 4.1rem; padding: 0; border-top: 1px solid var(--line); }
+.concept { border-bottom: 1px solid var(--line); }
+.concept-link {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.3rem 1rem;
+  padding: 0.6rem 0.3rem; min-height: 3.1rem; color: inherit; text-decoration: none; border-radius: 0.4rem;
+}
+.concept-link:hover .concept-name { text-decoration: underline; text-decoration-color: var(--brass); text-underline-offset: 0.2em; }
+.concept-main { display: flex; flex-direction: column; min-width: 0; }
+.concept-name { font-weight: 600; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.45rem; }
+.concept-kind { font-size: 0.8rem; color: var(--ink-soft); }
+.concept.soon .concept-name { font-weight: 400; color: #5d647a; }
+.concept-state { display: flex; align-items: center; gap: 0.6rem; flex: none; }
+.mini-meter { width: 3.5rem; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.mini-meter span { display: block; height: 100%; background: var(--felt); }
+.here { font: 600 0.72rem var(--sans); background: var(--ink); color: var(--paper); border-radius: 999px; padding: 0.1rem 0.55rem; }
+.badge.ready { color: var(--felt); }
+.badge.mastered { color: var(--felt); background: var(--felt-tint); }
+.badge.soon { color: #5d647a; border-style: dashed; }
+.soon-tag { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; color: var(--ink-soft); margin: 0.75rem 0 0; }
+.notice .button { margin-top: 0.4rem; }
+
 @media (prefers-reduced-motion: reduce) { .progress-line span { transition: none; } }
-@media (max-width: 30rem) { .site-header nav { gap: 0.8rem; } .level::before { left: 1.55rem; } }
+@media (max-width: 30rem) { .site-header nav { gap: 0.8rem; } .concepts { margin-left: 3.6rem; } .stage-name { font-size: 1.5rem; } }

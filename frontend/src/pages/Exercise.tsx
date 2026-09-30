@@ -3,62 +3,53 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import type { AttemptPayload, SessionPayload } from '../api/types'
 import { loadPiano, playNotes } from '../audio/piano'
 import { Keyboard } from '../components/Keyboard'
-import { addPending, flushPending } from '../store/pending'
-import { passedLevels } from '../store/pending'
-import { intervalBySemitones } from '../theory/intervals'
-import { noteName } from '../theory/notes'
-import { buildQuestions, type Question } from '../theory/questions'
-import {
-  INTERVAL_LEVELS,
-  isPassing,
-  isUnlocked,
-  levelById,
-  levelIntervals,
-  PASS_ACCURACY,
-  QUESTIONS_PER_SESSION,
-  type Level,
-} from '../theory/roadmap'
+import { addPending, flushPending, passedLevels } from '../store/pending'
+import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
+import { buildQuestions } from '../theory/questions'
+import { isPassing, isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
+import type { ExerciseDef, Level, Question } from '../theory/types'
 
 type Phase = 'intro' | 'question' | 'answered' | 'summary'
 type SaveState = 'saving' | 'saved' | 'queued'
 
-const MODE_WORD = { ascending: 'rising', descending: 'falling', harmonic: 'together' } as const
-
 export function Exercise() {
-  const { levelId } = useParams()
-  const level = levelById(Number(levelId))
-  // Read fresh on every level change, so finishing level N really does open level N+1.
-  const passed = passedLevels()
-  if (!level || !isUnlocked(level.id, passed)) return <Navigate to="/" replace />
-  return <Session key={level.id} level={level} />
+  const { exercise: exerciseId, level: levelParam } = useParams()
+  const exercise = getExercise(exerciseId)
+  const level = exercise ? getLevel(exercise, Number(levelParam)) : undefined
+  // Read fresh on every visit, so finishing level N really does open level N+1.
+  const passed = exercise ? passedLevels(exercise.id) : new Set<number>()
+  if (!exercise || !level || !isUnlocked(level.id, passed)) {
+    return <Navigate to={exercise ? `/learn/${exercise.id}` : '/'} replace />
+  }
+  return <Session key={`${exercise.id}-${level.id}`} exercise={exercise} level={level} />
 }
 
-function Session({ level }: { level: Level }) {
+function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const [phase, setPhase] = useState<Phase>('intro')
   const [questions, setQuestions] = useState<Question[]>([])
   const [index, setIndex] = useState(0)
   const [attempts, setAttempts] = useState<AttemptPayload[]>([])
-  const [picked, setPicked] = useState<number | null>(null)
+  const [picked, setPicked] = useState<string | null>(null)
   const [playing, setPlaying] = useState(false)
   const [loadError, setLoadError] = useState<string>()
   const [save, setSave] = useState<SaveState>('saving')
   const startedAt = useRef<Date | null>(null)
   const heardAt = useRef(0)
-  const choices = useMemo(() => levelIntervals(level), [level])
+  const choices = useMemo(() => levelItems(exercise, level), [exercise, level])
   const question = questions[index]
 
   const play = useCallback(
     async (q: Question) => {
       setPlaying(true)
       try {
-        await playNotes(q.notes, q.mode)
+        await playNotes(q.notes, exercise.playStyle(q.mode))
       } catch {
         setLoadError('The piano could not play. Check your connection, then try again.')
       } finally {
         setPlaying(false)
       }
     },
-    [],
+    [exercise],
   )
 
   async function start() {
@@ -69,7 +60,7 @@ function Session({ level }: { level: Level }) {
       setLoadError('The piano sounds could not load. Check your connection, then try again.')
       return
     }
-    const qs = buildQuestions(level, QUESTIONS_PER_SESSION)
+    const qs = buildQuestions(exercise, level, QUESTIONS_PER_SESSION)
     startedAt.current = new Date()
     setQuestions(qs)
     setIndex(0)
@@ -80,17 +71,17 @@ function Session({ level }: { level: Level }) {
     void play(qs[0])
   }
 
-  function answer(semitones: number) {
+  function answer(itemId: string) {
     if (phase !== 'question' || !question) return
     const attempt: AttemptPayload = {
       root_midi: question.root,
-      interval_semitones: question.semitones,
+      item: question.item,
       mode: question.mode,
-      answered_semitones: semitones,
-      correct: semitones === question.semitones,
+      answered: itemId,
+      correct: itemId === question.item,
       response_ms: Math.round(performance.now() - heardAt.current),
     }
-    setPicked(semitones)
+    setPicked(itemId)
     setAttempts((prev) => [...prev, attempt])
     setPhase('answered')
     void play(question) // replay so the ear can check the answer
@@ -114,7 +105,7 @@ function Session({ level }: { level: Level }) {
     setSave('saving')
     const session: SessionPayload = {
       client_id: crypto.randomUUID(),
-      exercise: 'intervals',
+      exercise: exercise.id,
       level: level.id,
       started_at: (startedAt.current ?? new Date()).toISOString(),
       ended_at: new Date().toISOString(),
@@ -138,16 +129,16 @@ function Session({ level }: { level: Level }) {
   if (phase === 'intro') {
     return (
       <section className="practice">
-        <BackLink />
-        <p className="level-tag">Level {level.id}</p>
+        <BackLink exercise={exercise} />
+        <p className="level-tag">{exercise.name}, level {level.id}</p>
         <h1>{level.name}</h1>
         <p className="lede">{level.blurb}</p>
         <Keyboard range={level.lowRange} />
-        <p className="hero-caption">The lit strip is where the lower note will fall.</p>
+        <p className="hero-caption">The lit strip is where the lowest note will fall.</p>
         <ul className="anchors">
-          {choices.map((i) => (
-            <li key={i.semitones}>
-              <strong>{i.short}</strong> {i.name} <span className="quiet">· {i.anchor}</span>
+          {choices.map((item) => (
+            <li key={item.id}>
+              <strong>{item.short}</strong> {item.name} <span className="quiet">· {item.hint}</span>
             </li>
           ))}
         </ul>
@@ -161,15 +152,15 @@ function Session({ level }: { level: Level }) {
   }
 
   if (phase === 'summary') {
-    return <Summary level={level} attempts={attempts} save={save} onAgain={() => setPhase('intro')} />
+    return <Summary exercise={exercise} level={level} attempts={attempts} save={save} onAgain={() => setPhase('intro')} />
   }
 
   const revealed = phase === 'answered'
-  const correct = revealed && picked === question.semitones
-  const truth = intervalBySemitones(question.semitones)
+  const correct = revealed && picked === question.item
+  const truth = getItem(exercise, question.item)
   return (
     <section className="practice">
-      <BackLink />
+      <BackLink exercise={exercise} />
       <div className="progress-line" role="progressbar" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={index + (revealed ? 1 : 0)} aria-label="Session progress">
         <span style={{ width: `${((index + (revealed ? 1 : 0)) / questions.length) * 100}%` }} />
       </div>
@@ -177,11 +168,11 @@ function Session({ level }: { level: Level }) {
 
       <Keyboard
         range={level.lowRange}
-        lit={revealed ? [{ midi: question.notes[0], role: 'first' }, { midi: question.notes[1], role: 'second' }] : []}
+        lit={revealed ? question.notes.map((midi) => ({ midi, role: midi === question.root ? 'first' : 'second' })) : []}
       />
 
       <div className="play-row">
-        <button className="button" onClick={() => void play(question)} disabled={playing} aria-label="Play the interval again">
+        <button className="button" onClick={() => void play(question)} disabled={playing} aria-label="Play the question again">
           {playing ? 'Playing…' : 'Play again'}
         </button>
         <span className="quiet">or press R</span>
@@ -189,13 +180,13 @@ function Session({ level }: { level: Level }) {
 
       {loadError && <p className="notice warn" role="alert">{loadError}</p>}
 
-      <div className="answers" role="group" aria-label="Choose the interval">
-        {choices.map((i) => {
-          const state = !revealed ? '' : i.semitones === question.semitones ? 'right' : i.semitones === picked ? 'wrong' : 'dim'
+      <div className="answers" role="group" aria-label="Choose the answer">
+        {choices.map((item) => {
+          const state = !revealed ? '' : item.id === question.item ? 'right' : item.id === picked ? 'wrong' : 'dim'
           return (
-            <button key={i.semitones} className={`answer ${state}`} onClick={() => answer(i.semitones)} disabled={revealed}>
-              <span className="answer-short">{i.short}</span>
-              <span className="answer-name">{i.name}</span>
+            <button key={item.id} className={`answer ${state}`} onClick={() => answer(item.id)} disabled={revealed}>
+              <span className="answer-short">{item.short}</span>
+              <span className="answer-name">{item.name}</span>
             </button>
           )
         })}
@@ -205,11 +196,11 @@ function Session({ level }: { level: Level }) {
         {revealed && (
           <>
             <p className={`verdict ${correct ? 'right' : 'wrong'}`}>
-              {correct ? 'Correct.' : `Not quite. That was the ${truth.name.toLowerCase()}.`}
+              {correct ? 'Correct.' : `Not quite. That was ${exercise.phrase(truth)}.`}
             </p>
             <p>
-              {noteName(question.notes[0])} to {noteName(question.notes[1])}, {MODE_WORD[question.mode]}, {truth.short}.
-              {!correct && <> Anchor: {truth.anchor}.</>}
+              {exercise.describe(question)}
+              {!correct && <> {exercise.hintLabel} {truth.hint}.</>}
             </p>
             <button className="button primary" onClick={next} autoFocus>
               {index + 1 >= questions.length ? 'See results' : 'Next question'}
@@ -221,38 +212,38 @@ function Session({ level }: { level: Level }) {
   )
 }
 
-function BackLink() {
-  return <Link className="back" to="/">← Roadmap</Link>
+function BackLink({ exercise }: { exercise: ExerciseDef }) {
+  return <Link className="back" to={`/learn/${exercise.id}`}>← {exercise.name}</Link>
 }
 
-function Summary({ level, attempts, save, onAgain }: { level: Level; attempts: AttemptPayload[]; save: SaveState; onAgain: () => void }) {
+function Summary({ exercise, level, attempts, save, onAgain }: { exercise: ExerciseDef; level: Level; attempts: AttemptPayload[]; save: SaveState; onAgain: () => void }) {
   const correct = attempts.filter((a) => a.correct).length
   const pass = isPassing(attempts.length, correct)
   const percent = Math.round((correct / attempts.length) * 100)
-  const missed = new Map<number, number>()
-  attempts.filter((a) => !a.correct).forEach((a) => missed.set(a.interval_semitones, (missed.get(a.interval_semitones) ?? 0) + 1))
-  const hasNext = level.id < INTERVAL_LEVELS.length
+  const missed = new Map<string, number>()
+  attempts.filter((a) => !a.correct).forEach((a) => missed.set(a.item, (missed.get(a.item) ?? 0) + 1))
+  const hasNext = level.id < exercise.levels.length
 
   return (
     <section className="practice">
-      <BackLink />
-      <p className="level-tag">Level {level.id}: {level.name}</p>
+      <BackLink exercise={exercise} />
+      <p className="level-tag">{exercise.name}, level {level.id}: {level.name}</p>
       <h1>{pass ? 'Level passed' : 'Not yet'}</h1>
       <p className="lede">
         {correct} of {attempts.length} correct ({percent}%).{' '}
         {pass
-          ? hasNext ? `Level ${level.id + 1} is open.` : 'You have finished the whole roadmap.'
+          ? hasNext ? `Level ${level.id + 1} is open.` : `You have finished the whole ${exercise.name.toLowerCase()} roadmap.`
           : `You need ${PASS_ACCURACY * 100}% to move on. Try again while it is fresh.`}
       </p>
       {missed.size > 0 && (
         <>
           <h2>Worth another listen</h2>
           <ul className="anchors">
-            {[...missed.entries()].sort((a, b) => b[1] - a[1]).map(([semitones, count]) => {
-              const i = intervalBySemitones(semitones)
+            {[...missed.entries()].sort((a, b) => b[1] - a[1]).map(([id, count]) => {
+              const item = getItem(exercise, id)
               return (
-                <li key={semitones}>
-                  <strong>{i.short}</strong> {i.name}, missed {count} {count === 1 ? 'time' : 'times'} <span className="quiet">· {i.anchor}</span>
+                <li key={id}>
+                  <strong>{item.short}</strong> {item.name}, missed {count} {count === 1 ? 'time' : 'times'} <span className="quiet">· {item.hint}</span>
                 </li>
               )
             })}
@@ -265,7 +256,7 @@ function Summary({ level, attempts, save, onAgain }: { level: Level; attempts: A
         {save === 'queued' && 'Saved on this device. It will upload when the server is reachable.'}
       </p>
       <div className="hero-actions">
-        {pass && hasNext && <Link className="button primary" to={`/practice/${level.id + 1}`}>Go to level {level.id + 1}</Link>}
+        {pass && hasNext && <Link className="button primary" to={`/practice/${exercise.id}/${level.id + 1}`}>Go to level {level.id + 1}</Link>}
         <button className={`button ${pass && hasNext ? '' : 'primary'}`} onClick={onAgain}>Practice level {level.id} again</button>
         <Link className="button" to="/progress">See progress</Link>
       </div>

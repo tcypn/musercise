@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchProgress, isConfigured } from '../api/client'
-import type { Progress } from '../api/types'
-import { INTERVAL_LEVELS, isUnlocked } from '../theory/roadmap'
 import { mergeProgress } from './merge'
-import { flushPending, getCachedProgress, getPending, setCachedProgress } from './pending'
+import { flushPending, getCachedProgress, getPending, getRejected, setCachedProgress } from './pending'
+import type { Progress } from '../api/types'
 
 export type SyncState = 'local' | 'syncing' | 'synced' | 'offline'
 
 export function useProgress() {
   const [server, setServer] = useState<Progress | null>(getCachedProgress)
   const [pending, setPending] = useState(getPending)
+  const [rejectedCount, setRejectedCount] = useState(() => getRejected().length)
   const [sync, setSync] = useState<SyncState>(() => (isConfigured() ? 'syncing' : 'local'))
   const [message, setMessage] = useState<string>()
 
@@ -21,6 +21,7 @@ export function useProgress() {
       const flushed = await flushPending() // upload first so the fetch below includes it
       if (cancelled) return
       setPending(getPending())
+      setRejectedCount(getRejected().length)
       try {
         const fresh = await fetchProgress()
         if (cancelled) return
@@ -40,11 +41,5 @@ export function useProgress() {
   }, [])
 
   const progress = useMemo(() => mergeProgress(server, pending), [server, pending])
-  const passed = useMemo(() => new Set(progress.levels.filter((l) => l.passed).map((l) => l.level)), [progress])
-  const nextLevel = useMemo(
-    () => INTERVAL_LEVELS.find((l) => isUnlocked(l.id, passed) && !passed.has(l.id)) ?? INTERVAL_LEVELS[INTERVAL_LEVELS.length - 1],
-    [passed],
-  )
-
-  return { progress, passed, nextLevel, sync, message, pendingCount: pending.length }
+  return { progress, sync, message, pendingCount: pending.length, rejectedCount }
 }

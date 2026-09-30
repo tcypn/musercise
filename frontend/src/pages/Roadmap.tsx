@@ -1,46 +1,48 @@
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { Keyboard } from '../components/Keyboard'
 import { SyncNotice } from '../components/SyncNotice'
 import { useProgress } from '../store/useProgress'
-import { INTERVAL_LEVELS, isUnlocked, levelIntervals, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/roadmap'
+import { getExercise, levelItems, nextLevel } from '../theory/exercises'
+import { isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
 
-const MODE_LABEL = { ascending: 'up', descending: 'down', harmonic: 'together' } as const
-
+/** The ten levels of one concept. */
 export function Roadmap() {
-  const { progress, passed, nextLevel, sync, message, pendingCount } = useProgress()
-  const stats = new Map(progress.levels.map((l) => [l.level, l]))
-  const { totals } = progress
-  const allPassed = passed.size === INTERVAL_LEVELS.length
+  const { exercise: id } = useParams()
+  const exercise = getExercise(id)
+  const { progress, sync, message, pendingCount, rejectedCount } = useProgress()
+  if (!exercise) return <Navigate to="/" replace />
+
+  const stats = new Map(progress.exercises[exercise.id].levels.map((l) => [l.level, l]))
+  const passed = new Set(progress.exercises[exercise.id].levels.filter((l) => l.passed).map((l) => l.level))
+  const next = nextLevel(exercise, passed)
+  const allPassed = passed.size === exercise.levels.length
+  const any = stats.size > 0
 
   return (
     <>
       <section className="hero">
-        <h1>Interval recognition</h1>
-        <p className="lede">
-          Hear two notes, name the distance between them. Ten levels take you from the fifth and octave to every interval
-          across all 88 keys.
-        </p>
-        <Keyboard range={nextLevel.lowRange} />
-        <p className="hero-caption">
-          The lit strip is where level {nextLevel.id} places its lower note.
-        </p>
+        <Link className="back" to="/">← Map</Link>
+        <h1>{exercise.name}</h1>
+        <p className="lede">{exercise.blurb}</p>
+        <Keyboard range={next.lowRange} />
+        <p className="hero-caption">The lit strip is where level {next.id} places its lowest note.</p>
         <div className="hero-actions">
-          <Link className="button primary" to={`/practice/${nextLevel.id}`}>
-            {allPassed ? 'Practice level 10 again' : totals.sessions === 0 ? 'Start level 1' : `Continue with level ${nextLevel.id}`}
+          <Link className="button primary" to={`/practice/${exercise.id}/${next.id}`}>
+            {allPassed ? `Practice level ${next.id} again` : !any ? 'Start level 1' : `Continue with level ${next.id}`}
           </Link>
-          {totals.sessions > 0 && (
+          {progress.totals.sessions > 0 && (
             <span className="quiet">
-              {totals.questions} questions answered
-              {totals.streak_days > 0 && `, ${totals.streak_days}-day streak`}
+              {progress.totals.questions} questions answered in all
+              {progress.totals.streak_days > 0 && `, ${progress.totals.streak_days}-day streak`}
             </span>
           )}
         </div>
       </section>
 
-      <SyncNotice sync={sync} message={message} pendingCount={pendingCount} />
+      <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
 
       <ol className="levels" aria-label="Levels">
-        {INTERVAL_LEVELS.map((level) => {
+        {exercise.levels.map((level) => {
           const open = isUnlocked(level.id, passed)
           const stat = stats.get(level.id)
           const done = passed.has(level.id)
@@ -54,11 +56,11 @@ export function Roadmap() {
                   <span className={`badge ${state}`}>{done ? 'Passed' : open ? 'Open' : 'Locked'}</span>
                 </span>
                 <span className="level-blurb">{level.blurb}</span>
-                <span className="chips" aria-label="Intervals in this level">
-                  {levelIntervals(level).map((i) => (
-                    <span key={i.semitones} className="chip">{i.short}</span>
+                <span className="chips" aria-label="What this level asks">
+                  {levelItems(exercise, level).map((item) => (
+                    <span key={item.id} className="chip">{item.short}</span>
                   ))}
-                  <span className="chip mode">{level.modes.map((m) => MODE_LABEL[m]).join(' / ')}</span>
+                  <span className="chip mode">{level.modes.map((m) => exercise.modeLabel[m]).join(' / ')}</span>
                 </span>
                 <span className="level-status">
                   {!open && `Pass level ${level.id - 1} with ${PASS_ACCURACY * 100}% to unlock.`}
@@ -79,7 +81,7 @@ export function Roadmap() {
           return (
             <li key={level.id} className={`level ${state}`}>
               {open ? (
-                <Link to={`/practice/${level.id}`} className="level-link">{body}</Link>
+                <Link to={`/practice/${exercise.id}/${level.id}`} className="level-link">{body}</Link>
               ) : (
                 <div className="level-link">{body}</div>
               )}

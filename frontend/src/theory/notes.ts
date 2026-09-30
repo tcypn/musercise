@@ -11,3 +11,7 @@ export function noteName(midi: number): string {
 export function isBlackKey(midi: number): boolean {
   return [1, 3, 6, 8, 10].includes(midi % 12)
 }
+
+export function article(word: string): 'a' | 'an' {
+  return /^[aeiou]/i.test(word) ? 'an' : 'a'
+}

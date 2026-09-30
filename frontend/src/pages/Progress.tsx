@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { SyncNotice } from '../components/SyncNotice'
 import { useProgress } from '../store/useProgress'
-import { INTERVALS, intervalBySemitones } from '../theory/intervals'
-import { PASS_ACCURACY } from '../theory/roadmap'
+import { EXERCISE_LIST, EXERCISES } from '../theory/exercises'
+import { PASS_ACCURACY } from '../theory/rules'
 
 function duration(seconds: number): string {
   const minutes = Math.round(seconds / 60)
@@ -13,17 +13,16 @@ function duration(seconds: number): string {
 const percent = (value: number) => `${Math.round(value * 100)}%`
 
 export function Progress() {
-  const { progress, nextLevel, sync, message, pendingCount } = useProgress()
-  const { totals, intervals, confusions, history } = progress
-  const byInterval = new Map(intervals.map((i) => [i.semitones, i]))
+  const { progress, sync, message, pendingCount, rejectedCount } = useProgress()
+  const { totals, history } = progress
 
   if (totals.sessions === 0) {
     return (
       <section className="practice">
         <h1>Progress</h1>
-        <SyncNotice sync={sync} message={message} pendingCount={pendingCount} />
+        <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
         <p className="lede">Nothing here yet. Finish a session and your accuracy, streak and trouble spots show up here.</p>
-        <Link className="button primary" to={`/practice/${nextLevel.id}`}>Start level {nextLevel.id}</Link>
+        <Link className="button primary" to="/">Open the map</Link>
       </section>
     )
   }
@@ -36,7 +35,7 @@ export function Progress() {
   return (
     <section className="practice wide">
       <h1>Progress</h1>
-      <SyncNotice sync={sync} message={message} pendingCount={pendingCount} />
+      <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
 
       <dl className="totals">
         <div><dt>Sessions</dt><dd>{totals.sessions}</dd></div>
@@ -52,58 +51,73 @@ export function Progress() {
         <text className="chart-label" x={chartW - 2} y={chartH * (1 - PASS_ACCURACY) - 5} textAnchor="end">{PASS_ACCURACY * 100}% to pass</text>
         {recent.map((s, i) => {
           const h = Math.max(2, s.accuracy * chartH)
+          const exercise = EXERCISES[s.exercise]
           return (
             <g key={s.id}>
               <rect className={`bar ${s.accuracy >= PASS_ACCURACY ? 'ok' : 'low'}`} x={i * barW + 2} y={chartH - h} width={barW - 4} height={h} rx={2}>
-                <title>{`Level ${s.level}: ${percent(s.accuracy)} on ${new Date(s.ended_at).toLocaleDateString()}`}</title>
+                <title>{`${exercise.name}, level ${s.level}: ${percent(s.accuracy)} on ${new Date(s.ended_at).toLocaleDateString()}`}</title>
               </rect>
-              <text className="chart-label" x={i * barW + barW / 2} y={chartH + 16} textAnchor="middle">{s.level}</text>
+              <text className="chart-label" x={i * barW + barW / 2} y={chartH + 16} textAnchor="middle">{exercise.name[0]}{s.level}</text>
             </g>
           )
         })}
       </svg>
-      <p className="quiet">Each bar is one session. The number underneath is its level.</p>
+      <p className="quiet">Each bar is one session. The label is the lesson's first letter and the level: I3 is Intervals level 3, C2 is Chord quality level 2.</p>
 
-      <h2>By interval</h2>
-      <table className="interval-table">
-        <thead>
-          <tr><th scope="col">Interval</th><th scope="col">Accuracy</th><th scope="col">Heard</th></tr>
-        </thead>
-        <tbody>
-          {INTERVALS.map((i) => {
-            const row = byInterval.get(i.semitones)
-            const acc = row && row.asked ? row.correct / row.asked : null
-            return (
-              <tr key={i.semitones}>
-                <th scope="row"><strong>{i.short}</strong> {i.name}</th>
-                <td>
-                  {acc === null ? <span className="quiet">not heard yet</span> : (
-                    <span className="meter" aria-label={percent(acc)}>
-                      <span className={acc >= PASS_ACCURACY ? 'ok' : 'low'} style={{ width: percent(acc) }} />
-                      <em>{percent(acc)}</em>
-                    </span>
-                  )}
-                </td>
-                <td>{row?.asked ?? 0}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-
-      {confusions.length > 0 && (
-        <>
-          <h2>What you mix up</h2>
-          <ul className="anchors">
-            {confusions.slice(0, 6).map((c) => (
-              <li key={`${c.asked}-${c.answered}`}>
-                {intervalBySemitones(c.asked).short} heard as {intervalBySemitones(c.answered).short}
-                <span className="quiet"> · {c.count} {c.count === 1 ? 'time' : 'times'}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      {EXERCISE_LIST.map((exercise) => {
+        const stats = progress.exercises[exercise.id]
+        const byItem = new Map(stats.items.map((i) => [i.item, i]))
+        const name = (id: string) => exercise.items.find((i) => i.id === id)
+        return (
+          <div key={exercise.id}>
+            <h2>{exercise.name}</h2>
+            {stats.items.length === 0 ? (
+              <p className="quiet">Not practised yet. <Link to={`/learn/${exercise.id}`}>Open {exercise.name.toLowerCase()}</Link></p>
+            ) : (
+              <>
+                <table className="interval-table">
+                  <thead>
+                    <tr><th scope="col">Answer</th><th scope="col">Accuracy</th><th scope="col">Heard</th></tr>
+                  </thead>
+                  <tbody>
+                    {exercise.items.map((item) => {
+                      const row = byItem.get(item.id)
+                      const acc = row && row.asked ? row.correct / row.asked : null
+                      return (
+                        <tr key={item.id}>
+                          <th scope="row"><strong>{item.short}</strong> {item.name}</th>
+                          <td>
+                            {acc === null ? <span className="quiet">not heard yet</span> : (
+                              <span className="meter" aria-label={percent(acc)}>
+                                <span className={acc >= PASS_ACCURACY ? 'ok' : 'low'} style={{ width: percent(acc) }} />
+                                <em>{percent(acc)}</em>
+                              </span>
+                            )}
+                          </td>
+                          <td>{row?.asked ?? 0}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+                {stats.confusions.length > 0 && (
+                  <>
+                    <h3>What you mix up</h3>
+                    <ul className="anchors">
+                      {stats.confusions.slice(0, 6).map((c) => (
+                        <li key={`${c.asked}-${c.answered}`}>
+                          {name(c.asked)?.short} heard as {name(c.answered)?.short}
+                          <span className="quiet"> · {c.count} {c.count === 1 ? 'time' : 'times'}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        )
+      })}
     </section>
   )
 }
