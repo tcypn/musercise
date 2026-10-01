@@ -43,11 +43,11 @@ export function EarRadar({ exercises }: Props) {
         <h2 id="d-radar-title" className="d-card-title">Your ear, answer by answer</h2>
       </div>
       <div className="d-toggles">
-        <div className="d-seg" role="group" aria-label="Lesson">
+        <select className="d-select" aria-label="Lesson" value={exerciseId} onChange={(e) => { setExerciseId(e.target.value as ExerciseId); setFocus(null) }}>
           {EXERCISE_LIST.map((e) => (
-            <button key={e.id} aria-pressed={exerciseId === e.id} onClick={() => { setExerciseId(e.id); setFocus(null) }}>{e.name}</button>
+            <option key={e.id} value={e.id}>{e.name}</option>
           ))}
-        </div>
+        </select>
         <div className="d-seg" role="group" aria-label="View">
           <button aria-pressed={view === 'shape'} onClick={() => setView('shape')}>Shape</button>
           <button aria-pressed={view === 'bars'} onClick={() => setView('bars')}>Bars</button>
@@ -58,7 +58,7 @@ export function EarRadar({ exercises }: Props) {
         <p className="d-empty">Answer a few {def.name.toLowerCase()} questions and your strengths and blind spots will show up here.</p>
       ) : view === 'shape' ? (
         <>
-          <svg className="d-chart radar" viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Radar chart of your accuracy for each ${def.name.toLowerCase()} answer. A table with the same numbers follows.`}>
+          <svg className="d-chart radar" viewBox={`-40 0 ${SIZE + 80} ${SIZE}`} role="img" aria-label={`Radar chart of your accuracy for each ${def.name.toLowerCase()} answer. A table with the same numbers follows.`}>
             {RINGS.map((r) => (
               <polygon key={r} className="d-grid" fill="none" points={axes.map((_, i) => { const p = polar(i, n, R * r); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }).join(' ')} />
             ))}
