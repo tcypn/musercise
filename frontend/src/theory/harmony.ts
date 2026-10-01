@@ -105,3 +105,59 @@ export function keyLabel(tonicPc: number, mode: KeyMode): { tonic: Note; label: 
 }
 
 export const chordEvent = (time: number, hold: number, notes: number[]): TimedEvent => ({ time, hold, notes })
+
+// ---- Voicing a progression -----------------------------------------------------------------------
+
+export interface VoicedChord {
+  /** The root, low on the keyboard (C2 to B2). */
+  bass: number
+  /** The chord tones above it, as close as possible to the chord before. */
+  upper: number[]
+}
+
+const UPPER_LOW = 53
+const UPPER_HIGH = 77
+const MAX_SPAN = 14
+
+/** Every way to place each chord tone in an octave inside the window, keeping the hand compact (at most a ninth wide). */
+function placements(pcs: readonly number[]): number[][] {
+  let out: number[][] = [[]]
+  for (const pc of pcs) {
+    const options: number[] = []
+    for (let m = UPPER_LOW; m <= UPPER_HIGH; m++) if (m % 12 === pc) options.push(m)
+    out = out.flatMap((prefix) => options.map((m) => [...prefix, m]))
+  }
+  return out
+    .map((notes) => [...notes].sort((a, b) => a - b))
+    .filter((notes) => notes[notes.length - 1] - notes[0] <= MAX_SPAN && new Set(notes).size === notes.length)
+}
+
+/** How far the voices travel from one chord to the next (the fewer semitones, the smoother). */
+function movement(from: readonly number[], to: readonly number[]): number {
+  const shared = Math.min(from.length, to.length)
+  let total = 0
+  for (let i = 0; i < shared; i++) total += Math.abs(from[from.length - 1 - i] - to[to.length - 1 - i]) // top voices first
+  return total + 3 * Math.abs(from.length - to.length)
+}
+
+/**
+ * Voices a chord progression the way a pianist plays it: the root in the bass, and the other notes arranged so
+ * each chord is the closest possible neighbour of the one before. `chords` give each chord's root (a pitch class,
+ * 0 to 11) and its notes as semitones above the root.
+ */
+export function voiceProgression(chords: readonly { rootPc: number; stack: readonly number[] }[]): VoicedChord[] {
+  const voiced: VoicedChord[] = []
+  for (const chord of chords) {
+    const rootPc = ((chord.rootPc % 12) + 12) % 12
+    const pcs = chord.stack.map((s) => (rootPc + s) % 12)
+    const options = placements(pcs)
+    const previous = voiced[voiced.length - 1]?.upper
+    const centre = (notes: number[]) => notes.reduce((s, n) => s + n, 0) / notes.length
+    const best = options.reduce((a, b) => {
+      const cost = (notes: number[]) => (previous ? movement(previous, notes) : Math.abs(centre(notes) - 64))
+      return cost(b) < cost(a) ? b : a
+    })
+    voiced.push({ bass: 36 + rootPc, upper: best })
+  }
+  return voiced
+}

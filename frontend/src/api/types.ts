@@ -34,7 +34,8 @@ export interface LevelStat {
 
 export interface ExerciseProgress {
   levels: LevelStat[]
-  items: { item: string; asked: number; correct: number }[]
+  /** `median_ms`: the median time to answer, in ms. Missing on servers older than the speed update. */
+  items: { item: string; asked: number; correct: number; median_ms?: number | null }[]
   confusions: { asked: string; answered: string; count: number }[]
 }
 

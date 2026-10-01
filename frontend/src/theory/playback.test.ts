@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EXERCISES } from './exercises'
-import { canSlow, eventsFor, partOf } from './playback'
+import { canSlow, eventsFor, partOf, questionOffsetMs } from './playback'
 import { buildQuestions } from './questions'
 
 const events = [
@@ -63,5 +63,15 @@ describe.each(['scale-degrees', 'chord-function'] as const)('%s plays a key firs
   it('names the two parts for the screen', () => {
     expect(lesson.partLabels?.key).toBe('The key')
     expect(lesson.partLabels?.question).toMatch(/^Name this (note|chord)$/)
+  })
+})
+
+describe('answer timing', () => {
+  it('starts counting when the part you answer about begins, not when the key starts', () => {
+    expect(questionOffsetMs({ root: 60, item: 'x', mode: 'major', notes: [60], events, answerFrom: 2 })).toBe(3150)
+  })
+
+  it('counts from the start for questions that are only the sound', () => {
+    expect(questionOffsetMs({ root: 60, item: 'x', mode: 'ascending', notes: [60, 64] })).toBe(0)
   })
 })

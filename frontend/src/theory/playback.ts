@@ -35,3 +35,15 @@ export function eventsFor(exercise: ExerciseDef, question: Question, slow = fals
 export function canSlow(exercise: ExerciseDef, question: Question): boolean {
   return question.events ? question.events.some((e) => e.time > 0) : exercise.playStyle(question.mode).gap > 0
 }
+
+/** Playback starts about this long after it is asked for (the audio clock looks ahead a little). */
+const LEAD_MS = 150
+
+/**
+ * How long after a question starts playing the part you answer about begins. Answer times are counted from there,
+ * so a key played first does not count as slowness. Zero for questions that are only the sound to answer about.
+ */
+export function questionOffsetMs(question: Question): number {
+  if (question.answerFrom === undefined || !question.events) return 0
+  return Math.round(question.events[question.answerFrom].time * 1000) + LEAD_MS
+}

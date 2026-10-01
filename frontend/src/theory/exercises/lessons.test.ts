@@ -545,3 +545,111 @@ describe('chords on each scale note', () => {
     expect(lesson.describe(s)).toBe('C major: Cmaj7 Dm7 Em7 Fmaj7 G7 Am7 Bm7♭5. The V7 chord is G7 (G B D F).')
   })
 })
+
+describe('common progressions', () => {
+  const lesson = EXERCISES.progressions
+  // Written out here, not taken from the lesson: the chords of a key, by root and kind.
+  const MAJOR: Record<number, string> = { 0: 'I', 2: 'ii', 4: 'iii', 5: 'IV', 7: 'V', 9: 'vi' }
+  const MINOR: Record<number, string> = { 0: 'i', 3: 'III', 5: 'iv', 7: 'V', 8: 'VI', 10: 'VII' }
+  const KIND_OF: Record<string, string> = { 'I': 'maj', ii: 'min', iii: 'min', IV: 'maj', V: 'maj', vi: 'min', i: 'min', III: 'maj', iv: 'min', VI: 'maj', VII: 'maj' }
+  const kind = (relative: number[]) => {
+    const key = [...new Set(relative)].sort((a, b) => a - b).join(',') // the root sounds in the bass and above it
+    return ({ '0,4,7': 'maj', '0,3,7': 'min', '0,4,7,11': 'maj7', '0,3,7,10': 'min7', '0,4,7,10': 'dom7' } as Record<string, string>)[key]
+  }
+  const triad = (k: string) => (k === 'maj7' || k === 'dom7' ? 'maj' : k === 'min7' ? 'min' : k)
+
+  /** What the question actually plays, read back from its notes: the numerals of the chords after the key. */
+  const decode = (q: ReturnType<typeof buildQuestions>[number]) => {
+    const home = Math.min(...q.events![0].notes)
+    const minor = q.events![0].notes.slice().sort((a, b) => a - b)[1] - home === 3
+    const chords = q.events!.slice(q.answerFrom)
+    const numerals = chords.map((e) => {
+      const bass = Math.min(...e.notes)
+      const root = (((bass - home) % 12) + 12) % 12
+      const numeral = (minor ? MINOR : MAJOR)[root]
+      const k = kind(e.notes.map((n) => (((n - bass) % 12) + 12) % 12))
+      return { numeral, kind: k }
+    })
+    return { minor, numerals }
+  }
+
+  it('plays exactly the chords the answer names, in the key it sets up', () => {
+    const rand = seeded(61)
+    let n = 0
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 120, rand)) {
+        const { minor, numerals } = decode(q)
+        expect(numerals.map((x) => x.numeral).join('-'), `level ${level.id}`).toBe(q.item)
+        expect(minor).toBe(q.mode === 'minor')
+        for (const x of numerals) expect(triad(x.kind), `${q.item} ${x.numeral}`).toBe(KIND_OF[x.numeral])
+        n++
+      }
+    }
+    expect(n).toBe(1200)
+  })
+
+  it('uses seventh chords only on the sevenths level, and mixes them at the end', () => {
+    const rand = seeded(62)
+    const sevenths = (level: number) => buildQuestions(lesson, lesson.levels[level - 1], 80, rand).map((q) => decode(q).numerals.some((x) => /7/.test(x.kind)))
+    expect(sevenths(1).every((s) => !s)).toBe(true)
+    expect(sevenths(8).every((s) => s)).toBe(true)
+    const mixed = sevenths(10)
+    expect(mixed.some((s) => s) && mixed.some((s) => !s)).toBe(true)
+  })
+
+  it('has the right dominant, tonic and subdominant qualities in the seventh chords', () => {
+    const q = buildQuestions(lesson, lesson.levels[7], 80, seeded(63)).find((x) => x.item === 'ii-V-I')!
+    expect(decode(q).numerals.map((x) => x.kind)).toEqual(['min7', 'dom7', 'maj7'])
+  })
+
+  it('voices chords smoothly: a bass note below, and the other notes close to the last chord', () => {
+    const rand = seeded(64)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const chords = q.events!.slice(q.answerFrom).map((e) => [...e.notes].sort((a, b) => a - b))
+        chords.forEach((c, i) => {
+          expect(c[0], `${q.item} chord ${i}`).toBeLessThanOrEqual(47) // bass is low
+          expect(c[1] - c[0], `${q.item} chord ${i}`).toBeGreaterThan(5) // and well below the rest
+          const upper = c.slice(1)
+          expect(upper[upper.length - 1] - upper[0]).toBeLessThanOrEqual(14) // a hand's width
+        })
+        for (let i = 1; i < chords.length; i++) {
+          const a = chords[i - 1].slice(1)
+          const b = chords[i].slice(1)
+          const top = Math.abs(a[a.length - 1] - b[b.length - 1])
+          expect(top, `${q.item} step ${i}`).toBeLessThanOrEqual(7) // the top voice never leaps
+        }
+      }
+    }
+  })
+
+  it('plays the chords evenly after a clear pause, and holds the last one longer', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 1, seeded(65))[0]
+    const key = q.events!.slice(0, q.answerFrom)
+    const chords = q.events!.slice(q.answerFrom)
+    expect(chords).toHaveLength(4)
+    const gaps = chords.slice(1).map((c, i) => +(c.time - chords[i].time).toFixed(2))
+    expect(new Set(gaps).size).toBe(1)
+    expect(chords[0].time - Math.max(...key.map((e) => e.time + e.hold))).toBeGreaterThanOrEqual(0.85)
+    expect(chords[3].hold).toBeGreaterThan(chords[2].hold)
+  })
+
+  it('has the eight-chord canon progression and keeps rotations as separate answers', () => {
+    const shorts = lesson.items.map((i) => i.short)
+    expect(shorts).toContain('I–V–vi–iii–IV–I–IV–V')
+    expect(shorts).toContain('vi–IV–I–V')
+    expect(shorts).toContain('IV–I–V–vi')
+    expect(lesson.levels[8].items).toContain('I-V-vi-iii-IV-I-IV-V')
+    expect(lesson.levels[6].items).toEqual(['i-iv-V-i', 'i-VI-III-VII', 'i-VII-VI-V'])
+  })
+
+  it('explains with the chord names in the key', () => {
+    const find = (id: string, text: string, level = 1) => buildQuestions(lesson, lesson.levels[level - 1], 400, seeded(66)).find((x) => x.item === id && lesson.describe(x).includes(text))!
+    const q = find('I-V-vi-IV', ' in G major: G D Em C.')
+    expect(lesson.describe(q)).toBe('I–V–vi–IV in G major: G D Em C. Bright and open, with a wistful turn on the minor vi.')
+    const m = find('i-VII-VI-V', ' in A minor: Am G F E.', 7)
+    expect(lesson.describe(m)).toContain('i–VII–VI–V in A minor: Am G F E.')
+    const s = find('ii-V-I', ' in B♭ major: Cm7 F7 B♭maj7.', 8)
+    expect(lesson.describe(s)).toContain('ii–V–I in B♭ major: Cm7 F7 B♭maj7.')
+  })
+})

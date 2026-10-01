@@ -91,7 +91,7 @@ class ApiTests(APITestCase):
         self.assertEqual(response.json()["correct_count"], 16)  # recomputed by the server
         data = self.progress()["exercises"]
         self.assertEqual(list(data)[:2], ["intervals", "chords"])  # the original lessons come first
-        self.assertEqual(data["scale-degrees"]["items"], [{"item": "5", "asked": 20, "correct": 16}])
+        self.assertEqual(data["scale-degrees"]["items"], [{"item": "5", "asked": 20, "correct": 16, "median_ms": 1500}])
         self.assertEqual(data["scale-degrees"]["levels"][0]["best_accuracy"], 0.8)
         self.assertTrue(data["scale-degrees"]["levels"][0]["passed"])
 
@@ -103,6 +103,20 @@ class ApiTests(APITestCase):
         self.assertEqual(self.post(make_payload(exercise="scale-degrees", item="5", mode="ma jor")).status_code, 400)
         # Flats, sharps and slashes are fine: b3, #4, C/E.
         self.assertEqual(self.post(make_payload(exercise="extensions", item="b3", mode="block", wrong_answer="#4")).status_code, 201)
+
+    def test_progress_reports_the_median_answer_time_per_answer(self):
+        payload = make_payload(exercise="intervals", item="7", total=5)
+        # Five answers to the same question: 2, 3, 4 and 5 seconds, and one left open for ten minutes.
+        for attempt, ms in zip(payload["attempts"], [2000, 3000, 4000, 5000, 600000]):
+            attempt["response_ms"] = ms
+        other = make_payload(exercise="intervals", item="5", total=1)
+        other["attempts"][0]["response_ms"] = 1234
+        other["client_id"] = str(uuid.uuid4())
+        self.assertEqual(self.post(payload).status_code, 201)
+        self.assertEqual(self.post(other).status_code, 201)
+        items = {row["item"]: row for row in self.progress()["exercises"]["intervals"]["items"]}
+        self.assertEqual(items["7"]["median_ms"], 4000)  # the idle ten minutes do not count for much
+        self.assertEqual(items["5"]["median_ms"], 1234)
 
     def test_progress_lists_only_known_and_used_lessons(self):
         self.assertEqual(list(self.progress()["exercises"]), ["intervals", "chords"])
@@ -143,9 +157,9 @@ class ApiTests(APITestCase):
         self.assertEqual(data["totals"]["correct"], 28)
         self.assertEqual(data["totals"]["streak_days"], 1)  # both exercises land on the same day
         self.assertEqual(data["totals"]["practice_seconds"], 600)
-        self.assertEqual(data["exercises"]["intervals"]["items"], [{"item": "7", "asked": 20, "correct": 18}])
+        self.assertEqual(data["exercises"]["intervals"]["items"], [{"item": "7", "asked": 20, "correct": 18, "median_ms": 1500}])
         self.assertEqual(data["exercises"]["intervals"]["confusions"], [{"asked": "7", "answered": "5", "count": 2}])
-        self.assertEqual(data["exercises"]["chords"]["items"], [{"item": "min", "asked": 10, "correct": 10}])
+        self.assertEqual(data["exercises"]["chords"]["items"], [{"item": "min", "asked": 10, "correct": 10, "median_ms": 1500}])
         self.assertEqual({h["exercise"] for h in data["history"]}, {"intervals", "chords"})
 
 

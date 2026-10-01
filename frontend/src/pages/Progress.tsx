@@ -9,6 +9,7 @@ import { useProgress } from '../store/useProgress'
 import { computeStreak, weekSeries } from '../theory/dashboard'
 import { EXERCISE_LIST, EXERCISES } from '../theory/exercises'
 import { summariseMap } from '../theory/mapProgress'
+import { seconds, speedView } from '../theory/speed'
 import { localDateString } from '../theory/practice'
 import { PASS_ACCURACY } from '../theory/rules'
 
@@ -119,6 +120,8 @@ export function Progress() {
       {EXERCISE_LIST.map((exercise) => {
         const stats = progress.exercises[exercise.id]
         const byItem = new Map(stats.items.map((i) => [i.item, i]))
+        const speed = speedView(stats.items)
+        const hasSpeed = stats.items.some((i) => typeof i.median_ms === 'number')
         const name = (id: string) => exercise.items.find((i) => i.id === id)
         return (
           <div key={exercise.id}>
@@ -127,9 +130,15 @@ export function Progress() {
               <p className="quiet">Not practised yet. <Link to={`/learn/${exercise.id}`}>Open {exercise.name.toLowerCase()}</Link></p>
             ) : (
               <>
+                {speed.typical !== null && (
+                  <p className="quiet">
+                    Your typical answer takes {seconds(speed.typical)}.
+                    {speed.slow.length > 0 && <> Slow for you: {speed.slow.map((id) => exercise.items.find((i) => i.id === id)?.short ?? id).join(', ')}.</>}
+                  </p>
+                )}
                 <table className="interval-table">
                   <thead>
-                    <tr><th scope="col">Answer</th><th scope="col">Accuracy</th><th scope="col">Heard</th></tr>
+                    <tr><th scope="col">Answer</th><th scope="col">Accuracy</th><th scope="col">Heard</th>{hasSpeed && <th scope="col">Speed</th>}</tr>
                   </thead>
                   <tbody>
                     {exercise.items.map((item) => {
@@ -147,6 +156,12 @@ export function Progress() {
                             )}
                           </td>
                           <td>{row?.asked ?? 0}</td>
+                          {hasSpeed && (
+                            <td>
+                              {typeof row?.median_ms === 'number' ? seconds(row.median_ms) : <span className="quiet">–</span>}
+                              {speed.slow.includes(item.id) && <span className="badge soon" style={{ marginLeft: '0.4rem' }}>slow</span>}
+                            </td>
+                          )}
                         </tr>
                       )
                     })}

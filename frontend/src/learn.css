@@ -198,3 +198,6 @@
 .part:active { transform: translateY(2px); border-bottom-width: 2px; }
 .part.on { background: var(--blue-tint); border-color: var(--blue-edge); color: var(--blue-text); }
 .part.answer.on { background: var(--felt-tint); border-color: var(--felt-edge); color: var(--felt-text); }
+
+.complete-speed { margin: 0; color: var(--ink-soft); font-weight: 700; max-width: 30rem; }
+.complete-speed strong { color: var(--ink); }

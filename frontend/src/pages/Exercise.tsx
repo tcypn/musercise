@@ -7,9 +7,10 @@ import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../component
 import { Keyboard } from '../components/Keyboard'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
-import { canSlow as questionCanSlow, eventsFor, type Part } from '../theory/playback'
+import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, type Part } from '../theory/playback'
 import { buildQuestions } from '../theory/questions'
 import { localDateString } from '../theory/practice'
+import { seconds as formatSeconds, sessionSpeed } from '../theory/speed'
 import { isPassing, isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
 import type { ExerciseDef, Level, Question } from '../theory/types'
 
@@ -116,7 +117,8 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       mode: question.mode,
       answered: picked,
       correct: picked === question.item,
-      response_ms: Math.round(performance.now() - heardAt.current),
+      // Time to answer, not time to listen: when a key plays first, the clock starts when the question itself starts.
+      response_ms: Math.max(0, Math.round(performance.now() - heardAt.current - questionOffsetMs(question))),
     }
     setAttempts((prev) => [...prev, attempt])
     setPhase('checked')
@@ -336,6 +338,7 @@ function Complete({ exercise, level, attempts, save, seconds, onAgain }: { exerc
   attempts.filter((a) => !a.correct).forEach((a) => missed.set(a.item, (missed.get(a.item) ?? 0) + 1))
   const hasNext = level.id < exercise.levels.length
   const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+  const speed = sessionSpeed(attempts)
 
   return (
     <div className="lesson">
@@ -357,6 +360,14 @@ function Complete({ exercise, level, attempts, save, seconds, onAgain }: { exerc
           <div className="stat time"><span className="stat-label">Time</span><span className="stat-value">{time}</span></div>
           <div className="stat qs"><span className="stat-label">Correct</span><span className="stat-value">{correct}/{attempts.length}</span></div>
         </div>
+        {speed && (
+          <p className="complete-speed">
+            <strong>{formatSeconds(speed.average)}</strong> per answer on average.
+            {speed.slowest.length > 0 && speed.slowest[0].ms > speed.average * 1.3 && (
+              <> Slowest: {speed.slowest.filter((s) => s.ms > speed.average * 1.3).map((s) => `${getItem(exercise, s.item).short} (${formatSeconds(s.ms)})`).join(', ')}.</>
+            )}
+          </p>
+        )}
         {missed.size > 0 && (
           <>
             <h2 style={{ margin: 0, fontSize: '1.15rem' }}>{exercise.kind === 'quiz' ? 'Worth another look' : 'Worth another listen'}</h2>

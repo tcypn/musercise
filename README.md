@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Eight are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes** and **chord function**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Nine are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function** and **common progressions**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -155,6 +155,25 @@ Each question has two parts, labelled on screen: **1 · The key** (its home chor
 | 9 | less help (only the home chord before the question), triads and sevenths |
 | 10 | major and minor keys, triads and sevenths, high and low |
 
+### Common progressions (ear)
+
+Two labelled parts again: **1 · The key**, then **2 · Name this progression**. You hear four (or eight) chords with smooth voicings and a bass note, and name the pattern by its Roman numerals. After the answer the keyboard lights the first chord and the text spells the chords in that key ("I–V–vi–IV in G major: G D Em C. …").
+
+| Level | Patterns |
+| --- | --- |
+| 1 | I-IV-V-I and I-V-vi-IV |
+| 2-3 | add the fifties pattern (I-vi-IV-V), then the turnaround (I-vi-ii-V) |
+| 4-5 | add patterns starting on vi (vi-IV-I-V) and on IV (IV-I-V-vi) |
+| 6 | add ii-V-I |
+| 7 | minor patterns: i-iv-V-i, i-VI-III-VII, i-VII-VI-V |
+| 8 | seventh chords |
+| 9 | less help, plus the eight-chord canon progression |
+| 10 | everything mixed |
+
+### Speed tracking
+
+Each answer's time is measured from the moment the answer part finishes sounding (for ear lessons with a key part, the key is not counted). The **lesson-complete screen** shows the average time per answer and the slowest answers. The **Progress** page shows a Speed column per answer (the median time, so one idle minute does not matter) and flags answers that are clearly slower than your own typical time. This needs the server to send `median_ms` per answer (`progress/stats.py`); an older server just hides the column. Passing a level is still accuracy only.
+
 Levels live in `frontend/src/theory/exercises/`. The pass rule is also in `backend/progress/rules.py`. Intervals and chords keep strict answer lists on the server; every later lesson is accepted by id, so adding a lesson does not need a server update (the first lesson after intervals and chords needed one).
 
 ## Today's practice
@@ -269,10 +288,9 @@ Piano samples: Salamander Grand Piano by Alexander Holm, [CC BY 3.0](https://cre
 
 The remaining lessons are added in small batches, ear lessons toward pop and R&B first:
 
-1. Scale degrees, 9ths/6ths/added notes, keyboard map and note names, major scale and key signatures, chords on each scale note, chord function (done)
-2. Common progressions, and speed tracking (how fast you answer, per answer)
-3. Pentatonic scale, chord spelling and symbols (including 9ths and slash chords)
-4. Cadences, inversions and slash chords by ear
-5. Then the rest, chosen for what you are missing: inversions and slash chords, cadences, chord function, minor scales, key changes, naming a note by ear, finding a song's chords by ear, the staff, note values, circle of fifths, rhythm, melody and improvisation by ear, the other playing lessons, and the jazz-flavoured lessons last
+1. Scale degrees, 9ths/6ths/added notes, keyboard map and note names, major scale and key signatures, chords on each scale note, chord function, common progressions, speed tracking (done)
+2. Pentatonic scale, chord spelling and symbols (including 9ths and slash chords)
+3. Cadences, inversions and slash chords by ear
+4. Then the rest, chosen for what you are missing: chord tones for improvising, modes, minor scales, key changes, naming a note by ear, finding a song's chords by ear, the staff, note values, circle of fifths, rhythm, melody and improvisation by ear, the other playing lessons, and the jazz-flavoured lessons last
 
 Every lesson ships with property tests that check the notes by arithmetic (the question really plays what the answer says) and a browser run that checks one sound plays at a time.

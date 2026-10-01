@@ -1,4 +1,5 @@
 from collections import Counter
+from statistics import median
 from datetime import timedelta
 
 from django.db.models import Count, Max, Q, Sum
@@ -38,9 +39,22 @@ def exercise_stats(exercise: str) -> dict:
         .order_by("item")
     )
     confusions = Counter(attempts.filter(correct=False).values_list("item", "answered"))
+    # How long answers take, per answer: the median, so one question left open while the phone was put down
+    # does not spoil it. Milliseconds, from the question being asked to the answer being checked.
+    times: dict = {}
+    for item, ms in attempts.values_list("item", "response_ms"):
+        times.setdefault(item, []).append(ms)
     return {
         "levels": level_stats(exercise),
-        "items": [{"item": r["item"], "asked": r["asked"], "correct": r["correct"]} for r in per_item],
+        "items": [
+            {
+                "item": r["item"],
+                "asked": r["asked"],
+                "correct": r["correct"],
+                "median_ms": int(median(times[r["item"]])) if times.get(r["item"]) else None,
+            }
+            for r in per_item
+        ],
         "confusions": [
             {"asked": a, "answered": b, "count": n} for (a, b), n in confusions.most_common(10)
         ],

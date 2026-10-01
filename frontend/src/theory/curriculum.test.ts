@@ -61,7 +61,7 @@ describe('map progress', () => {
   })
 
   it('marks unbuilt concepts as coming soon', () => {
-    expect(conceptStatus(getConcept('progressions')!, emptyProgress())).toMatchObject({ state: 'soon', total: 0 })
+    expect(conceptStatus(getConcept('modulation')!, emptyProgress())).toMatchObject({ state: 'soon', total: 0 })
   })
 
   it('has no continue target once everything that is built is mastered', () => {
