@@ -588,6 +588,18 @@ describe('common progressions', () => {
     expect(n).toBe(1200)
   })
 
+  it('shows every chord of the progression after the answer, the same notes that were played', () => {
+    const rand = seeded(63)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const played = q.events!.slice(q.answerFrom!)
+        expect(q.steps, q.item).toHaveLength(q.item.split('-').length)
+        expect(q.steps!.map((s) => s.notes)).toEqual(played.map((e) => e.notes))
+        expect(q.steps!.map((s) => s.label.split(' · ')[0]).join('-')).toBe(q.item)
+      }
+    }
+  })
+
   it('uses seventh chords only on the sevenths level, and mixes them at the end', () => {
     const rand = seeded(62)
     const sevenths = (level: number) => buildQuestions(lesson, lesson.levels[level - 1], 80, rand).map((q) => decode(q).numerals.some((x) => /7/.test(x.kind)))

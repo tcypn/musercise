@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import type { AttemptPayload, SessionPayload } from '../api/types'
-import { loadPiano, playSequence, prepareAudio, soundBlocked, stopSound, warmUp } from '../audio/piano'
+import { loadPiano, playNotes, playSequence, prepareAudio, soundBlocked, stopSound, warmUp } from '../audio/piano'
 import { Book, Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
@@ -38,6 +38,8 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const [playing, setPlaying] = useState(false)
   /** Which part of a two-part question is sounding right now, for the labels on screen. */
   const [heard, setHeard] = useState<'key' | 'question' | null>(null)
+  /** Which chord of a progression the answer keyboard shows: follows the sound, or the chord that was tapped. */
+  const [step, setStep] = useState(0)
   const [loadError, setLoadError] = useState<string>()
   const [save, setSave] = useState<SaveState>('saving')
   const [seconds, setSeconds] = useState(0)
@@ -65,6 +67,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
         const from = q.answerFrom
         const handle = await playSequence(eventsFor(exercise, q, slow, part), (i) => {
           if (playId.current !== mine) return // a newer sound has taken over
+          if (i !== null && from !== undefined && q.steps && i >= from) setStep(i - from)
           setHeard(i === null || from === undefined ? null : part === 'question' || (part === 'all' && i >= from) ? 'question' : 'key')
         })
         // A phone may still be holding the sound back; say so instead of leaving the learner in silence.
@@ -99,6 +102,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     setIndex(0)
     setAttempts([])
     setPicked(null)
+    setStep(0)
     setPhase('question')
     heardAt.current = performance.now()
     if (sounds(qs[0])) void play(qs[0])
@@ -121,6 +125,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       response_ms: Math.max(0, Math.round(performance.now() - heardAt.current - questionOffsetMs(question))),
     }
     setAttempts((prev) => [...prev, attempt])
+    setStep(0)
     setPhase('checked')
     if (sounds(question)) void play(question) // replaces what is sounding, so the ear can check the answer
   }
@@ -135,6 +140,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     const nextIndex = index + 1
     setIndex(nextIndex)
     setPicked(null)
+    setStep(0)
     setPhase('question')
     heardAt.current = performance.now()
     if (sounds(questions[nextIndex])) void play(questions[nextIndex])
@@ -301,7 +307,30 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
 
         {checked && !quiz && (
           <div className="lesson-keys">
-            <Keyboard range={level.lowRange} lit={(question.lit ?? question.notes).map((midi) => ({ midi, role: midi === question.root ? 'first' : 'second' }))} />
+            <Keyboard
+              range={level.lowRange}
+              lit={(question.steps ? question.steps[step].notes : (question.lit ?? question.notes)).map((midi) => ({ midi, role: midi === (question.steps ? question.steps[step].notes[0] : question.root) ? 'first' : 'second' }))}
+            />
+            {question.steps && (
+              <div className="chord-steps" role="group" aria-label="Chords of the progression">
+                {question.steps.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="chord-step"
+                    aria-pressed={step === i}
+                    onClick={() => {
+                      prepareAudio()
+                      stopSound()
+                      setStep(i)
+                      void playNotes(s.notes, { gap: 0, hold: 1.6 }).catch(() => {})
+                    }}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="hero-caption">{exercise.describe(question)}</p>
           </div>
         )}

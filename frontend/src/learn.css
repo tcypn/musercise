@@ -201,3 +201,7 @@
 
 .complete-speed { margin: 0; color: var(--ink-soft); font-weight: 700; max-width: 30rem; }
 .complete-speed strong { color: var(--ink); }
+
+.chord-steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.8rem 0 0.2rem; }
+.chord-step { min-height: 2.75rem; padding: 0 0.9rem; font: 800 0.95rem 'Nunito', var(--sans); color: var(--ink, #3c3c3c); background: #fff; border: 2px solid #e5e5e5; border-bottom-width: 4px; border-radius: 0.85rem; cursor: pointer; }
+.chord-step[aria-pressed='true'] { background: #ddf4ff; border-color: #84d8ff; color: #0b6fa0; }

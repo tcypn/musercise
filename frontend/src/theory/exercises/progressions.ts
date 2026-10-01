@@ -125,6 +125,7 @@ function makeQuestion(level: Level, item: Item, _asked: Mode, rand: () => number
     events: [...context, ...chords],
     answerFrom: context.length,
     lit: first,
+    steps: chords.map((c, i) => ({ label: `${p.numerals[i]} · ${names[i]}`, notes: c.notes })),
     explain: `${pretty(p)} in ${label}: ${names.join(' ')}. ${p.hint}`,
   }
 }
