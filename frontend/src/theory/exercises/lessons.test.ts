@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { HIGHEST_MIDI, LOWEST_MIDI } from '../notes'
 import { eventsFor } from '../playback'
-import { buildQuestions } from '../questions'
+import { buildQuestions, sameSetting } from '../questions'
 import { QUESTIONS_PER_SESSION } from '../rules'
 import { DEGREE_SEMITONES } from '../harmony'
 import { EXERCISE_LIST, EXERCISES, levelItems } from './index'
@@ -25,6 +25,23 @@ describe.each(EXERCISE_LIST.map((e) => [e.id, e] as const))('lesson %s', (_id, e
     expect(new Set(ids).size).toBe(ids.length)
     const shorts = exercise.items.map((i) => i.short)
     expect(new Set(shorts).size).toBe(shorts.length)
+  })
+
+  it.skipIf(exercise.kind === 'quiz')('can play any other answer of the level in the same key as a question', () => {
+    const rand = seeded(91)
+    for (const level of exercise.levels) {
+      const others = level.items
+      if (others.length < 2) continue
+      for (const q of buildQuestions(exercise, level, 12, rand)) {
+        for (const id of others.filter((x) => x !== q.item)) {
+          const alt = sameSetting(exercise, level, q, id, rand)
+          expect(alt, `${exercise.id} level ${level.id}: ${q.item} -> ${id}`).not.toBeNull()
+          expect(alt!.item).toBe(id)
+          const home = (x: typeof q) => (x.answerFrom !== undefined && x.events ? Math.min(...x.events[0].notes) % 12 : x.root)
+          expect(home(alt!) % 12).toBe(home(q) % 12)
+        }
+      }
+    }
   })
 
   it('only uses answers that exist, and uses every answer somewhere', () => {

@@ -5,16 +5,17 @@ import { loadPiano, playNotes, playSequence, prepareAudio, soundBlocked, stopSou
 import { Book, Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
+import { Listen } from '../components/lesson/Listen'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
 import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, type Part } from '../theory/playback'
-import { buildQuestions } from '../theory/questions'
+import { buildQuestions, sameSetting } from '../theory/questions'
 import { localDateString } from '../theory/practice'
 import { seconds as formatSeconds, sessionSpeed } from '../theory/speed'
 import { isPassing, isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
 import type { ExerciseDef, Level, Question } from '../theory/types'
 
-type Phase = 'intro' | 'question' | 'checked' | 'summary'
+type Phase = 'intro' | 'listen' | 'question' | 'checked' | 'summary'
 type SaveState = 'saving' | 'saved' | 'queued'
 
 export function Exercise() {
@@ -40,6 +41,8 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const [heard, setHeard] = useState<'key' | 'question' | null>(null)
   /** Which chord of a progression the answer keyboard shows: follows the sound, or the chord that was tapped. */
   const [step, setStep] = useState(0)
+  /** After a wrong answer: is the keyboard showing the correct answer or what the learner picked? */
+  const [view, setView] = useState<'answer' | 'yours'>('answer')
   const [loadError, setLoadError] = useState<string>()
   const [save, setSave] = useState<SaveState>('saving')
   const [seconds, setSeconds] = useState(0)
@@ -53,6 +56,9 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     () => (question?.choices ? exercise.items.filter((i) => question.choices!.includes(i.id)) : levelChoices),
     [exercise, levelChoices, question],
   )
+  // After a wrong answer: the picked answer, in the same key, so the two can be heard back to back.
+  const wrongPick = phase === 'checked' && !quiz && !!question && picked !== null && picked !== question.item
+  const alt = useMemo(() => (wrongPick ? sameSetting(exercise, level, question, picked!) : null), [wrongPick, exercise, level, question, picked])
   /** Does this question make a sound? Ear lessons always do; quiz questions only when they carry events. */
   const sounds = (q: Question) => !quiz || !!q.events
   const back = `/learn/${exercise.id}`
@@ -126,6 +132,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
     }
     setAttempts((prev) => [...prev, attempt])
     setStep(0)
+    setView('answer')
     setPhase('checked')
     if (sounds(question)) void play(question) // replaces what is sounding, so the ear can check the answer
   }
@@ -225,6 +232,26 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
         </div>
         <footer className="lesson-foot">
           <div className="lesson-foot-in end">
+            {!quiz && <button className="button big-btn" onClick={() => setPhase('listen')}>Listen first</button>}
+            <button className="button primary big-btn" onClick={() => void start()}>Start</button>
+          </div>
+        </footer>
+      </div>
+    )
+  }
+
+  if (phase === 'listen') {
+    return (
+      <div className="lesson lesson-intro">
+        <LessonHeader done={0} total={QUESTIONS_PER_SESSION} combo={0} quitTo={back} />
+        <div className="lesson-main">
+          <p className="lesson-label"><Ear size={20} />{exercise.name}, level {level.id}</p>
+          <h1 className="lesson-title">Listen first</h1>
+          <Listen exercise={exercise} level={level} items={levelChoices} />
+        </div>
+        <footer className="lesson-foot">
+          <div className="lesson-foot-in end">
+            <button className="button big-btn" onClick={() => { stopSound(); setPhase('intro') }}>Back</button>
             <button className="button primary big-btn" onClick={() => void start()}>Start</button>
           </div>
         </footer>
@@ -239,6 +266,37 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const checked = phase === 'checked'
   const correct = checked && picked === question.item
   const truth = getItem(exercise, question.item)
+  const shown = view === 'yours' && alt ? alt : question
+  const stepNow = Math.min(step, (shown.steps?.length ?? 1) - 1)
+
+  function hearYours() {
+    if (!alt) return
+    prepareAudio()
+    setView('yours')
+    setStep(0)
+    void play(alt)
+  }
+  function hearCorrect() {
+    prepareAudio()
+    setView('answer')
+    setStep(0)
+    void play(question)
+  }
+  /** Yours, a short pause, then the correct one. Any other sound that starts in between cancels the rest. */
+  async function hearBoth() {
+    if (!alt) return
+    prepareAudio()
+    setView('yours')
+    setStep(0)
+    const first = playId.current + 1
+    await play(alt)
+    if (playId.current !== first) return
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    if (playId.current !== first) return
+    setView('answer')
+    setStep(0)
+    void play(question)
+  }
   const combo = (() => {
     let run = 0
     for (let i = attempts.length - 1; i >= 0 && attempts[i].correct; i--) run++
@@ -309,16 +367,16 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
           <div className="lesson-keys">
             <Keyboard
               range={level.lowRange}
-              lit={(question.steps ? question.steps[step].notes : (question.lit ?? question.notes)).map((midi) => ({ midi, role: midi === (question.steps ? question.steps[step].notes[0] : question.root) ? 'first' : 'second' }))}
+              lit={(shown.steps ? shown.steps[stepNow].notes : (shown.lit ?? shown.notes)).map((midi) => ({ midi, role: midi === (shown.steps ? shown.steps[stepNow].notes[0] : shown.root) ? 'first' : 'second' }))}
             />
-            {question.steps && (
+            {shown.steps && (
               <div className="chord-steps" role="group" aria-label="Chords of the progression">
-                {question.steps.map((s, i) => (
+                {shown.steps.map((s, i) => (
                   <button
                     key={i}
                     type="button"
                     className="chord-step"
-                    aria-pressed={step === i}
+                    aria-pressed={stepNow === i}
                     onClick={() => {
                       prepareAudio()
                       stopSound()
@@ -331,7 +389,15 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
                 ))}
               </div>
             )}
-            <p className="hero-caption">{exercise.describe(question)}</p>
+            <p className="hero-caption">{view === 'yours' && alt ? <strong>Your answer: </strong> : null}{exercise.describe(shown)}</p>
+            {wrongPick && alt && (
+              <div className="compare" role="group" aria-label="Compare your answer with the correct one">
+                <button type="button" className="button" onClick={() => hearYours()}>Hear yours ({getItem(exercise, picked!).short})</button>
+                <button type="button" className="button" onClick={() => hearCorrect()}>Hear correct ({truth.short})</button>
+                <button type="button" className="button" onClick={() => void hearBoth()}>Both, one after the other</button>
+                <p className="quiet">Both play in the same key, so the only difference is the answer.</p>
+              </div>
+            )}
           </div>
         )}
       </div>

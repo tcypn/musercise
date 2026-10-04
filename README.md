@@ -170,6 +170,10 @@ Two labelled parts again: **1 · The key**, then **2 · Name this progression**.
 | 9 | less help, plus the eight-chord canon progression |
 | 10 | everything mixed |
 
+### Listening aids
+
+Every ear lesson has two helpers. **Listen first** (next to Start on a level's intro) shows each answer of the level as a card: press play to hear it in a new key, with the keyboard lit and the explanation; nothing is scored or saved. After a **wrong answer**, buttons let you hear *your* answer, the correct one, or both one after the other, in the same key (`sameSetting` in `theory/questions.ts`; a shared test checks every answer of every ear level can be played in the question's key).
+
 ### Speed tracking
 
 Each answer's time is measured from the moment the answer part finishes sounding (for ear lessons with a key part, the key is not counted). The **lesson-complete screen** shows the average time per answer and the slowest answers. The **Progress** page shows a Speed column per answer (the median time, so one idle minute does not matter) and flags answers that are clearly slower than your own typical time. This needs the server to send `median_ms` per answer (`progress/stats.py`); an older server just hides the column. Passing a level is still accuracy only.
