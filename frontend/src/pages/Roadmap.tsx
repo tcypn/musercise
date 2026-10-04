@@ -4,6 +4,7 @@ import { Keyboard } from '../components/Keyboard'
 import { SyncNotice } from '../components/SyncNotice'
 import { useProgress } from '../store/useProgress'
 import { getExercise, levelItems, nextLevel } from '../theory/exercises'
+import { weakSpot } from '../theory/mistakes'
 import { isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
 
 /** The ten levels of one concept. */
@@ -16,6 +17,7 @@ export function Roadmap() {
   const stats = new Map(progress.exercises[exercise.id].levels.map((l) => [l.level, l]))
   const passed = new Set(progress.exercises[exercise.id].levels.filter((l) => l.passed).map((l) => l.level))
   const next = nextLevel(exercise, passed)
+  const weak = weakSpot(exercise, progress)
   const allPassed = passed.size === exercise.levels.length
   const any = stats.size > 0
 
@@ -31,6 +33,7 @@ export function Roadmap() {
           <Link className="button primary" to={`/practice/${exercise.id}/${next.id}`}>
             {allPassed ? `Practice level ${next.id} again` : !any ? 'Start level 1' : `Continue with level ${next.id}`}
           </Link>
+          {weak && <Link className="button" to={`/mistakes/${exercise.id}`}>Practise your mistakes</Link>}
           {progress.totals.sessions > 0 && (
             <span className="quiet">
               {progress.totals.questions} questions answered in all

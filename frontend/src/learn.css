@@ -5,17 +5,17 @@
 
 /* ---- Home layout: one column on phones; the path, then a column of cards beside it on wide screens ---- */
 .learn { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); max-width: 42rem; margin: 0 auto;
-  grid-template-areas: 'top' 'notice' 'today' 'rec' 'accuracy' 'path' 'ear'; }
+  grid-template-areas: 'top' 'notice' 'today' 'rec' 'mistakes' 'accuracy' 'path' 'ear'; }
 .learn > * { min-width: 0; }
 .learn-top { grid-area: top; display: flex; justify-content: flex-end; }
 .learn-notice { grid-area: notice; }
 .learn-notice:empty { display: none; }
 .learn-notice .notice { margin: 0; }
-.learn-today { grid-area: today; } .learn-rec { grid-area: rec; } .learn-accuracy { grid-area: accuracy; }
+.learn-today { grid-area: today; } .learn-rec { grid-area: rec; } .learn-mistakes { grid-area: mistakes; } .learn-accuracy { grid-area: accuracy; }
 .learn-path { grid-area: path; } .learn-ear { grid-area: ear; }
 @media (min-width: 62rem) {
-  .learn { max-width: none; grid-template-columns: minmax(0, 1fr) 24rem; column-gap: 2.5rem; grid-template-rows: auto auto auto auto auto auto 1fr;
-    grid-template-areas: 'notice notice' 'path top' 'path today' 'path rec' 'path accuracy' 'path ear' 'path .'; }
+  .learn { max-width: none; grid-template-columns: minmax(0, 1fr) 24rem; column-gap: 2.5rem; grid-template-rows: auto auto auto auto auto auto auto 1fr;
+    grid-template-areas: 'notice notice' 'path top' 'path today' 'path rec' 'path mistakes' 'path accuracy' 'path ear' 'path .'; }
 }
 
 /* Streak, top right: just the flame and the number. It opens the streak page. */
@@ -217,3 +217,4 @@
 .listen-card .lesson-keys { margin-top: 0.7rem; }
 .compare { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.8rem 0 0.2rem; align-items: center; }
 .compare .quiet { flex-basis: 100%; margin: 0; }
+.learn-mistakes:empty { display: none; }

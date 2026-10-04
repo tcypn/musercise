@@ -3,7 +3,7 @@ import { Brand, SideNav } from './components/SideNav'
 import { TabBar } from './components/TabBar'
 import { ComingSoon } from './pages/ComingSoon'
 import { Daily } from './pages/Daily'
-import { Exercise } from './pages/Exercise'
+import { Exercise, Mistakes } from './pages/Exercise'
 import { Learn } from './pages/Learn'
 import { MapPage } from './pages/MapPage'
 import { Progress } from './pages/Progress'
@@ -20,7 +20,7 @@ function LegacyPractice() {
 /** Home is wider than the reading pages, and a lesson in progress takes over the whole screen. */
 function Shell() {
   const path = useLocation().pathname
-  const mode = path === '/' ? ' wide' : path.startsWith('/practice/') ? ' focus' : ''
+  const mode = path === '/' ? ' wide' : path.startsWith('/practice/') || path.startsWith('/mistakes/') ? ' focus' : ''
   return (
     <div className={`shell${mode}`}>
       <SideNav />
@@ -35,6 +35,7 @@ function Shell() {
             <Route path="/map" element={<MapPage />} />
             <Route path="/learn/:exercise" element={<Roadmap />} />
             <Route path="/practice/:exercise/:level" element={<Exercise />} />
+            <Route path="/mistakes/:exercise" element={<Mistakes />} />
             <Route path="/practice/:level" element={<LegacyPractice />} />
             <Route path="/soon/:concept" element={<ComingSoon />} />
             <Route path="/daily" element={<Daily />} />

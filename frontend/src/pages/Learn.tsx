@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AccuracyCard } from '../components/dash/AccuracyCard'
 import { EarRadar } from '../components/dash/EarRadar'
+import { MistakesCard } from '../components/dash/MistakesCard'
 import { Flame } from '../components/dash/Icons'
 import { RecommendedList } from '../components/dash/RecommendedList'
 import { TodayCard } from '../components/dash/TodayCard'
@@ -9,6 +10,7 @@ import { PathView } from '../components/path/PathView'
 import { SyncNotice } from '../components/SyncNotice'
 import { useProgress } from '../store/useProgress'
 import { accuracyView, computeStreak, last7, recommendations } from '../theory/dashboard'
+import { weakSpots } from '../theory/mistakes'
 import { buildPath, defaultStage } from '../theory/path'
 import { localDateString } from '../theory/practice'
 
@@ -23,6 +25,7 @@ export function Learn() {
   const bars = useMemo(() => last7(progress.daily, today), [progress.daily, today])
   const recs = useMemo(() => recommendations(progress, today), [progress, today])
   const path = useMemo(() => buildPath(progress), [progress])
+  const spots = useMemo(() => weakSpots(progress), [progress])
   const openId = picked ?? defaultStage(path)
 
   return (
@@ -44,6 +47,7 @@ export function Learn() {
 
       <div className="learn-today"><TodayCard today={today} /></div>
       <div className="learn-rec"><RecommendedList items={recs} /></div>
+      <div className="learn-mistakes"><MistakesCard spots={spots} /></div>
       <div className="learn-accuracy"><AccuracyCard view={accuracy} days={bars} /></div>
       <div className="learn-path"><PathView stages={path} openId={openId} onOpen={setPicked} /></div>
       <div className="learn-ear"><EarRadar exercises={progress.exercises} /></div>

@@ -10,6 +10,9 @@ import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
 import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, type Part } from '../theory/playback'
 import { buildQuestions, sameSetting } from '../theory/questions'
+import { MISTAKE_QUESTIONS, weakSpot, type WeakSpot } from '../theory/mistakes'
+import { getCachedProgress, getPending } from '../store/pending'
+import { mergeProgress } from '../store/merge'
 import { localDateString } from '../theory/practice'
 import { seconds as formatSeconds, sessionSpeed } from '../theory/speed'
 import { isPassing, isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
@@ -30,7 +33,18 @@ export function Exercise() {
   return <Session key={`${exercise.id}-${level.id}`} exercise={exercise} level={level} />
 }
 
-function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
+/** Practise the answers you get wrong most often in one lesson: a short session with only those answers on offer. */
+export function Mistakes() {
+  const { exercise: exerciseId } = useParams()
+  const exercise = getExercise(exerciseId)
+  // Decided once, when the page opens, so the answers do not change while you practise.
+  const [spot] = useState<WeakSpot | null>(() => (exercise ? weakSpot(exercise, mergeProgress(getCachedProgress(), getPending())) : null))
+  if (!exercise || !spot) return <Navigate to={exercise ? `/learn/${exercise.id}` : '/'} replace />
+  const level: Level = { ...spot.level, items: spot.items }
+  return <Session key={`mistakes-${exercise.id}`} exercise={exercise} level={level} focus={spot} />
+}
+
+function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Level; focus?: WeakSpot }) {
   const [phase, setPhase] = useState<Phase>('intro')
   const [questions, setQuestions] = useState<Question[]>([])
   const [index, setIndex] = useState(0)
@@ -49,6 +63,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const startedAt = useRef<Date | null>(null)
   const heardAt = useRef(0)
   const quiz = exercise.kind === 'quiz'
+  const count = focus ? MISTAKE_QUESTIONS : QUESTIONS_PER_SESSION
   const levelChoices = useMemo(() => levelItems(exercise, level), [exercise, level])
   const question = questions[index]
   // A quiz question may offer just a few of the level's answers; the order is always the lesson's own.
@@ -61,7 +76,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   const alt = useMemo(() => (wrongPick ? sameSetting(exercise, level, question, picked!) : null), [wrongPick, exercise, level, question, picked])
   /** Does this question make a sound? Ear lessons always do; quiz questions only when they carry events. */
   const sounds = (q: Question) => !quiz || !!q.events
-  const back = `/learn/${exercise.id}`
+  const back = focus ? '/' : `/learn/${exercise.id}`
 
   // Only the latest play() may touch `playing`, so a sound that was cut short cannot switch the button back on.
   const playId = useRef(0)
@@ -102,7 +117,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       setLoadError('The piano sounds could not load. Check your connection, then try again.')
       return
     }
-    const qs = buildQuestions(exercise, level, QUESTIONS_PER_SESSION)
+    const qs = buildQuestions(exercise, level, count)
     startedAt.current = new Date()
     setQuestions(qs)
     setIndex(0)
@@ -204,11 +219,11 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   if (phase === 'intro') {
     return (
       <div className="lesson lesson-intro">
-        <LessonHeader done={0} total={QUESTIONS_PER_SESSION} combo={0} quitTo={back} />
+        <LessonHeader done={0} total={count} combo={0} quitTo={back} />
         <div className="lesson-main">
-          <p className="lesson-label">{quiz ? <Book size={20} /> : <Ear size={20} />}{exercise.name}, level {level.id}</p>
-          <h1 className="lesson-title">{level.name}</h1>
-          <p className="lede" style={{ margin: 0 }}>{level.blurb}</p>
+          <p className="lesson-label">{quiz ? <Book size={20} /> : <Ear size={20} />}{focus ? `Practise your mistakes · ${exercise.name}` : `${exercise.name}, level ${level.id}`}</p>
+          <h1 className="lesson-title">{focus ? 'The answers you mix up' : level.name}</h1>
+          <p className="lede" style={{ margin: 0 }}>{focus ? `${count} questions with only the answers you get wrong most often, so you hear them side by side. This does not change your level progress.` : level.blurb}</p>
           <div>
             <Keyboard range={level.lowRange} />
             <p className="hero-caption">The lit strip is where the {exercise.rangeWord ?? 'lowest note'} will fall.</p>
@@ -226,7 +241,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
             </p>
           )}
           <p className="quiet" style={{ margin: 0 }}>
-            {QUESTIONS_PER_SESSION} questions. Score {PASS_ACCURACY * 100}% or more to unlock the next level. {quiz ? 'Press' : 'Press R to hear a question again,'} 1 to 9 to pick an answer and Enter to check it.
+            {focus ? `${count} questions.` : `${QUESTIONS_PER_SESSION} questions. Score ${PASS_ACCURACY * 100}% or more to unlock the next level.`} {quiz ? 'Press' : 'Press R to hear a question again,'} 1 to 9 to pick an answer and Enter to check it.
           </p>
           {loadError && <p className="notice warn" role="alert">{loadError}</p>}
         </div>
@@ -243,9 +258,9 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   if (phase === 'listen') {
     return (
       <div className="lesson lesson-intro">
-        <LessonHeader done={0} total={QUESTIONS_PER_SESSION} combo={0} quitTo={back} />
+        <LessonHeader done={0} total={count} combo={0} quitTo={back} />
         <div className="lesson-main">
-          <p className="lesson-label"><Ear size={20} />{exercise.name}, level {level.id}</p>
+          <p className="lesson-label"><Ear size={20} />{focus ? `Practise your mistakes · ${exercise.name}` : `${exercise.name}, level ${level.id}`}</p>
           <h1 className="lesson-title">Listen first</h1>
           <Listen exercise={exercise} level={level} items={levelChoices} />
         </div>
@@ -260,7 +275,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   }
 
   if (phase === 'summary') {
-    return <Complete exercise={exercise} level={level} attempts={attempts} save={save} seconds={seconds} onAgain={() => setPhase('intro')} />
+    return <Complete exercise={exercise} level={level} focus={!!focus} attempts={attempts} save={save} seconds={seconds} onAgain={() => setPhase('intro')} />
   }
 
   const checked = phase === 'checked'
@@ -315,7 +330,7 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
       />
       <div className="lesson-main">
         <div>
-          <p className="lesson-label">{quiz ? <Book size={20} /> : <Ear size={20} />}{exercise.name}, level {level.id} · question {index + 1} of {questions.length}</p>
+          <p className="lesson-label">{quiz ? <Book size={20} /> : <Ear size={20} />}{exercise.name}, {focus ? 'mistakes' : `level ${level.id}`} · question {index + 1} of {questions.length}</p>
           <h1 className="lesson-title" style={{ marginTop: '0.5rem' }}>{question.prompt?.text ?? exercise.question}</h1>
         </div>
 
@@ -425,9 +440,9 @@ function Session({ exercise, level }: { exercise: ExerciseDef; level: Level }) {
   )
 }
 
-function Complete({ exercise, level, attempts, save, seconds, onAgain }: { exercise: ExerciseDef; level: Level; attempts: AttemptPayload[]; save: SaveState; seconds: number; onAgain: () => void }) {
+function Complete({ exercise, level, focus, attempts, save, seconds, onAgain }: { exercise: ExerciseDef; level: Level; focus: boolean; attempts: AttemptPayload[]; save: SaveState; seconds: number; onAgain: () => void }) {
   const correct = attempts.filter((a) => a.correct).length
-  const pass = isPassing(attempts.length, correct)
+  const pass = focus ? attempts.length > 0 && correct / attempts.length >= PASS_ACCURACY : isPassing(attempts.length, correct)
   const percent = Math.round((correct / attempts.length) * 100)
   const missed = new Map<string, number>()
   attempts.filter((a) => !a.correct).forEach((a) => missed.set(a.item, (missed.get(a.item) ?? 0) + 1))
@@ -437,15 +452,15 @@ function Complete({ exercise, level, attempts, save, seconds, onAgain }: { exerc
 
   return (
     <div className="lesson">
-      <LessonHeader done={attempts.length} total={attempts.length} combo={0} quitTo={`/learn/${exercise.id}`} />
+      <LessonHeader done={attempts.length} total={attempts.length} combo={0} quitTo={focus ? '/' : `/learn/${exercise.id}`} />
       <div className="lesson-main complete">
         {pass && <Confetti />}
         <span className={`trophy ${pass ? '' : 'no'}`}><Trophy size={64} /></span>
         <div>
-          <h1>{pass ? 'Level passed!' : 'Not yet'}</h1>
+          <h1>{focus ? (pass ? 'Much better!' : 'Keep going') : pass ? 'Level passed!' : 'Not yet'}</h1>
           <p className="complete-sub" style={{ marginTop: '0.5rem' }}>
-            {exercise.name}, level {level.id}: {level.name}.{' '}
-            {pass
+            {focus ? `${exercise.name}, your mistakes. This does not change your level progress.` : `${exercise.name}, level ${level.id}: ${level.name}.`}{' '}
+            {focus ? (pass ? 'These answers are getting easier to tell apart.' : 'Listen first to the answers below, then try again.') : pass
               ? hasNext ? `Level ${level.id + 1} is open.` : `You have finished the whole ${exercise.name.toLowerCase()} roadmap.`
               : `You need ${PASS_ACCURACY * 100}% to move on. Try again while it is fresh.`}
           </p>
@@ -487,8 +502,8 @@ function Complete({ exercise, level, attempts, save, seconds, onAgain }: { exerc
       <footer className="lesson-foot">
         <div className="lesson-foot-in">
           <button type="button" className="button big-btn" onClick={onAgain}>Review lesson</button>
-          <Link className="button primary big-btn" to={pass && hasNext ? `/practice/${exercise.id}/${level.id + 1}` : '/'}>
-            {pass && hasNext ? `Go to level ${level.id + 1}` : 'Continue'}
+          <Link className="button primary big-btn" to={!focus && pass && hasNext ? `/practice/${exercise.id}/${level.id + 1}` : '/'}>
+            {!focus && pass && hasNext ? `Go to level ${level.id + 1}` : 'Continue'}
           </Link>
         </div>
       </footer>
