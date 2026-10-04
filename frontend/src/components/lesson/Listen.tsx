@@ -55,13 +55,13 @@ export function Listen({ exercise, level, items }: Props) {
           return (
             <li key={item.id} className="listen-card" data-playing={playingId === item.id}>
               <div className="listen-head">
-                <button type="button" className="speak small" aria-label={`Play ${item.name}`} aria-busy={playingId === item.id} onClick={() => void play(item, true)}>
-                  <Speaker size={28} />
-                </button>
                 <div>
                   <strong>{item.short}</strong> {item.name}
                   <div className="quiet">{item.hint}</div>
                 </div>
+                <button type="button" className="speak small" aria-label={`Play ${item.name}`} aria-busy={playingId === item.id} onClick={() => void play(item, true)}>
+                  <Speaker size={28} />
+                </button>
               </div>
               {q && (
                 <div className="lesson-keys">
