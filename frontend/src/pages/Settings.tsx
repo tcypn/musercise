@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { fetchProgress, getSettings, isConfigured, saveSettings } from '../api/client'
+import { APP_VERSION, CHANGELOG } from '../changelog'
 import { flushPending, getPending, getRejected, requeueRejected } from '../store/pending'
 
 export function Settings() {
@@ -64,6 +65,15 @@ export function Settings() {
         </div>
       )}
       {waiting > 0 && <p className="quiet">{waiting} {waiting === 1 ? 'session is' : 'sessions are'} saved on this device and not uploaded yet.</p>}
+      <details>
+        <summary className="quiet">App version {APP_VERSION} · build {__BUILD__}</summary>
+        {CHANGELOG.map((v) => (
+          <div key={v.version}>
+            <h3>{v.version} <span className="quiet">· {v.date}</span></h3>
+            <ul>{v.changes.map((c) => <li key={c}>{c}</li>)}</ul>
+          </div>
+        ))}
+      </details>
     </section>
   )
 }
