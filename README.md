@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Sixteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I** and **finding the chords by ear**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Seventeen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear** and **minor scales**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -288,6 +288,23 @@ The capstone. Hear a four-chord loop played like a song (twice), and find the ch
 | 8 | no key first: find home yourself |
 | 9 | add iii and ♭VII |
 | 10 | everything mixed, faster |
+
+### Minor scales (ear)
+
+Hear the home note, then a scale, and name it: **major**, **natural minor** (♭3, ♭6, ♭7), **harmonic minor** (raised 7th: an exotic gap from ♭6 to 7) or **melodic minor** (raised 6th and 7th; played the jazz way, the same going down). After the answer every note of the run is shown ("♭3 · E♭"); tap one to hear it alone.
+
+| Level | Question |
+| --- | --- |
+| 1 | major or natural minor, in C |
+| 2 | add harmonic minor |
+| 3 | add melodic minor |
+| 4 | any key |
+| 5 | runs going down |
+| 6 | only the top half (5 to 8), where the three minors differ |
+| 7 | no home note first |
+| 8 | up and back down |
+| 9 | faster |
+| 10 | everything mixed |
 
 ### Listening aids
 

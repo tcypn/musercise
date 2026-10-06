@@ -1067,3 +1067,40 @@ describe('finding the chords by ear', () => {
     }
   })
 })
+
+describe('minor scales', () => {
+  const lesson = EXERCISES['minor-scales']
+  // Independent theory: each scale as semitones above home.
+  const SEMIS: Record<string, number[]> = { major: [0, 2, 4, 5, 7, 9, 11], natural: [0, 2, 3, 5, 7, 8, 10], harmonic: [0, 2, 3, 5, 7, 8, 11], melodic: [0, 2, 3, 5, 7, 9, 11] }
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+
+  it('plays the named scale in order from home, spelled with each letter once', () => {
+    const rand = seeded(97)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 100, rand)) {
+        const run = q.events!.slice(q.answerFrom ?? 0).map((e) => e.notes[0])
+        const home = q.root
+        const scale = [...SEMIS[q.item], 12]
+        const rel = run.map((m) => m - home)
+        for (const r of rel) expect(scale, `level ${level.id} ${q.item}`).toContain(r)
+        // a straight run: each note the next or previous scale step
+        const idx = rel.map((r) => scale.indexOf(r))
+        for (let i = 1; i < idx.length; i++) expect(Math.abs(idx[i] - idx[i - 1])).toBe(1)
+        if (level.id === 6) expect(idx).toEqual([4, 5, 6, 7])
+        else expect(idx.includes(0) && idx.includes(7)).toBe(true)
+        if (level.id <= 3) expect(home % 12).toBe(0)
+        expect(q.steps!.map((s) => s.notes[0])).toEqual(run)
+        const names = q.steps!.map((s) => s.label.split(' · ')[1])
+        names.forEach((n, i) => expect(pcOf(n)).toBe(run[i] % 12))
+        const homeLetter = LETTERS.indexOf(names[idx.indexOf(Math.min(...idx))][0]) - Math.min(...idx)
+        names.forEach((n, i) => expect(n[0]).toBe(LETTERS[(((homeLetter + idx[i]) % 7) + 7) % 7]))
+        const other = level.items.find((x) => x !== q.item)!
+        const alt = sameSetting(lesson, level, q, other)!
+        expect(alt.root).toBe(q.root)
+        expect(alt.events!.length).toBe(q.events!.length)
+      }
+    }
+  })
+})
