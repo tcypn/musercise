@@ -768,3 +768,52 @@ describe('chord spelling and symbols', () => {
     expect(short('s-F#aug')).toBe('F♯ A♯ C♯♯')
   })
 })
+
+describe('pentatonic', () => {
+  const lesson = EXERCISES.pentatonic
+  // Independent theory: the scales as semitones above home, and each degree's letter step and semitones.
+  const MAJOR_PENT = [0, 2, 4, 7, 9]
+  const MINOR_PENT = [0, 3, 5, 7, 10]
+  const BLUES = [0, 3, 5, 6, 7, 10]
+  const DEGREE: Record<string, [number, number]> = { '1': [0, 0], '2': [1, 2], b3: [2, 3], '3': [2, 4], '4': [3, 5], b5: [4, 6], '5': [4, 7], '6': [5, 9], b7: [6, 10] }
+  const SHORT: Record<string, string> = { '1': '1', '2': '2', b3: '♭3', '3': '3', '4': '4', b5: '♭5', '5': '5', '6': '6', b7: '♭7' }
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+
+  it('plays only scale notes, ends on the answer, and shows every note with its number and name', () => {
+    const rand = seeded(31)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 150, rand)) {
+        const tonicPc = Math.min(...q.events![0].notes) % 12
+        const scale = q.mode === 'major' ? MAJOR_PENT : level.id >= 9 ? BLUES : MINOR_PENT
+        const tune = q.events!.slice(q.answerFrom).map((e) => e.notes[0])
+        expect(q.events!.slice(q.answerFrom).every((e) => e.notes.length === 1)).toBe(true)
+        expect(tune.length).toBeGreaterThanOrEqual(3)
+        expect(tune.length).toBeLessThanOrEqual(5)
+        if (level.id <= 4) expect(tonicPc).toBe(0)
+        for (const m of tune) expect(scale, `level ${level.id}`).toContain((m - tonicPc + 120) % 12)
+        expect((tune[tune.length - 1] - tonicPc + 120) % 12).toBe(DEGREE[q.item][1])
+        const tonicName = q.explain!.match(/^In ([A-G][♯♭]*) (major|minor):/)!
+        expect(pcOf(tonicName[1])).toBe(tonicPc)
+        expect(tonicName[2]).toBe(q.mode)
+        expect(q.steps!.map((s) => s.notes)).toEqual(tune.map((m) => [m]))
+        q.steps!.forEach((s, i) => {
+          const [num, note] = s.label.split(' · ')
+          const id = Object.keys(SHORT).find((k) => SHORT[k] === num)!
+          expect((tune[i] - tonicPc + 120) % 12).toBe(DEGREE[id][1])
+          expect(pcOf(note)).toBe(tune[i] % 12)
+          expect(note[0]).toBe(LETTERS[(LETTERS.indexOf(tonicName[1][0]) + DEGREE[id][0]) % 7])
+        })
+        // one note at a time: each note stops before or as the next starts
+        const ev = q.events!.slice(q.answerFrom)
+        for (let i = 1; i < ev.length; i++) expect(ev[i - 1].time + ev[i - 1].hold).toBeLessThanOrEqual(ev[i].time)
+      }
+    }
+  })
+
+  it('explains in plain words', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 60, seeded(2)).find((x) => x.item === '1')!
+    expect(lesson.describe(q)).toMatch(/^In C major: ([A-G] ){2,}C\. The tune ended on C, the home note \(1\)\.$/)
+  })
+})

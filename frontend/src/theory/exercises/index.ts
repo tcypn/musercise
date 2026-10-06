@@ -7,6 +7,7 @@ import { extensionsExercise } from './extensions'
 import { intervalsExercise } from './intervals'
 import { majorScaleExercise } from './majorScale'
 import { noteNamesExercise } from './noteNames'
+import { pentatonicExercise } from './pentatonic'
 import { progressionsExercise } from './progressions'
 import { scaleDegreesExercise } from './scaleDegrees'
 
@@ -21,9 +22,10 @@ export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   'diatonic-chords': diatonicChordsExercise,
   progressions: progressionsExercise,
   'chord-spelling': chordSpellingExercise,
+  pentatonic: pentatonicExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)

@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Ten are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function** and **common progressions**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Eleven are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions** and **pentatonic scale**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -185,6 +185,23 @@ Two labelled parts again: **1 · The key**, then **2 · Name this progression**.
 | 7 | minor patterns: i-iv-V-i, i-VI-III-VII, i-VII-VI-V |
 | 8 | seventh chords |
 | 9 | less help, plus the eight-chord canon progression |
+| 10 | everything mixed |
+
+### Pentatonic scale (ear)
+
+The pentatonic scale is five notes that almost always sound good over a song: 1 2 3 5 6 in major (C D E G A in C), 1 ♭3 4 5 ♭7 in minor (A C D E G in A minor). Hear the key, then a short tune of three to five pentatonic notes, and say which note of the scale it ends on. After the answer every note of the tune is shown with its number and name ("3 · E, 2 · D, 1 · C"); tap one to hear it alone. Knowing where a line lands is the first step to improvising.
+
+| Level | Question |
+| --- | --- |
+| 1 | three-note tunes in C major, ending on 1, 3 or 5 |
+| 2 | ending on any of the five notes |
+| 3 | four-note tunes |
+| 4 | five-note tunes that skip notes |
+| 5 | any key |
+| 6 | less help: only the home chord before the tune |
+| 7 | minor pentatonic, in a minor key |
+| 8 | minor, less help |
+| 9 | the blue note ♭5 (the blues scale) |
 | 10 | everything mixed |
 
 ### Listening aids
