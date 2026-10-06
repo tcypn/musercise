@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Thirteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords** and **pentatonic scale**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Fourteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale** and **chord tones and guide tones**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -236,6 +236,23 @@ The pentatonic scale is five notes that almost always sound good over a song: 1 
 | 7 | minor pentatonic, in a minor key |
 | 8 | minor, less help |
 | 9 | the blue note ♭5 (the blues scale) |
+| 10 | everything mixed |
+
+### Chord tones and guide tones (ear)
+
+Hear a chord, then one melody note above it, and say what the note is in the chord: **1**, **3**, **5**, **7**, **9** or **out** (not in the chord). Landing on chord tones is what makes an improvised line fit; the 3rd and 7th (the guide tones) say the most about a chord. After the answer the chord and the note are shown ("C7 · C E G B♭", "E · the 3rd of C7"); tap either to hear it alone.
+
+| Level | Question |
+| --- | --- |
+| 1 | 1, 3 or 5 over C, F and G major |
+| 2 | minor chords too |
+| 3 | the 7th, over dominant 7th chords |
+| 4 | maj7, 7 and m7 chords |
+| 5 | guide tones: 3rd or 7th |
+| 6 | the 9th |
+| 7 | out: a note that clashes with the chord |
+| 8 | any root, melody up to C6 |
+| 9 | the same note over two chords: name it over the second |
 | 10 | everything mixed |
 
 ### Listening aids

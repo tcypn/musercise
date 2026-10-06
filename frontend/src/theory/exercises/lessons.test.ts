@@ -908,3 +908,51 @@ describe('inversions and slash chords', () => {
     expect(lesson.describe(f)).toBe('F/A: an F major chord with its 3rd, A, in the bass.')
   })
 })
+
+describe('chord tones and guide tones', () => {
+  const lesson = EXERCISES['chord-tones']
+  // Independent theory: chord tones as semitones above the root, and each answer's letter step.
+  const CHORDS: Record<string, number[]> = { '': [0, 4, 7], m: [0, 3, 7], '7': [0, 4, 7, 10], maj7: [0, 4, 7, 11], m7: [0, 3, 7, 10] }
+  const LETTER_STEP: Record<string, number> = { '1': 0, '3': 2, '5': 4, '7': 6, '9': 1 }
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+
+  it('plays the named chord and a melody note above it that is the answer', () => {
+    const rand = seeded(61)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 150, rand)) {
+        const events = q.events!
+        expect(q.steps!.map((s) => s.notes)).toEqual(events.map((e) => e.notes))
+        const chordNotes = events[events.length - 2].notes
+        const melody = events[events.length - 1].notes[0]
+        const [symbol, spelled] = q.steps![q.steps!.length - 2].label.split(' · ')
+        const [, rootName, suffix] = symbol.match(/^([A-G][♯♭]*)(m7|maj7|7|m|)$/)!
+        const rootPc = pcOf(rootName)
+        expect(Math.min(...chordNotes) % 12).toBe(rootPc)
+        const stack = CHORDS[suffix].map((s) => (rootPc + s) % 12)
+        expect(new Set(chordNotes.map((m) => m % 12))).toEqual(new Set(stack))
+        expect(spelled.split(' ').map(pcOf)).toEqual(stack)
+        for (const e of events.slice(0, -1)) if (e.notes.length > 1) expect(melody).toBeGreaterThan(Math.max(...e.notes))
+        const interval = (melody - rootPc + 120) % 12
+        const noteName = q.steps![q.steps!.length - 1].label.split(' · ')[0]
+        expect(pcOf(noteName)).toBe(melody % 12)
+        if (q.item === 'out') {
+          expect(stack).not.toContain(melody % 12)
+          expect(interval).not.toBe(2)
+        } else {
+          const want = q.item === '9' ? 2 : CHORDS[suffix][['1', '3', '5', '7'].indexOf(q.item)]
+          expect(interval, `level ${level.id} ${symbol} ${q.item}`).toBe(want)
+          expect(noteName[0]).toBe(LETTERS[(LETTERS.indexOf(rootName[0]) + LETTER_STEP[q.item]) % 7])
+        }
+        if (level.id === 9) expect(events.length).toBe(4)
+      }
+    }
+  })
+
+  it('explains in plain words', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 60, seeded(4)).find((x) => x.item === '3' && x.steps![0].label.startsWith('C ·'))!
+    expect(lesson.describe(q)).toBe('Over C (C major: C E G) the E is the 3rd, a guide tone.')
+    expect(q.steps!.map((s) => s.label)).toEqual(['C · C E G', 'E · the 3rd of C'])
+  })
+})
