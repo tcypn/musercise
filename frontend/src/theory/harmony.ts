@@ -90,8 +90,8 @@ export const STACK: Readonly<Record<string, readonly number[]>> = {
   m7b5: [0, 3, 6, 10],
 }
 
-/** Chord type as written after the root: C, Cm, Cdim, Cmaj7, Cm7, C7, Cm7♭5. */
-export const SUFFIX: Readonly<Record<string, string>> = { maj: '', min: 'm', dim: 'dim', maj7: 'maj7', m7: 'm7', '7': '7', m7b5: 'm7♭5' }
+/** Chord type as written after the root: C, Cm, Cdim, Cmaj7, Cm7, C7, Cm7♭5, Caug, Cmaj9, C9, Cm9. */
+export const SUFFIX: Readonly<Record<string, string>> = { maj: '', min: 'm', dim: 'dim', maj7: 'maj7', m7: 'm7', '7': '7', m7b5: 'm7♭5', aug: 'aug', maj9: 'maj9', '9': '9', m9: 'm9' }
 
 export const chordName = (root: Note, type: string): string => `${noteLabel(root)}${SUFFIX[type]}`
 

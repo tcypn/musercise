@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Nine are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function** and **common progressions**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Ten are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function** and **common progressions**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -139,6 +139,23 @@ Every major key has seven chords, one on each note of its scale, written with Ro
 | 10 | everything mixed |
 
 Wrong answers are always the same kind of chord as the right one, and never two spellings of one chord (F♯ and G♭ are one chord).
+
+### Chord spelling and symbols (a quiz)
+
+Spell a chord from its symbol ("Spell Fmaj7": pick F A C E) or name a chord from its notes ("Which chord is E G C?": C/E, with the keys lit). Roots are the twelve key notes (C, D♭, D, E♭ ... B), always spelled by letter, so Cdim is C E♭ G♭ and F♯aug is F♯ A♯ C♯♯. Wrong answers are the same kind of chord, mostly on the same root (Cmaj7 next to C7 and Cm7). After each answer the strip gives the notes and what they are ("Fmaj7 = F A C E: major 3rd, perfect 5th, major 7th above F.").
+
+| Level | Question |
+| --- | --- |
+| 1 | spell major and minor chords on the white keys |
+| 2 | the other way: name the chord from its notes |
+| 3 | major and minor on all twelve roots, both ways |
+| 4 | add diminished and augmented |
+| 5 | maj7 and 7 |
+| 6 | add m7 and m7♭5 |
+| 7 | 9th chords: maj9, 9, m9 |
+| 8 | slash chords with the 3rd in the bass (C/E = E G C) |
+| 9 | slash chords with the 5th in the bass too (C/G = G C E) |
+| 10 | everything mixed |
 
 ### Chord function (ear)
 

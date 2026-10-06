@@ -682,3 +682,89 @@ describe('common progressions', () => {
     expect(lesson.describe(s)).toContain('ii–V–I in B♭ major: Cm7 F7 B♭maj7.')
   })
 })
+
+describe('chord spelling and symbols', () => {
+  const lesson = EXERCISES['chord-spelling']
+  const short = (id: string) => lesson.items.find((i) => i.id === id)!.short
+  // Independent theory: a chord is the root plus notes [letters up, semitones up]; a 9th is a 2nd an octave up.
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const TABLE: Record<string, [number, number][]> = {
+    '': [[0, 0], [2, 4], [4, 7]],
+    m: [[0, 0], [2, 3], [4, 7]],
+    dim: [[0, 0], [2, 3], [4, 6]],
+    aug: [[0, 0], [2, 4], [4, 8]],
+    maj7: [[0, 0], [2, 4], [4, 7], [6, 11]],
+    '7': [[0, 0], [2, 4], [4, 7], [6, 10]],
+    m7: [[0, 0], [2, 3], [4, 7], [6, 10]],
+    'm7♭5': [[0, 0], [2, 3], [4, 6], [6, 10]],
+    maj9: [[0, 0], [2, 4], [4, 7], [6, 11], [1, 14]],
+    '9': [[0, 0], [2, 4], [4, 7], [6, 10], [1, 14]],
+    m9: [[0, 0], [2, 3], [4, 7], [6, 10], [1, 14]],
+  }
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+  function note(root: string, letters: number, semis: number): string {
+    const letter = LETTERS[(LETTERS.indexOf(root[0]) + letters) % 7]
+    const acc = ((((pcOf(root) + semis - NATURAL[letter]) % 12) + 18) % 12) - 6
+    return letter + (acc > 0 ? '♯'.repeat(acc) : '♭'.repeat(-acc))
+  }
+  /** The notes a symbol stands for, written as the lesson should write them. */
+  function expected(symbol: string): string {
+    const [, root, rest] = symbol.match(/^([A-G][♯♭]*)(.*)$/)!
+    if (rest.startsWith('/')) {
+      const [r, third, fifth] = TABLE[''].map(([l, s]) => note(root, l, s))
+      const bass = rest.slice(1)
+      expect([third, fifth], symbol).toContain(bass)
+      return (bass === third ? [third, fifth, r] : [fifth, r, third]).join(' ')
+    }
+    expect(TABLE[rest], symbol).toBeDefined()
+    return TABLE[rest].map(([l, s]) => note(root, l, s)).join(' ')
+  }
+
+  it('spells every chord right, in both answer sets', () => {
+    const keys = lesson.items.filter((i) => i.id.startsWith('c-')).map((i) => i.id.slice(2))
+    expect(keys.length).toBe(12 * 13)
+    for (const key of keys) expect(short(`s-${key}`), key).toBe(expected(short(`c-${key}`)))
+  })
+
+  it('asks a fair question every time: the right prompt, choices of one kind, the keys in order', () => {
+    const rand = seeded(23)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 200, rand)) {
+        const key = q.item.slice(2)
+        const symbol = short(`c-${key}`)
+        const notes = expected(symbol)
+        if (q.mode === 'spell') {
+          expect(q.item.startsWith('s-')).toBe(true)
+          expect(q.prompt!.text).toBe(`Spell ${symbol}.`)
+        } else {
+          expect(q.item.startsWith('c-')).toBe(true)
+          expect(q.prompt!.text).toContain(notes)
+          const lit = q.prompt!.lit!
+          expect(lit.map((m) => m % 12)).toEqual(notes.split(' ').map(pcOf))
+          for (let i = 1; i < lit.length; i++) expect(lit[i]).toBeGreaterThan(lit[i - 1])
+        }
+        expect(q.choices!.every((c) => c.slice(0, 2) === q.item.slice(0, 2))).toBe(true)
+        expect(q.choices!.length).toBeLessThanOrEqual(5)
+        expect(q.explain).toContain(`${symbol} = ${notes}`)
+      }
+    }
+  })
+
+  it('never names the chord on a spelling tile', () => {
+    for (const item of lesson.items.filter((i) => i.id.startsWith('s-'))) expect(item.name).toMatch(/^\d notes$/)
+  })
+
+  it('offers several choices from level 1 on', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 20, seeded(5))
+    for (const x of q) expect(x.choices!.length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('explains in plain words', () => {
+    const level = (n: number, id: string) => buildQuestions(lesson, lesson.levels[n - 1], 400, seeded(4)).find((x) => x.item === id)!
+    expect(lesson.describe(level(5, 's-Fmaj7'))).toBe('Fmaj7 = F A C E: major 3rd, perfect 5th, major 7th above F.')
+    expect(lesson.describe(level(8, 'c-C/E'))).toBe('C/E = E G C: a C major chord (C E G) with its 3rd, E, in the bass.')
+    expect(short('s-Dbm7b5')).toBe('D♭ F♭ A♭♭ C♭')
+    expect(short('s-F#aug')).toBe('F♯ A♯ C♯♯')
+  })
+})
