@@ -1,6 +1,6 @@
 import type { TimedEvent } from './practice'
 
-export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one'
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear'
 
 /** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
 export type Mode =
@@ -59,6 +59,8 @@ export interface Question {
   explain?: string
   /** Quiz lessons: offer only these answers (ids, always including the right one) instead of every answer of the level. */
   choices?: string[]
+  /** The same question with another answer swapped in and nothing else changed (used for "hear yours"). */
+  swap?: (item: string) => Question
 }
 
 /** `gap` seconds between note starts (0 = all at once); each note rings for `hold` seconds. */

@@ -1010,3 +1010,60 @@ describe('ii-V-I', () => {
     expect(q.steps!.map((s) => s.label)).toEqual(['ii · Dm', 'V · G', 'I · C'])
   })
 })
+
+describe('finding the chords by ear', () => {
+  const lesson = EXERCISES['by-ear']
+
+  it('"hear yours" plays the same loop with only the asked chord changed', () => {
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 20, seeded(5))) {
+        const other = level.items.find((i) => i !== q.item)!
+        const alt = sameSetting(lesson, level, q, other)!
+        const at = Number(q.prompt!.text.match(/([1-4])/)![1]) - 1
+        expect(alt.item).toBe(other)
+        expect(alt.prompt).toEqual(q.prompt)
+        q.steps!.forEach((s, i) => (i === at ? expect(alt.steps![i].label).not.toBe(s.label) : expect(alt.steps![i].label.split(' · ')[0]).toBe(s.label.split(' · ')[0])))
+      }
+    }
+  })
+  // Independent theory: each numeral's root above the tonic and its quality in a major key.
+  const NUMERAL: Record<string, [number, boolean]> = { I: [0, false], ii: [2, true], iii: [4, true], IV: [5, false], V: [7, false], vi: [9, true], bVII: [10, false] }
+  const SHORT: Record<string, string> = { I: 'I', ii: 'ii', iii: 'iii', IV: 'IV', V: 'V', vi: 'vi', bVII: '♭VII' }
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+  const triad = (root: number, minor: boolean) => new Set([root, root + (minor ? 3 : 4), root + 7].map((x) => x % 12))
+
+  it('plays a loop of real chords of the key, every note in the chord of its bar, and asks for the right one', () => {
+    const rand = seeded(83)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 80, rand)) {
+        const at = Number(q.prompt!.text.match(/^Which chord is number ([1-4])\?$/)![1]) - 1
+        expect(q.steps!.length).toBe(4)
+        const numerals = q.steps!.map((s) => Object.keys(SHORT).find((k) => SHORT[k] === s.label.split(': ')[1].split(' · ')[0])!)
+        expect(numerals[at]).toBe(q.item)
+        for (const n of numerals) expect(level.items).toContain(n)
+        const song = q.events!.slice(q.answerFrom ?? 0)
+        // home: from the key when it is played, else from the I chord's bass, else from any chord's bass and its numeral
+        const tonic = (Math.min(...q.steps![0].notes) - NUMERAL[numerals[0]][0] + 120) % 12
+        if (q.answerFrom !== undefined) expect(Math.min(...q.events![0].notes) % 12).toBe(tonic)
+        q.steps!.forEach((s, i) => {
+          const [root, minor] = NUMERAL[numerals[i]]
+          const want = triad(tonic + root, minor)
+          expect(new Set(s.notes.map((m) => m % 12))).toEqual(want)
+          expect(Math.min(...s.notes) % 12).toBe((tonic + root) % 12)
+          expect(pcOf(s.label.split(' · ')[1].match(/^[A-G][♯♭]*/)![0])).toBe((tonic + root) % 12)
+        })
+        // every note sounds over the chord of its bar: two passes of four bars, each bar starting with a bass note (below C3)
+        const bassTimes = [...new Set(song.filter((e) => e.notes.some((m) => m < 48)).map((e) => e.time))].sort((x, y) => x - y)
+        expect([8, 16]).toContain(bassTimes.length)
+        const barStarts = bassTimes.filter((_, i) => i % (bassTimes.length / 8) === 0)
+        for (const e of song) {
+          const barIndex = barStarts.filter((t) => t <= e.time + 1e-9).length - 1
+          expect(barIndex).toBeGreaterThanOrEqual(0)
+          const chordPcs = new Set(q.steps![barIndex % 4].notes.map((m) => m % 12))
+          for (const m of e.notes) expect(chordPcs.has(m % 12), `level ${level.id} bar ${barIndex}`).toBe(true)
+        }
+      }
+    }
+  })
+})

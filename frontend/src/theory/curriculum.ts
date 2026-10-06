@@ -132,7 +132,7 @@ export const STAGES: readonly Stage[] = [
       { id: 'bass-lines', name: 'Bass lines', kind: 'play', blurb: 'Play root, fifth and passing-note bass lines that lock in with the chords.', why: 'A good bass line makes simple chords sound full.', before: ['slash-chords', 'meter'] },
       { id: 'voice-leading', name: 'Voice leading', kind: 'play', blurb: 'Move from chord to chord by the smallest steps, keeping common notes.', why: 'The difference between blocky chord jumping and smooth professional-sounding accompaniment.', before: ['slash-chords', 'diatonic-chords'] },
       { id: 'transposition', name: 'Transposition', kind: 'theory', blurb: 'Play a song or progression in a different key.', why: 'Singers need songs in their own range. It is also the best test of whether you understand a song.', before: ['circle-of-fifths', 'nashville'] },
-      { id: 'by-ear', name: 'Finding the chords of a song by ear', kind: 'ear', blurb: 'Listen to a song and work out its chords and key.', why: 'The goal of most of this map: hear a song, then play it.', before: ['progressions', 'scale-degrees', 'slash-chords'] },
+      { id: 'by-ear', name: 'Finding the chords of a song by ear', kind: 'ear', blurb: 'Listen to a song and work out its chords and key.', why: 'The goal of most of this map: hear a song, then play it.', before: ['progressions', 'scale-degrees', 'slash-chords'] , exerciseId: 'by-ear' },
     ],
   },
 ]

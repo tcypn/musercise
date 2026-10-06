@@ -57,6 +57,7 @@ function setting(question: Question): number {
 export function sameSetting(exercise: ExerciseDef, level: Level, question: Question, itemId: string, rand: () => number = Math.random): Question | null {
   const item = exercise.items.find((i) => i.id === itemId)
   if (!item) return null
+  if (question.swap) return question.swap(itemId)
   const want = setting(question)
   let sameNote: Question | null = null
   for (let tries = 0; tries < 1500; tries++) {

@@ -1,4 +1,5 @@
 import type { ExerciseDef, ExerciseId, Item, Level } from '../types'
+import { byEarExercise } from './byEar'
 import { cadencesExercise } from './cadences'
 import { chordFunctionExercise } from './chordFunction'
 import { chordsExercise } from './chords'
@@ -31,9 +32,10 @@ export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   'slash-chords': slashChordsExercise,
   'chord-tones': chordTonesExercise,
   'two-five-one': twoFiveOneExercise,
+  'by-ear': byEarExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)

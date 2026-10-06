@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Fifteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones** and **ii-V-I**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Sixteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I** and **finding the chords by ear**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -271,6 +271,23 @@ The move behind jazz, gospel and R&B harmony: ii, V, then I (Dm7 G7 Cmaj7 in C).
 | 8 | two ii-V-Is in a row: where does the second go? |
 | 9 | R&B colours: 9ths and 13ths |
 | 10 | everything mixed |
+
+### Finding the chords by ear (ear)
+
+The capstone. Hear a four-chord loop played like a song (twice), and find the chord the question asks for: "Which chord is number 3?". Answer with a Roman numeral: I, ii, iii, IV, V, vi or ♭VII. After the answer every chord of the loop is shown ("1: I · C", "2: V · G", ...); tap one to hear it alone. Piano only: the playing gets busier level by level.
+
+| Level | Question |
+| --- | --- |
+| 1 | I, IV, V, vi; block chords; key first |
+| 2 | add ii |
+| 3 | bass note, then the chord |
+| 4 | broken chords, like a ballad |
+| 5 | pop comping rhythm |
+| 6 | a tune on top |
+| 7 | loops that start away from I |
+| 8 | no key first: find home yourself |
+| 9 | add iii and ♭VII |
+| 10 | everything mixed, faster |
 
 ### Listening aids
 
