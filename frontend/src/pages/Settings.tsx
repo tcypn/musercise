@@ -65,15 +65,23 @@ export function Settings() {
         </div>
       )}
       {waiting > 0 && <p className="quiet">{waiting} {waiting === 1 ? 'session is' : 'sessions are'} saved on this device and not uploaded yet.</p>}
-      <details>
-        <summary className="quiet">App version {APP_VERSION} · build {__BUILD__}</summary>
-        {CHANGELOG.map((v) => (
-          <div key={v.version}>
-            <h3>{v.version} <span className="quiet">· {v.date}</span></h3>
-            <ul>{v.changes.map((c) => <li key={c}>{c}</li>)}</ul>
-          </div>
-        ))}
-      </details>
+      <div className="about">
+        <p className="about-head">
+          <strong>Musercise</strong> <span className="version-pill">{APP_VERSION}</span> <span className="quiet">build {__BUILD__}</span>
+        </p>
+        <details>
+          <summary>What's new</summary>
+          <ol className="changelog">
+            {CHANGELOG.map((v) => (
+              <li key={v.version}>
+                <p className="changelog-head"><strong>{v.version}</strong> <span className="quiet">{v.date}</span></p>
+                <ul>{v.changes.map((c) => <li key={c}>{c}</li>)}</ul>
+              </li>
+            ))}
+          </ol>
+        </details>
+        <p className="about-credit">Piano sounds: Salamander Grand Piano by Alexander Holm, CC BY 3.0.</p>
+      </div>
     </section>
   )
 }

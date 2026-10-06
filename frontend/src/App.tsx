@@ -44,9 +44,6 @@ function Shell() {
             <Route path="*" element={<Learn />} />
           </Routes>
         </main>
-        <footer className="site-footer">
-          Piano sounds: Salamander Grand Piano by Alexander Holm, CC BY 3.0.
-        </footer>
       </div>
       <TabBar />
     </div>
