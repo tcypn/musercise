@@ -88,10 +88,14 @@ export const STACK: Readonly<Record<string, readonly number[]>> = {
   m7: [0, 3, 7, 10],
   '7': [0, 4, 7, 10],
   m7b5: [0, 3, 6, 10],
+  maj9: [0, 4, 7, 11, 14],
+  m9: [0, 3, 7, 10, 14],
+  '9': [0, 4, 7, 10, 14],
+  '13': [0, 4, 10, 14, 21], // the 5th left out, as pianists play it
 }
 
 /** Chord type as written after the root: C, Cm, Cdim, Cmaj7, Cm7, C7, Cm7♭5, Caug, Cmaj9, C9, Cm9. */
-export const SUFFIX: Readonly<Record<string, string>> = { maj: '', min: 'm', dim: 'dim', maj7: 'maj7', m7: 'm7', '7': '7', m7b5: 'm7♭5', aug: 'aug', maj9: 'maj9', '9': '9', m9: 'm9' }
+export const SUFFIX: Readonly<Record<string, string>> = { maj: '', min: 'm', dim: 'dim', maj7: 'maj7', m7: 'm7', '7': '7', m7b5: 'm7♭5', aug: 'aug', maj9: 'maj9', '9': '9', m9: 'm9', '13': '13' }
 
 export const chordName = (root: Note, type: string): string => `${noteLabel(root)}${SUFFIX[type]}`
 

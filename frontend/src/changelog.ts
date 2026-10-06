@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.17.0', date: '2026-10-06', changes: ['New lesson: ii-V-I'] },
   { version: '1.16.0', date: '2026-10-06', changes: ['App version in Settings, with this list of what each version changed'] },
   { version: '1.15.0', date: '2026-10-06', changes: ['New lesson: chord tones and guide tones'] },
   { version: '1.14.0', date: '2026-10-06', changes: ['New lesson: inversions and slash chords'] },

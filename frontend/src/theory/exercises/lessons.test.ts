@@ -956,3 +956,57 @@ describe('chord tones and guide tones', () => {
     expect(q.steps!.map((s) => s.label)).toEqual(['C · C E G', 'E · the 3rd of C'])
   })
 })
+
+describe('ii-V-I', () => {
+  const lesson = EXERCISES['two-five-one']
+  // Independent theory: chord shapes as semitones above the root, which shapes fit each place of a ii-V-I,
+  // and how far above home each target lands.
+  const SHAPES: Record<string, number[]> = {
+    min: [0, 3, 7], m7: [0, 3, 7, 10], m9: [0, 3, 7, 10, 2], dim: [0, 3, 6], m7b5: [0, 3, 6, 10],
+    maj: [0, 4, 7], '7': [0, 4, 7, 10], '9': [0, 4, 7, 10, 2], '13': [0, 4, 10, 2, 9], maj7: [0, 4, 7, 11], maj9: [0, 4, 7, 11, 2],
+  }
+  const FITS = {
+    major: [['min', 'm7', 'm9'], ['maj', '7', '9', '13'], ['maj', 'maj7', 'maj9']],
+    minor: [['dim', 'm7b5'], ['maj', '7', '9', '13'], ['min', 'm7', 'm9']],
+  }
+  const TARGET: Record<string, [number, 'major' | 'minor']> = { major: [0, 'major'], minor: [0, 'minor'], 'to-IV': [5, 'major'], 'to-V': [7, 'major'], 'to-vi': [9, 'minor'], 'to-ii': [2, 'minor'] }
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+  const shapeOf = (notes: number[]) => {
+    const bass = Math.min(...notes)
+    const rel = [...new Set(notes.map((m) => (m - bass + 120) % 12))].sort((a, b) => a - b)
+    return Object.keys(SHAPES).filter((k) => JSON.stringify([...new Set(SHAPES[k].map((x) => x % 12))].sort((a, b) => a - b)) === JSON.stringify(rel))
+  }
+
+  it('plays ii, V and the target a 5th apart, with the right chords, landing where the answer says', () => {
+    const rand = seeded(71)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 120, rand)) {
+        const chords = q.events!.slice(q.answerFrom ?? 0).map((e) => e.notes)
+        expect(q.steps!.map((s) => s.notes)).toEqual(chords)
+        expect([3, 6]).toContain(chords.length)
+        const tonic = q.answerFrom !== undefined ? Math.min(...q.events![0].notes) % 12 : level.id === 1 ? 0 : null
+        for (let k = 0; k < chords.length; k += 3) {
+          const three = chords.slice(k, k + 3)
+          const bass = three.map((c) => Math.min(...c) % 12)
+          expect((bass[1] - bass[0] + 12) % 12).toBe(5)
+          expect((bass[2] - bass[1] + 12) % 12).toBe(5)
+          const last = k + 3 === chords.length
+          const kind = last ? TARGET[q.item][1] : FITS.major[0].some((s) => shapeOf(three[0]).includes(s)) ? 'major' : 'minor'
+          three.forEach((c, i) => expect(FITS[kind][i].some((s) => shapeOf(c).includes(s)), `level ${level.id} ${q.item} chord ${k + i}`).toBe(true))
+          if (last && tonic !== null) expect((bass[2] - tonic + 12) % 12).toBe(TARGET[q.item][0])
+        }
+        q.steps!.forEach((s, i) => {
+          const name = s.label.split(' · ')[1]
+          expect(pcOf(name.match(/^[A-G][♯♭]*/)![0])).toBe(Math.min(...chords[i]) % 12)
+        })
+      }
+    }
+  })
+
+  it('explains in plain words', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 40, seeded(3)).find((x) => x.item === 'major')!
+    expect(lesson.describe(q)).toBe('Dm G C. A major ii-V-I: minor ii, major V, settling home on a major chord.')
+    expect(q.steps!.map((s) => s.label)).toEqual(['ii · Dm', 'V · G', 'I · C'])
+  })
+})

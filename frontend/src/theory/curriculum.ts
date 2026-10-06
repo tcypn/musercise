@@ -93,7 +93,7 @@ export const STAGES: readonly Stage[] = [
       { id: 'cadences', name: 'Cadences', kind: 'ear', blurb: 'Hear the endings of phrases: authentic (V-I), plagal (IV-I), half and deceptive.', why: 'Cadences are the punctuation of music, in classical pieces and in songs alike.', before: ['chord-function'] , exerciseId: 'cadences' },
       { id: 'modulation', name: 'Key changes', kind: 'ear', blurb: 'Hear when a song moves to a new key, such as a lift up a step for the last chorus.', why: 'You will meet key changes in pop songs, ballads and classical pieces. Hearing one lets you follow it.', before: ['progressions'] },
       { id: 'borrowed-chords', name: 'Borrowed and secondary chords', kind: 'ear', blurb: 'Hear chords that step outside the key, such as a minor iv in a major key or V/V.', why: 'They add colour to R&B and pop. Worth learning once the basic progressions are easy.', before: ['progressions'], later: true },
-      { id: 'two-five-one', name: 'ii-V-I', kind: 'ear', blurb: 'Hear the classic jazz progression in major and minor keys.', why: 'The backbone of jazz harmony. Skip it for now if jazz is a later goal.', before: ['progressions', 'extensions'], later: true },
+      { id: 'two-five-one', name: 'ii-V-I', kind: 'ear', blurb: 'Hear the classic jazz progression in major and minor keys.', why: 'The backbone of jazz harmony. Skip it for now if jazz is a later goal.', before: ['progressions', 'extensions'], exerciseId: 'two-five-one' },
     ],
   },
   {

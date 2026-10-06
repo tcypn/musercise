@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Fourteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale** and **chord tones and guide tones**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Fifteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones** and **ii-V-I**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -253,6 +253,23 @@ Hear a chord, then one melody note above it, and say what the note is in the cho
 | 7 | out: a note that clashes with the chord |
 | 8 | any root, melody up to C6 |
 | 9 | the same note over two chords: name it over the second |
+| 10 | everything mixed |
+
+### ii-V-I (ear)
+
+The move behind jazz, gospel and R&B harmony: ii, V, then I (Dm7 G7 Cmaj7 in C). Hear it in major and minor (Dm7♭5 G7 Cm7), then hear where a ii-V-I is heading when it leads away from home: to IV (Gm7 C7 F), V, vi or ii. After the answer every chord is shown ("ii7 of IV · Gm7", "V7 of IV · C7", "IV · F"); tap one to hear it alone.
+
+| Level | Question |
+| --- | --- |
+| 1 | major or minor, triads, in C |
+| 2 | with 7th chords, any key |
+| 3 | key first: lands home or on IV |
+| 4 | add V |
+| 5 | add vi (a minor ii-V-i) |
+| 6 | add ii |
+| 7 | less help: only the home chord first |
+| 8 | two ii-V-Is in a row: where does the second go? |
+| 9 | R&B colours: 9ths and 13ths |
 | 10 | everything mixed |
 
 ### Listening aids
