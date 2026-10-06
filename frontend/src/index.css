@@ -187,7 +187,7 @@ a.level-link:hover .level-title { text-decoration: underline; text-decoration-co
 .meter span.low { background: var(--madder-tint); border-right: 3px solid var(--madder); }
 .meter em { position: relative; font: 600 0.8rem/1.4rem var(--sans); font-style: normal; padding-left: 0.5rem; }
 
-.form { display: grid; gap: 1rem; margin-top: 1.5rem; max-width: 26rem; }
+.form { display: grid; gap: 1rem; margin-top: 1.5rem; }
 .form label { display: grid; gap: 0.3rem; font-weight: 600; }
 .form input { font: 400 1rem var(--sans); padding: 0.65rem 0.75rem; border: 1.5px solid var(--line); border-radius: 0.5rem; background: var(--paper); min-height: 2.75rem; }
 
