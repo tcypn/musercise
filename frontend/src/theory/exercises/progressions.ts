@@ -4,7 +4,7 @@ import type { ExerciseDef, Item, Level, Mode, Question } from '../types'
 
 type Type = 'maj' | 'min' | 'maj7' | 'm7' | '7'
 
-interface Degree {
+export interface Degree {
   /** Semitones above the tonic, and letters above the tonic's letter, of the chord's root. */
   semis: number
   letters: number
@@ -13,7 +13,7 @@ interface Degree {
 }
 
 /** The chords the progressions use, by Roman numeral. */
-const MAJOR: Record<string, Degree> = {
+export const MAJOR: Record<string, Degree> = {
   I: { semis: 0, letters: 0, triad: 'maj', seventh: 'maj7' },
   ii: { semis: 2, letters: 1, triad: 'min', seventh: 'm7' },
   iii: { semis: 4, letters: 2, triad: 'min', seventh: 'm7' },
@@ -21,7 +21,7 @@ const MAJOR: Record<string, Degree> = {
   V: { semis: 7, letters: 4, triad: 'maj', seventh: '7' },
   vi: { semis: 9, letters: 5, triad: 'min', seventh: 'm7' },
 }
-const MINOR: Record<string, Degree> = {
+export const MINOR: Record<string, Degree> = {
   i: { semis: 0, letters: 0, triad: 'min', seventh: 'm7' },
   III: { semis: 3, letters: 2, triad: 'maj', seventh: 'maj7' },
   iv: { semis: 5, letters: 3, triad: 'min', seventh: 'm7' },

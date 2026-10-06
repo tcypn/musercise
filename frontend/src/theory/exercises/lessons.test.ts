@@ -817,3 +817,51 @@ describe('pentatonic', () => {
     expect(lesson.describe(q)).toMatch(/^In C major: ([A-G] ){2,}C\. The tune ended on C, the home note \(1\)\.$/)
   })
 })
+
+describe('cadences', () => {
+  const lesson = EXERCISES.cadences
+  // Independent theory: chord tones as semitones above the tonic.
+  const MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11]
+  const MINOR_NOTES = [0, 2, 3, 5, 7, 8, 10, 11] // natural minor plus the raised 7th of V
+  const triad = (root: number, minor: boolean) => [root, root + (minor ? 3 : 4), root + 7].map((x) => x % 12).sort((a, b) => a - b)
+  const dom7 = (root: number) => [root, root + 4, root + 7, root + 10].map((x) => x % 12).sort((a, b) => a - b)
+  /** The last two chords each cadence must end with, as [root, minor?] above the tonic (null = any chord). */
+  const ENDINGS: Record<string, Record<string, [[number, boolean] | null, [number, boolean]]>> = {
+    major: { perfect: [[7, false], [0, false]], plagal: [[5, false], [0, false]], half: [null, [7, false]], deceptive: [[7, false], [9, true]] },
+    minor: { perfect: [[7, false], [0, true]], plagal: [[5, true], [0, true]], half: [null, [7, false]], deceptive: [[7, false], [8, false]] },
+  }
+
+  it('ends every phrase with the cadence it names, using only chords of the key', () => {
+    const rand = seeded(41)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 120, rand)) {
+        const tonicPc = Math.min(...q.events![0].notes) % 12
+        if (level.id <= 4) expect(tonicPc).toBe(0)
+        const chords = q.events!.slice(q.answerFrom).map((e) => e.notes)
+        expect(chords.length).toBeGreaterThanOrEqual(3)
+        expect(chords.length).toBeLessThanOrEqual(5)
+        const rel = (notes: number[]) => [...new Set(notes.map((m) => (m - tonicPc + 120) % 12))].sort((a, b) => a - b)
+        const bass = (notes: number[]) => (Math.min(...notes) - tonicPc + 120) % 12
+        for (let i = 1; i < chords.length; i++) expect(rel(chords[i])).not.toEqual(rel(chords[i - 1]))
+        const scale = q.mode === 'major' ? MAJOR_SCALE : MINOR_NOTES
+        for (const c of chords) for (const pc of rel(c)) expect(scale, `level ${level.id} ${q.item}`).toContain(pc)
+        const [pre, last] = ENDINGS[q.mode][q.item]
+        const lastChord = chords[chords.length - 1]
+        expect(bass(lastChord)).toBe(last[0])
+        expect(rel(lastChord)).toEqual(triad(last[0], last[1]))
+        if (pre) {
+          const p = chords[chords.length - 2]
+          expect(bass(p)).toBe(pre[0])
+          expect([triad(pre[0], pre[1]), ...(pre[0] === 7 ? [dom7(7)] : [])]).toContainEqual(rel(p))
+        }
+        expect(q.steps!.map((s) => s.notes)).toEqual(chords)
+      }
+    }
+  })
+
+  it('explains in plain words', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 40, seeded(1)).find((x) => x.item === 'perfect')!
+    expect(lesson.describe(q)).toBe('Perfect cadence (V–I) in C major: C G C. A full stop: the tension of V resolves home.')
+    expect(q.steps!.map((s) => s.label)).toEqual(['I · C', 'V · G', 'I · C'])
+  })
+})

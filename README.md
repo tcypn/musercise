@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Eleven are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions** and **pentatonic scale**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Twelve are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences** and **pentatonic scale**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -185,6 +185,23 @@ Two labelled parts again: **1 · The key**, then **2 · Name this progression**.
 | 7 | minor patterns: i-iv-V-i, i-VI-III-VII, i-VII-VI-V |
 | 8 | seventh chords |
 | 9 | less help, plus the eight-chord canon progression |
+| 10 | everything mixed |
+
+### Cadences (ear)
+
+A cadence is how a phrase ends, the punctuation of music. Hear the key, then a short phrase of three to five chords, and name the ending: **perfect** (V–I, a full stop), **plagal** (IV–I, the "amen"), **half** (stops on V, a comma) or **deceptive** (V–vi, a surprise). After the answer every chord is shown ("I · C", "V7 · G7", "vi · Am"); tap one to hear it alone.
+
+| Level | Question |
+| --- | --- |
+| 1 | perfect or half, in C major |
+| 2 | add plagal |
+| 3 | add deceptive |
+| 4 | V7 instead of V |
+| 5 | any key |
+| 6 | longer phrases with different chords before the ending |
+| 7 | less help: only the home chord first |
+| 8 | minor keys: V–i, iv–i, half on V, V–VI |
+| 9 | minor, less help |
 | 10 | everything mixed |
 
 ### Pentatonic scale (ear)
