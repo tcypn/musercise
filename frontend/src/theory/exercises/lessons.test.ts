@@ -1104,3 +1104,45 @@ describe('minor scales', () => {
     }
   })
 })
+
+describe('modes', () => {
+  const lesson = EXERCISES.modes
+  // Independent theory: the modes as the major scale started from each of its notes.
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11]
+  const START: Record<string, number> = { ionian: 0, dorian: 1, phrygian: 2, lydian: 3, mixolydian: 4, aeolian: 5, locrian: 6 }
+  const modeSemis = (id: string) => MAJOR.map((_, i) => (MAJOR[(i + START[id]) % 7] - MAJOR[START[id]] + 12) % 12)
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+
+  it('plays the named mode over its home note, spelled with each letter once, and any vamp stays in the mode', () => {
+    const rand = seeded(101)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 100, rand)) {
+        const semis = [...modeSemis(q.item), 12]
+        const home = q.root
+        const drone = q.events!.find((e) => e.notes.length === 1 && e.notes[0] === home - 24)!
+        expect(drone).toBeDefined()
+        const run = q.events!.filter((e) => e.time > drone.time && e.notes.length === 1).map((e) => e.notes[0])
+        const idx = run.map((m) => semis.indexOf(m - home))
+        expect(idx.every((i) => i >= 0), `level ${level.id} ${q.item}`).toBe(true)
+        for (let i = 1; i < idx.length; i++) expect(Math.abs(idx[i] - idx[i - 1])).toBe(1)
+        expect(idx.includes(0) && idx.includes(7)).toBe(true)
+        if (level.id <= 5) expect(home % 12).toBe(0)
+        const vamp = q.events!.filter((e) => e.notes.length > 1)
+        for (const e of vamp) for (const m of e.notes) expect(semis.map((s) => s % 12)).toContain((m - home + 120) % 12)
+        if (vamp.length) expect(Math.min(...vamp[0].notes) % 12).toBe(home % 12)
+        const runSteps = q.steps!.slice(q.steps!.findIndex((s) => s.label.startsWith('Home')) + 1)
+        expect(runSteps.map((s) => s.notes[0])).toEqual(run)
+        const names = runSteps.map((s) => s.label.split(' · ')[1])
+        names.forEach((n, i) => expect(pcOf(n)).toBe(run[i] % 12))
+        const homeLetter = LETTERS.indexOf(names[idx.indexOf(0)][0])
+        names.forEach((n, i) => expect(n[0]).toBe(LETTERS[(homeLetter + idx[i]) % 7]))
+        const other = level.items.find((x) => x !== q.item)!
+        const alt = sameSetting(lesson, level, q, other)!
+        expect(alt.root).toBe(q.root)
+        expect(alt.events!.length).toBe(q.events!.length)
+      }
+    }
+  })
+})

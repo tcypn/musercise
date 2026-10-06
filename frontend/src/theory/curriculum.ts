@@ -67,7 +67,7 @@ export const STAGES: readonly Stage[] = [
       { id: 'scale-degrees', name: 'Scale degrees', kind: 'ear', blurb: 'Hear a key, then a note, and say its number in the scale (1 to 7).', why: 'This is the core of playing by ear: you hear a melody as numbers, so you can play it in any key.', before: ['intervals', 'major-scale'], exerciseId: 'scale-degrees' },
       { id: 'minor-scales', name: 'Minor scales', kind: 'ear', blurb: 'Tell natural, harmonic and melodic minor apart, and hear how they differ from major.', why: 'Much of R&B, pop ballads and classical music is in minor keys.', before: ['major-scale'] , exerciseId: 'minor-scales' },
       { id: 'pentatonic', name: 'Pentatonic and blues scales', kind: 'ear', blurb: 'Hear and play the five-note scales that almost always sound good over a song.', why: 'The safest first tool for improvising, and the sound of many R&B and pop melodies.', before: ['major-scale'], exerciseId: 'pentatonic' },
-      { id: 'modes', name: 'Modes', kind: 'ear', blurb: 'Hear the seven modes, such as Dorian and Mixolydian, as different flavours of one scale.', why: 'Used to colour an improvisation over one chord. More important in jazz, so it can wait.', before: ['minor-scales'], later: true },
+      { id: 'modes', name: 'Modes', kind: 'ear', blurb: 'Hear the seven modes, such as Dorian and Mixolydian, as different flavours of one scale.', why: 'Used to colour an improvisation over one chord. More important in jazz, so it can wait.', before: ['minor-scales'], exerciseId: 'modes' },
     ],
   },
   {
