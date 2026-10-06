@@ -865,3 +865,46 @@ describe('cadences', () => {
     expect(q.steps!.map((s) => s.label)).toEqual(['I · C', 'V · G', 'I · C'])
   })
 })
+
+describe('inversions and slash chords', () => {
+  const lesson = EXERCISES['slash-chords']
+  // Independent theory: chord tones as semitones above the root, and the tone each answer puts in the bass.
+  const CHORDS: Record<string, number[]> = { '': [0, 4, 7], m: [0, 3, 7], '7': [0, 4, 7, 10], maj7: [0, 4, 7, 11], m7: [0, 3, 7, 10] }
+  const TONE: Record<string, number> = { root: 0, '3rd': 1, '5th': 2, '7th': 3 }
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+
+  it('puts the answer\'s chord tone in the bass and plays the whole chord above it', () => {
+    const rand = seeded(53)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 120, rand)) {
+        const notes = q.answerFrom !== undefined ? q.events![q.answerFrom].notes : q.notes
+        expect(q.steps!.map((s) => s.notes)).toEqual([notes])
+        const [symbol, spelled] = q.steps![0].label.split(' · ')
+        const [, rootName, suffix, bassName] = symbol.match(/^([A-G][♯♭]*)(m7|maj7|7|m|)(?:\/([A-G][♯♭]*))?$/)!
+        const stack = CHORDS[suffix].map((s) => (pcOf(rootName) + s) % 12)
+        const bassPc = stack[TONE[q.item]]
+        const low = Math.min(...notes)
+        expect(low % 12, `level ${level.id} ${symbol}`).toBe(bassPc)
+        expect(notes[0]).toBe(low)
+        expect(new Set(notes.map((m) => m % 12))).toEqual(new Set(stack))
+        if (q.item === 'root') expect(bassName).toBeUndefined()
+        else {
+          expect(pcOf(bassName)).toBe(bassPc)
+          // the bass is spelled as the chord tone: the 3rd two letters above the root, the 5th four, the 7th six
+          expect(bassName[0]).toBe(LETTERS[(LETTERS.indexOf(rootName[0]) + 2 * TONE[q.item]) % 7])
+        }
+        expect(spelled.split(' ').map(pcOf)).toEqual(notes.map((m) => m % 12))
+      }
+    }
+  })
+
+  it('explains in plain words', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 40, seeded(8)).find((x) => x.item === '3rd' && x.steps![0].label.startsWith('C/E'))!
+    expect(lesson.describe(q)).toBe('C/E: a C major chord with its 3rd, E, in the bass.')
+    expect(q.steps![0].label).toBe('C/E · E G C')
+    const f = buildQuestions(lesson, lesson.levels[0], 60, seeded(9)).find((x) => x.item === '3rd' && x.steps![0].label.startsWith('F/A'))!
+    expect(lesson.describe(f)).toBe('F/A: an F major chord with its 3rd, A, in the bass.')
+  })
+})

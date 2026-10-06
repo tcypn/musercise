@@ -72,7 +72,7 @@ describe('learning path', () => {
 
   it('reports ready counts per stage', () => {
     const path = buildPath(emptyProgress())
-    expect(path.map((s) => s.ready)).toEqual([2, 3, 4, 3, 0, 0, 0])
+    expect(path.map((s) => s.ready)).toEqual([2, 3, 5, 3, 0, 0, 0])
     expect(path[4].nodes.every((n) => n.state === 'soon')).toBe(true) // rhythm: nothing built yet
   })
 

@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Twelve are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences** and **pentatonic scale**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Thirteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords** and **pentatonic scale**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -202,6 +202,23 @@ A cadence is how a phrase ends, the punctuation of music. Hear the key, then a s
 | 7 | less help: only the home chord first |
 | 8 | minor keys: V–i, iv–i, half on V, V–VI |
 | 9 | minor, less help |
+| 10 | everything mixed |
+
+### Inversions and slash chords (ear)
+
+Hear a chord and say which of its notes is in the bass: the **root** (C), the **3rd** (C/E, "C over E"), the **5th** (C/G) or, with 7th chords, the **7th** (C7/B♭). Slash chords make bass lines walk smoothly in pop and R&B. After the answer the chord is shown with its name and notes, bass first ("C/E · E G C").
+
+| Level | Question |
+| --- | --- |
+| 1 | root or 3rd in the bass, major chords on C, F and G |
+| 2 | add the 5th |
+| 3 | any root |
+| 4 | minor chords too |
+| 5 | a low left-hand bass note under the chord |
+| 6 | the chord spread wide above the bass |
+| 7 | 7th chords, and the 7th in the bass |
+| 8 | broken, from the bass up |
+| 9 | in a key: the key first, then I, IV or V |
 | 10 | everything mixed |
 
 ### Pentatonic scale (ear)
