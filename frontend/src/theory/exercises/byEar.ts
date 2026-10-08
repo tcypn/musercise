@@ -1,4 +1,5 @@
-import { chordName, keyContext, keyLabel, STACK, voiceProgression, type VoicedChord } from '../harmony'
+import { chordName, keyContext, keyLabel, STACK, voiceProgression } from '../harmony'
+import { barEvents, type Pattern } from '../comping'
 import type { TimedEvent } from '../practice'
 import { spellFrom } from '../spelling'
 import type { ExerciseDef, Item, Level, Mode, Question } from '../types'
@@ -22,7 +23,7 @@ const LOOPS: readonly string[][] = [
   ['I', 'IV', 'vi', 'V'], ['I', 'vi', 'ii', 'V'], ['I', 'iii', 'IV', 'V'], ['I', 'bVII', 'IV', 'I'], ['I', 'V', 'IV', 'V'], ['ii', 'V', 'I', 'vi'],
 ]
 
-type Texture = 'block' | 'bass' | 'broken' | 'pop' | 'melody'
+type Texture = Extract<Pattern, 'held' | 'bass' | 'broken' | 'pop' | 'melody'>
 interface Setup {
   chords: readonly string[]
   textures: readonly Texture[]
@@ -35,8 +36,8 @@ const FOUR = ['I', 'IV', 'V', 'vi']
 const FIVE = ['I', 'ii', 'IV', 'V', 'vi']
 const ALL = CHORDS.map((c) => c.id)
 const SETUP: Record<number, Setup> = {
-  1: { chords: FOUR, textures: ['block'], keyFirst: true, free: false, bpm: 90 },
-  2: { chords: FIVE, textures: ['block'], keyFirst: true, free: false, bpm: 90 },
+  1: { chords: FOUR, textures: ['held'], keyFirst: true, free: false, bpm: 90 },
+  2: { chords: FIVE, textures: ['held'], keyFirst: true, free: false, bpm: 90 },
   3: { chords: FIVE, textures: ['bass'], keyFirst: true, free: false, bpm: 90 },
   4: { chords: FIVE, textures: ['broken'], keyFirst: true, free: false, bpm: 80 },
   5: { chords: FIVE, textures: ['pop'], keyFirst: true, free: false, bpm: 96 },
@@ -44,7 +45,7 @@ const SETUP: Record<number, Setup> = {
   7: { chords: FIVE, textures: ['bass', 'broken', 'pop', 'melody'], keyFirst: true, free: true, bpm: 96 },
   8: { chords: FIVE, textures: ['bass', 'broken', 'pop', 'melody'], keyFirst: false, free: true, bpm: 96 },
   9: { chords: ALL, textures: ['bass', 'broken', 'pop', 'melody'], keyFirst: false, free: true, bpm: 96 },
-  10: { chords: ALL, textures: ['block', 'bass', 'broken', 'pop', 'melody'], keyFirst: false, free: true, bpm: 112 },
+  10: { chords: ALL, textures: ['held', 'bass', 'broken', 'pop', 'melody'], keyFirst: false, free: true, bpm: 112 },
 }
 
 const MAJOR = ['major'] as const satisfies readonly Mode[]
@@ -63,7 +64,6 @@ const levels: readonly Level[] = [
 ]
 
 const pick = <T,>(list: readonly T[], rand: () => number): T => list[Math.floor(rand() * list.length)]
-const atOrAbove = (from: number, pc: number) => from + ((((pc - from) % 12) + 12) % 12)
 
 /** A loop with the asked chord in it, and the position (0 to 3) that is asked. */
 function loopFor(item: string, setup: Setup, rand: () => number): { loop: string[]; at: number } {
@@ -81,24 +81,6 @@ function loopFor(item: string, setup: Setup, rand: () => number): { loop: string
   }
 }
 
-/** The notes of one bar of a chord, in the level's style. */
-function bar(v: VoicedChord, texture: Texture, t: number, beat: number, rand: () => number): TimedEvent[] {
-  const upper = v.upper
-  const ev = (time: number, hold: number, notes: number[]) => ({ time: t + time * beat, hold: hold * beat, notes })
-  if (texture === 'block') return [ev(0, 3.8, [v.bass, ...upper])]
-  if (texture === 'bass') return [ev(0, 3.8, [v.bass]), ev(1, 2.8, upper)]
-  if (texture === 'broken') {
-    const order = [0, 1, 2, 1, 0, 1, 2].map((i) => upper[Math.min(i, upper.length - 1)])
-    return [ev(0, 3.8, [v.bass]), ...order.map((m, i) => ev(0.5 + i * 0.5, 0.75, [m]))]
-  }
-  const comp = [ev(0, 1.9, [v.bass]), ev(2, 1.9, [v.bass]), ev(0, 1.2, upper), ev(1.5, 0.8, upper), ev(2.5, 1.2, upper)]
-  if (texture === 'pop') return comp
-  // A tune of chord tones above the right hand, on beats 1 and 3.
-  const top = Math.max(...upper) + 1
-  const tones = upper.map((m) => atOrAbove(top, m % 12)).sort((a, b) => a - b)
-  return [...comp, ev(0, 1.8, [pick(tones, rand)]), ev(2, 1.8, [pick(tones, rand)])]
-}
-
 /** A repeatable random generator, so a swapped question keeps the same tune and rhythm. */
 function seeded(seed: number): () => number {
   let x = Math.floor(seed * 2147483646) + 1
@@ -114,7 +96,7 @@ function build(setup: Setup, item: string, mode: Mode, loop: string[], at: numbe
   const start = context.end + 0.9
   const beat = 60 / setup.bpm
   const song: TimedEvent[] = []
-  for (let pass = 0; pass < 2; pass++) voiced.forEach((v, i) => song.push(...bar(v, texture, start + (pass * 4 + i) * 4 * beat, beat, rand)))
+  for (let pass = 0; pass < 2; pass++) voiced.forEach((v, i) => song.push(...barEvents(v, texture, start + (pass * 4 + i) * 4 * beat, beat, rand)))
 
   const { tonic, label } = keyLabel(tonicPc, 'major')
   const names = chords.map((c) => chordName(spellFrom(tonic, [[c.letters, c.semis]])[0], c.type))

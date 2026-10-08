@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Eighteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales** and **modes**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Nineteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes** and **comping patterns**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -321,6 +321,23 @@ A low home note holds while a scale runs over it; name the mode. Each mode is on
 | 7 | a two-chord vamp only that mode has, then the scale |
 | 8 | runs going down |
 | 9 | add Locrian |
+| 10 | everything mixed |
+
+### Comping patterns (ear)
+
+How to accompany a singer instead of playing block chords on every beat. Hear a chord loop played in one accompaniment pattern and name it: **block** (both hands, every beat), **basic pop** (bass and 5th below, soft chords on every beat), **ballad** (held chord over a rolling left hand), **pop push** (chord on 1, the "&" of 2 and 4), **arpeggio**, **R&B** (short off-beat chords), **gospel** (left-hand octaves) and **waltz** (3/4). Listen first plays each one, to copy at the piano. After the answer the strip says how to play the pattern, and the chords of the loop are shown.
+
+| Level | Question |
+| --- | --- |
+| 1 | block or basic pop |
+| 2 | add ballad |
+| 3 | add pop push |
+| 4 | add arpeggio |
+| 5 | add R&B |
+| 6 | add gospel |
+| 7 | add waltz |
+| 8 | any key, other loops |
+| 9 | slow, medium and fast |
 | 10 | everything mixed |
 
 ### Listening aids

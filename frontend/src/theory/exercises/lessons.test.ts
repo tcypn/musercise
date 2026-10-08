@@ -1146,3 +1146,46 @@ describe('modes', () => {
     }
   })
 })
+
+describe('comping patterns', () => {
+  const lesson = EXERCISES.comping
+  // Independent description of each pattern, in beats: when the bass root itself sounds, and the last onset of a bar.
+  const ROOT_ON: Record<string, number[]> = { block: [0, 1, 2, 3], basic: [0], ballad: [0, 2], push: [0, 2], arpeggio: [0], rnb: [0, 3], gospel: [0, 2], waltz: [0] }
+  const LAST: Record<string, number> = { block: 3, basic: 3, ballad: 3.5, push: 3, arpeggio: 3.5, rnb: 3, gospel: 3, waltz: 2 }
+  const BEATS: Record<string, number> = { waltz: 3 }
+  const TRIADS: Record<string, [number, boolean]> = { I: [0, false], ii: [2, true], IV: [5, false], V: [7, false], vi: [9, true] }
+
+  it('plays the named pattern: its beats, its bass, and only notes of each bar\'s chord', () => {
+    const rand = seeded(113)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const events = q.events!
+        expect(q.steps!.length).toBe(4)
+        const tonic = q.root % 12
+        const numerals = q.steps!.map((s) => s.label.split(' · ')[0])
+        const chordPcs = numerals.map((n) => {
+          const [r, minor] = TRIADS[n]
+          return new Set([r, r + (minor ? 3 : 4), r + 7].map((x) => (tonic + x) % 12))
+        })
+        const beats = BEATS[q.item] ?? 4
+        // 8 bars (the loop twice); the last onset sits LAST beats into bar 8
+        const bar = Math.max(...events.map((e) => e.time)) / (7 + LAST[q.item] / beats)
+        const beat = bar / beats
+        const bassOf = q.steps!.map((s) => Math.min(...s.notes))
+        const rootOnsets = new Set<number>()
+        for (const e of events) {
+          const b = Math.floor((e.time + 1e-6) / bar)
+          expect(b).toBeLessThan(8)
+          for (const m of e.notes) expect(chordPcs[b % 4].has(m % 12), `${q.item} bar ${b}`).toBe(true)
+          const offset = Math.round(((e.time - b * bar) / beat) * 2) / 2
+          if (e.notes.includes(bassOf[b % 4])) rootOnsets.add(offset)
+        }
+        expect([...rootOnsets].sort((x, y) => x - y), q.item).toEqual(ROOT_ON[q.item])
+        const other = level.items.find((x) => x !== q.item)!
+        const alt = sameSetting(lesson, level, q, other)!
+        expect(alt.steps!.map((s) => s.label)).toEqual(q.steps!.map((s) => s.label))
+        expect(alt.item).toBe(other)
+      }
+    }
+  })
+})
