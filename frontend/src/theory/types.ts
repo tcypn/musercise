@@ -53,6 +53,8 @@ export interface Question {
   lit?: number[]
   /** After the answer, the chords of a progression one by one: each lights on the keyboard as it sounds, and can be tapped to hear alone. */
   steps?: { label: string; notes: number[] }[]
+  /** For each of `events`, the step it belongs to (null for the key played first). Needed when a step has several sounds. */
+  stepOf?: (number | null)[]
   /** Quiz lessons: the question in words, with keys to show on the keyboard while it is asked. */
   prompt?: { text: string; lit?: number[]; chart?: string }
   /** Quiz lessons: why the answer is right, in a sentence, shown after the answer. */

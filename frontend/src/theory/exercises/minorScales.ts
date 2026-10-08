@@ -63,6 +63,7 @@ function build(setup: Setup, kind: string, mode: Mode, tonicPc: number, directio
   return {
     root: home, item: kind, mode, notes: [home],
     events: [...context, ...run],
+    stepOf: [...context.map(() => null), ...run.map((_, i) => i)],
     ...(setup.homeFirst ? { answerFrom: context.length } : {}),
     steps,
     explain: `From ${noteLabel(tonic)}: ${[...notes, notes[0]].map(noteLabel).join(' ')}. This is ${BY_ID.get(kind)!.explain}`,

@@ -106,6 +106,7 @@ function makeQuestion(level: Level, item: Item, _asked: Mode, rand: () => number
   return {
     root: firstNotes[0], item: item.id, mode: keyMode, notes: firstNotes,
     events: [...context.events, ...events],
+    stepOf: [...context.events.map(() => null), ...events.map((_, i) => i)],
     ...(setup.help ? { answerFrom: context.events.length } : {}),
     lit: firstNotes,
     steps: events.map((e, i) => ({ label: `${chords[i].numeral} · ${names[i]}`, notes: e.notes })),

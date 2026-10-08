@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { playSequence, prepareAudio, stopSound } from '../../audio/piano'
-import { eventsFor } from '../../theory/playback'
+import { eventsFor, stepFor } from '../../theory/playback'
 import type { ExerciseDef, Item, Level, Question } from '../../theory/types'
 import { Keyboard } from '../Keyboard'
 import { Snail, Speaker } from '../dash/Icons'
@@ -15,6 +15,8 @@ interface Props {
 export function Listen({ exercise, level, items }: Props) {
   const [examples, setExamples] = useState<Record<string, Question>>({})
   const [playingId, setPlayingId] = useState<string | null>(null)
+  /** Which chord or note of the example is sounding, so the keyboard shows what you hear. */
+  const [step, setStep] = useState(0)
   const [slow, setSlow] = useState(false)
   const [error, setError] = useState<string>()
   const token = useRef(0)
@@ -31,7 +33,11 @@ export function Listen({ exercise, level, items }: Props) {
     setExamples((prev) => ({ ...prev, [item.id]: question }))
     setPlayingId(item.id)
     try {
-      const handle = await playSequence(eventsFor(exercise, question, slow))
+      setStep(0)
+      const handle = await playSequence(eventsFor(exercise, question, slow), (i) => {
+        const s = i === null || token.current !== mine ? null : stepFor(question, 'all', i)
+        if (s !== null) setStep(s)
+      })
       await handle.done
     } catch {
       setError('The piano could not play. Check your connection, then try again.')
@@ -65,7 +71,10 @@ export function Listen({ exercise, level, items }: Props) {
               </div>
               {q && (
                 <div className="lesson-keys">
-                  <Keyboard range={level.lowRange} lit={(q.lit ?? q.notes).map((midi) => ({ midi, role: midi === q.root ? 'first' : 'second' }))} />
+                  <Keyboard
+                    range={level.lowRange}
+                    lit={(q.steps ? q.steps[Math.min(playingId === item.id ? step : 0, q.steps.length - 1)].notes : (q.lit ?? q.notes)).map((midi, i) => ({ midi, role: (q.steps ? i === 0 : midi === q.root) ? 'first' : 'second' }))}
+                  />
                   <p className="hero-caption">{exercise.describe(q)}</p>
                 </div>
               )}

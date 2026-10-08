@@ -31,6 +31,18 @@ export function eventsFor(exercise: ExerciseDef, question: Question, slow = fals
   return question.notes.map((midi, i) => ({ time: i * gap, hold, notes: [midi] }))
 }
 
+/**
+ * Which step of the answer view an event belongs to, so the keyboard can follow the sound. `index` counts the events
+ * as played (after `part` slicing). Without a `stepOf` map, each event after the key is one step.
+ */
+export function stepFor(question: Question, part: Part, index: number): number | null {
+  if (!question.steps) return null
+  const full = part === 'question' && question.answerFrom !== undefined ? index + question.answerFrom : index
+  if (question.stepOf) return question.stepOf[full] ?? null
+  if (question.answerFrom === undefined || full < question.answerFrom) return null
+  return Math.min(full - question.answerFrom, question.steps.length - 1)
+}
+
 /** Slow only helps when notes come one after another. */
 export function canSlow(exercise: ExerciseDef, question: Question): boolean {
   return question.events ? question.events.some((e) => e.time > 0) : exercise.playStyle(question.mode).gap > 0

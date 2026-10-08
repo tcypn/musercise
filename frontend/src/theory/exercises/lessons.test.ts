@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { HIGHEST_MIDI, LOWEST_MIDI } from '../notes'
-import { eventsFor } from '../playback'
+import { eventsFor, stepFor } from '../playback'
 import { buildQuestions, sameSetting } from '../questions'
 import { QUESTIONS_PER_SESSION } from '../rules'
 import { DEGREE_SEMITONES } from '../harmony'
@@ -89,6 +89,31 @@ describe.each(EXERCISE_LIST.map((e) => [e.id, e] as const))('lesson %s', (_id, e
         const events = eventsFor(exercise, q)
         expect(events.length).toBeGreaterThan(0)
         expect(eventsFor(exercise, q, true).length).toBe(events.length)
+      }
+    }
+  })
+
+  it.skipIf(exercise.kind === 'quiz')('lights the keyboard with what is sounding: every sound belongs to a step, every step sounds', () => {
+    const rand = seeded(17)
+    for (const level of exercise.levels) {
+      for (const q of buildQuestions(exercise, level, 30, rand)) {
+        if (!q.steps || !q.events) continue
+        if (q.stepOf) expect(q.stepOf.length, `${exercise.id} level ${level.id}`).toBe(q.events.length)
+        const reached = new Set<number>()
+        let matching = 0, mapped = 0
+        q.events.forEach((e, i) => {
+          const s = stepFor(q, 'all', i)
+          if (s === null) return
+          expect(s).toBeGreaterThanOrEqual(0)
+          expect(s).toBeLessThan(q.steps!.length)
+          reached.add(s)
+          mapped++
+          const pcs = new Set(q.steps![s].notes.map((m) => m % 12))
+          if (e.notes.every((m) => pcs.has(m % 12))) matching++
+        })
+        expect(reached.size, `${exercise.id} level ${level.id}`).toBe(q.steps.length)
+        // passing notes are the only sounds outside their step
+        expect(matching / mapped, `${exercise.id} level ${level.id}`).toBeGreaterThanOrEqual(0.7)
       }
     }
   })

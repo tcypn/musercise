@@ -137,7 +137,7 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
   const what = item.id === 'out' ? 'not in the chord: it rubs and wants to move a step to a chord tone' : `the ${role.word}${item.id === '3' || item.id === '7' ? ', a guide tone' : ''}`
   const explain = `${before ? `Over ${before.symbol} the ${name} was ${roleOf(pitchClass(note), before) === 'not in the chord' ? 'not in the chord' : `the ${roleOf(pitchClass(note), before)}`}; over ` : 'Over '}${now.symbol} (${noteLabel(now.root)} ${WORD[now.type]}: ${spelled(now)}) the ${name} is ${what}.`
 
-  return { root: now.midi[0], item: item.id, mode, notes: [...now.midi, melody], events, steps, explain }
+  return { root: now.midi[0], item: item.id, mode, notes: [...now.midi, melody], events, stepOf: events.map((_, i) => i), steps, explain }
 }
 
 export const chordTonesExercise: ExerciseDef = {

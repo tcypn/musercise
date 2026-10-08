@@ -96,7 +96,14 @@ function build(setup: Setup, item: string, mode: Mode, loop: string[], at: numbe
   const start = context.end + 0.9
   const beat = 60 / setup.bpm
   const song: TimedEvent[] = []
-  for (let pass = 0; pass < 2; pass++) voiced.forEach((v, i) => song.push(...barEvents(v, texture, start + (pass * 4 + i) * 4 * beat, beat, rand)))
+  const stepOf: (number | null)[] = context.events.map(() => null)
+  for (let pass = 0; pass < 2; pass++) {
+    voiced.forEach((v, i) => {
+      const bar = barEvents(v, texture, start + (pass * 4 + i) * 4 * beat, beat, rand)
+      song.push(...bar)
+      stepOf.push(...bar.map(() => i))
+    })
+  }
 
   const { tonic, label } = keyLabel(tonicPc, 'major')
   const names = chords.map((c) => chordName(spellFrom(tonic, [[c.letters, c.semis]])[0], c.type))
@@ -105,6 +112,7 @@ function build(setup: Setup, item: string, mode: Mode, loop: string[], at: numbe
     // The root is home (C3 to B3), so a swapped question counts as the same setting even when chord 1 changes.
     root: 48 + tonicPc, item, mode, notes: [48 + tonicPc],
     events: [...context.events, ...song],
+    stepOf,
     ...(setup.keyFirst ? { answerFrom: context.events.length } : {}),
     prompt: { text: `Which chord is number ${at + 1}?` },
     lit: [asked.bass, ...asked.upper],

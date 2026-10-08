@@ -103,12 +103,14 @@ function build(setup: Setup, line: string, mode: Mode, loop: string[], tonicPc: 
   const beat = 60 / setup.bpm
   const bar = 4 * beat
   const song: TimedEvent[] = []
+  const stepOf: (number | null)[] = context.events.map(() => null)
   for (let pass = 0; pass < 2; pass++) {
     voiced.forEach((v, i) => {
       const t = start + (pass * 4 + i) * bar
       if (setup.busy) song.push(...[0, 1.5, 3].map((b, k) => chordEvent(t + b * beat, (k === 2 ? 0.9 : 1.4) * beat, v.upper)))
       else song.push(chordEvent(t, 3.9 * beat, v.upper))
       bass[i].forEach(([b, m], k) => song.push(chordEvent(t + b * beat, ((bass[i][k + 1]?.[0] ?? 4) - b - 0.1) * beat, [m])))
+      while (stepOf.length < context.events.length + song.length) stepOf.push(i)
     })
   }
 
@@ -129,6 +131,7 @@ function build(setup: Setup, line: string, mode: Mode, loop: string[], tonicPc: 
   return {
     root: 48 + tonicPc, item: line, mode, notes: [48 + tonicPc],
     events: [...context.events, ...song],
+    stepOf,
     ...(setup.keyFirst ? { answerFrom: context.events.length } : {}),
     steps,
     explain: `${l.name}, ${loop.join('–')} in ${label}: ${steps.map((s) => s.label.split(' · ')[0]).join(' ')}. ${l.how[0].toUpperCase()}${l.how.slice(1)} Try it: ${l.tryIt}`,

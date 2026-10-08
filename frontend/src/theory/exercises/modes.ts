@@ -76,6 +76,7 @@ function build(id: string, mode: Mode, tonicPc: number, direction: Direction, wi
   return {
     root: home, item: id, mode, notes: [home],
     events: [...vampEvents, drone, ...run],
+    stepOf: [...vampEvents.map((_, i) => i % 2), vampSteps.length, ...run.map((_, i) => vampSteps.length + 1 + i)],
     steps: [
       ...vampSteps,
       { label: `Home · ${noteLabel(tonic)}`, notes: [home - 24] },

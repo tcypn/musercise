@@ -59,13 +59,21 @@ function build(pattern: Pattern, mode: Mode, loop: string[], tonicPc: number, bp
   const beat = 60 / bpm
   const bar = beatsPerBar(pattern) * beat
   const events: TimedEvent[] = []
-  for (let pass = 0; pass < 2; pass++) voiced.forEach((v, i) => events.push(...barEvents(v, pattern, (pass * 4 + i) * bar, beat, () => 0)))
+  const stepOf: number[] = []
+  for (let pass = 0; pass < 2; pass++) {
+    voiced.forEach((v, i) => {
+      const bar1 = barEvents(v, pattern, (pass * 4 + i) * bar, beat, () => 0)
+      events.push(...bar1)
+      stepOf.push(...bar1.map(() => i))
+    })
+  }
   const { tonic, label } = keyLabel(tonicPc, 'major')
   const names = chords.map((c) => chordName(spellFrom(tonic, [c.step])[0], c.type))
   const p = BY_ID.get(pattern)!
   return {
     root: 48 + tonicPc, item: pattern, mode, notes: [48 + tonicPc],
     events,
+    stepOf,
     steps: voiced.map((v, i) => ({ label: `${loop[i]} · ${names[i]}`, notes: [v.bass, ...v.upper] })),
     explain: `${p.name}, ${loop.join('–')} in ${label} (${names.join(' ')}): ${p.grid} Try it: ${p.tryIt}`,
     swap: (other) => build(other as Pattern, mode, loop, tonicPc, bpm),

@@ -55,13 +55,21 @@ function build(pattern: string, mode: Mode, loop: string[], tonicPc: number, bpm
   const voiced = voiceProgression(chords.map((c) => ({ rootPc: (tonicPc + c.step[1]) % 12, stack: STACK[c.type] })))
   const beat = 60 / bpm
   const events: TimedEvent[] = []
-  for (let pass = 0; pass < 2; pass++) voiced.forEach((v, i) => events.push(...barEvents(v, `lh-${pattern}` as Pattern, (pass * 4 + i) * 4 * beat, beat, () => 0)))
+  const stepOf: number[] = []
+  for (let pass = 0; pass < 2; pass++) {
+    voiced.forEach((v, i) => {
+      const bar = barEvents(v, `lh-${pattern}` as Pattern, (pass * 4 + i) * 4 * beat, beat, () => 0)
+      events.push(...bar)
+      stepOf.push(...bar.map(() => i))
+    })
+  }
   const { tonic, label } = keyLabel(tonicPc, 'major')
   const names = chords.map((c) => chordName(spellFrom(tonic, [c.step])[0], c.type))
   const p = BY_ID.get(pattern)!
   return {
     root: 48 + tonicPc, item: pattern, mode, notes: [48 + tonicPc],
     events,
+    stepOf,
     steps: voiced.map((v, i) => ({ label: `${loop[i]} · ${names[i]}`, notes: [v.bass, ...v.upper] })),
     explain: `${p.name}, ${loop.join('–')} in ${label} (${names.join(' ')}): ${p.how} Try it: ${p.tryIt}`,
     swap: (other) => build(other, mode, loop, tonicPc, bpm),

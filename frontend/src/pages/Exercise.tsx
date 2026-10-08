@@ -8,7 +8,7 @@ import { Keyboard } from '../components/Keyboard'
 import { Listen } from '../components/lesson/Listen'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
-import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, type Part } from '../theory/playback'
+import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, stepFor, type Part } from '../theory/playback'
 import { buildQuestions, sameSetting } from '../theory/questions'
 import { MISTAKE_QUESTIONS, weakSpot, type WeakSpot } from '../theory/mistakes'
 import { getCachedProgress, getPending } from '../store/pending'
@@ -88,7 +88,8 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
         const from = q.answerFrom
         const handle = await playSequence(eventsFor(exercise, q, slow, part), (i) => {
           if (playId.current !== mine) return // a newer sound has taken over
-          if (i !== null && from !== undefined && q.steps && i >= from) setStep(i - from)
+          const s = i === null ? null : stepFor(q, part, i)
+          if (s !== null) setStep(s)
           setHeard(i === null || from === undefined ? null : part === 'question' || (part === 'all' && i >= from) ? 'question' : 'key')
         })
         // A phone may still be holding the sound back; say so instead of leaving the learner in silence.
