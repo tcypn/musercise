@@ -85,6 +85,20 @@ describe('learning path', () => {
   })
 
   it('gives every node a shift from the wind pattern', () => {
-    buildPath(emptyProgress())[0].nodes.forEach((n, i) => expect(n.offset).toBe(windOffset(i)))
+    // each lesson's path winds from the middle
+    for (const lesson of buildPath(emptyProgress())[0].lessons) lesson.nodes.forEach((n, i) => expect(n.offset).toBe(windOffset(i)))
+  })
+
+  it('groups each stage lesson by lesson, numbers them, and marks each lesson\'s last level as its badge', () => {
+    for (const stage of buildPath(emptyProgress())) {
+      expect(stage.lessons.flatMap((l) => l.nodes).map((n) => n.id)).toEqual(stage.nodes.map((n) => n.id))
+      const built = stage.lessons.filter((l) => l.number !== undefined)
+      expect(built.map((l) => l.number)).toEqual(built.map((_, i) => i + 1))
+      for (const lesson of built) {
+        expect(lesson.nodes.filter((n) => n.badge !== undefined).map((n) => n.id)).toEqual([lesson.nodes[lesson.nodes.length - 1].id])
+        expect(lesson.nodes[lesson.nodes.length - 1].badge).toBe(lesson.number)
+      }
+      for (const soon of stage.lessons.filter((l) => l.number === undefined)) expect(soon.nodes.every((n) => n.state === 'soon')).toBe(true)
+    }
   })
 })

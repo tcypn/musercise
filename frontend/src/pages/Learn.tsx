@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { GoalChip } from '../components/dash/GoalChip'
 import { StreakChip } from '../components/dash/StreakChip'
 import { AccuracyCard } from '../components/dash/AccuracyCard'
@@ -28,6 +28,12 @@ export function Learn() {
   const path = useMemo(() => buildPath(progress, goal), [progress, goal])
   const spots = useMemo(() => weakSpots(progress), [progress])
   const openId = picked ?? defaultStage(path)
+
+  // Open where you left off: START in view, as Duolingo does.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => document.querySelector('.path-node.current')?.scrollIntoView({ block: 'center' }))
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   return (
     <div className="dash learn">

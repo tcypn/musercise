@@ -60,7 +60,10 @@ p { margin: 0 0 0.75rem; }
 a { color: var(--blue-text); text-underline-offset: 0.18em; }
 :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
 
-.site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 1rem; border-bottom: 2px solid var(--line); }
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 1rem; border-bottom: 2px solid var(--line);
+  position: sticky; top: 0; z-index: 30; background: #fff; }
+/* Height of the sticky app bar on phones, so things that stick below it (the stage banner) know where to stop. */
+:root { --appbar-h: 4.35rem; }
 .brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--green); }
 .brand-mark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 0.75rem; background: var(--green); color: #fff; box-shadow: 0 3px 0 var(--green-lip); }
 .brand-name { font: 900 1.75rem/1 var(--sans); letter-spacing: -0.05em; }
@@ -74,6 +77,7 @@ a { color: var(--blue-text); text-underline-offset: 0.18em; }
 .side-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (min-width: 48rem) {
   .site-header { display: none; }
+  :root { --appbar-h: 0rem; }
   .sidenav { display: flex; flex-direction: column; gap: 2.25rem; flex: none; position: sticky; top: 0; align-self: flex-start; height: 100vh; width: 5.75rem; padding: 2rem 0.75rem; border-right: 2px solid var(--line); }
   .sidenav nav { display: flex; flex-direction: column; gap: 0.5rem; }
   .sidenav .brand { justify-content: center; }

@@ -26,24 +26,53 @@
 
 /* ---- The path ---- */
 .path-view { display: flex; flex-direction: column; gap: 1.25rem; max-width: 37.5rem; margin: 0 auto; }
-.stage-banner, .stage-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-radius: 1rem; }
+.stage-banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-radius: 1rem; }
 .stage-banner { background: var(--green); color: #fff; box-shadow: 0 4px 0 var(--green-lip); padding: 1.1rem 1.1rem 1.1rem 1.4rem; }
-.stage-card { background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; padding: 1.1rem 1.25rem; }
-.stage-banner h2, .stage-card h2 { margin: 0; font-size: 1.45rem; font-weight: 900; }
+.stage-banner h2 { margin: 0; font-size: 1.45rem; font-weight: 900; }
 .stage-banner h2 { color: #fff; }
 .stage-eyebrow { margin: 0 0 0.2rem; font: 800 0.8rem/1.2 'Nunito', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
 .stage-banner .stage-eyebrow { opacity: 0.92; }
-.stage-card .stage-eyebrow { color: var(--ink-soft); }
-.stage-card-main { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
-.stage-icon { flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; background: #f2f2f2; color: #8c8c8c; }
-.stage-card .button { flex: none; min-height: 2.9rem; padding: 0 1rem; font-size: 0.85rem; }
-.stage-blurb { margin: 0.2rem 0 0; color: var(--ink-soft); font-weight: 700; font-size: 0.95rem; }
 .guide-btn { flex: none; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3rem; padding: 0 1rem; border-radius: 1rem; color: #fff; background: var(--green); text-decoration: none;
   border: 2px solid rgba(0, 0, 0, 0.14); border-bottom-width: 4px; font: 800 0.9rem/1 'Nunito', sans-serif; letter-spacing: 0.07em; text-transform: uppercase; }
 .guide-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
 .guide-text { display: none; }
 @media (min-width: 30rem) { .guide-text { display: inline; } }
 .stage-block.open .path { margin-top: 0.5rem; }
+
+/* One stage at a time: the banner sticks under the app bar and names the lesson you are scrolling through. */
+.stage-banner { position: sticky; top: calc(var(--appbar-h, 0rem) + 0.5rem); z-index: 15; }
+.stage-title { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; padding: 0; border: 0; background: none; color: #fff; text-align: left; cursor: pointer; font: inherit; }
+.stage-title h2 { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.stage-title:focus-visible { outline: 3px solid #fff; outline-offset: 4px; border-radius: 0.5rem; }
+.stage-list { top: calc(100% + 0.6rem); width: min(32rem, calc(100vw - 2rem)); max-height: 70vh; overflow-y: auto; color: var(--ink); }
+.stage-list ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.stage-pick { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.7rem 0.9rem; border: 2px solid var(--line); border-radius: 0.9rem; background: #fff; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.stage-pick.active { border-color: var(--blue-text); }
+.stage-pick:hover { background: #f7f7f7; }
+.stage-pick-main { display: flex; flex-direction: column; min-width: 0; }
+.stage-pick .stage-eyebrow { color: var(--ink-soft); }
+.stage-pick .quiet { white-space: nowrap; font-size: 0.85rem; }
+
+/* Between lessons: a line with the next lesson's name. */
+.unit-divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0 0.25rem; color: var(--ink-soft); font: 800 1.05rem/1.2 'Nunito', sans-serif; text-align: center; }
+.unit-divider::before, .unit-divider::after { content: ''; flex: 1; height: 2px; background: var(--line); }
+.unit-divider span { max-width: 70%; }
+
+/* A lesson's last level: a numbered badge. */
+.node-badge { position: relative; display: grid; place-items: center; width: 96px; height: 96px; }
+.node-badge svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.node-badge path { fill: var(--line); stroke: #cecece; stroke-width: 3; stroke-linejoin: round; }
+.node-badge.current path, .node-badge.open path { fill: var(--green); stroke: var(--green-lip); }
+.node-badge.done path { fill: var(--brass); stroke: var(--brass-lip); }
+.node-badge-num { position: relative; font: 900 1.8rem/1 'Nunito', sans-serif; color: #fff; }
+.node-badge.locked .node-badge-num, .node-badge.soon .node-badge-num { color: #9a9a9a; }
+
+/* The next stage, at the bottom. */
+.up-next { text-align: center; padding: 2rem 1rem; margin-top: 1rem; border-top: 2px solid var(--line); }
+.up-next-tag { display: inline-block; padding: 0.35rem 0.8rem; border-radius: 0.6rem; background: #f2f2f2; color: var(--ink-soft); font: 900 0.85rem/1 'Nunito', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+.up-next h2 { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 0.9rem 0 0.4rem; color: var(--ink-soft); }
+.up-next p { margin: 0 auto 1.2rem; max-width: 30rem; color: var(--ink-soft); }
+.up-next .button { display: inline-flex; align-items: center; gap: 0.3rem; }
 
 .path { position: relative; width: 100%; max-width: 37.5rem; margin: 0 auto; overflow-x: clip; }
 .path-lines { position: absolute; left: 0; top: 0; }
@@ -185,10 +214,7 @@
 
 /* Phones: a folded stage becomes a compact card with the button underneath, so titles are not squeezed. */
 @media (max-width: 36rem) {
-  .stage-card { flex-direction: column; align-items: stretch; gap: 0.8rem; padding: 1rem; }
-  .stage-card .stage-blurb { display: none; }
-  .stage-card .button { width: 100%; }
-  .stage-banner h2, .stage-card h2 { font-size: 1.25rem; }
+  .stage-banner h2 { font-size: 1.25rem; }
 }
 
 /* The two parts of a question with a key first: tap one to hear just that part; it lights while it sounds. */
