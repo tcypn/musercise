@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { GoalChip } from '../components/dash/GoalChip'
 import { StreakChip } from '../components/dash/StreakChip'
 import { AccuracyCard } from '../components/dash/AccuracyCard'
@@ -19,7 +20,9 @@ import { localDateString } from '../theory/practice'
 export function Learn() {
   const today = useMemo(() => localDateString(), [])
   const { progress, sync, message, pendingCount, rejectedCount } = useProgress()
-  const [picked, setPicked] = useState<number | null>(null)
+  // "Jump here" on the stage list comes back with the stage to show.
+  const location = useLocation()
+  const [picked, setPicked] = useState<number | null>(() => (location.state as { stage?: number } | null)?.stage ?? null)
 
   const accuracy = useMemo(() => accuracyView(progress, today), [progress, today])
   const bars = useMemo(() => last7(progress.daily, today), [progress.daily, today])

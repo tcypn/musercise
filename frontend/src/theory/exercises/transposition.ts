@@ -216,5 +216,6 @@ export const transpositionExercise: ExerciseDef = {
   playStyle: () => ({ gap: 0, hold: 1.5 }),
   describe: (q) => q.explain ?? '',
   modeLabel: { chord: 'transpose' },
+  tip: 'Think in numbers, not letters: I–V–vi–IV is the same pattern in every key, so find the new I and count from there. With a guitarist: chord shapes + capo = the key you hear.',
   phrase: (item) => `the answer ${item.short}`,
 }

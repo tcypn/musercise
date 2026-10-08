@@ -158,5 +158,6 @@ export const bassLinesExercise: ExerciseDef = {
   playStyle: () => ({ gap: 0, hold: 2.4 }),
   describe: (q) => q.explain ?? '',
   modeLabel: { major: 'bass line' },
+  tip: 'Listen only to the lowest notes. A bass that stays put while chords change is a pedal; one that steps down through slash chords is a walk-down; a note just before the next chord is a passing note.',
   phrase: (item) => `a ${BY_ID.get(item.id)!.name.toLowerCase()} bass`,
 }

@@ -101,4 +101,10 @@ describe('learning path', () => {
       for (const soon of stage.lessons.filter((l) => l.number === undefined)) expect(soon.nodes.every((n) => n.state === 'soon')).toBe(true)
     }
   })
+
+  it('counts levels passed per stage for the stage list', () => {
+    const stage = buildPath(withPassed('intervals', [1, 2, 3]))[0]
+    expect(stage.levelsPassed).toBe(3)
+    expect(stage.levelsTotal).toBe(stage.nodes.filter((n) => n.state !== 'soon').length)
+  })
 })

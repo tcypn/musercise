@@ -7,6 +7,8 @@ import { ComingSoon } from './pages/ComingSoon'
 import { Daily } from './pages/Daily'
 import { Exercise, Mistakes } from './pages/Exercise'
 import { Goals } from './pages/Goals'
+import { Guide } from './pages/Guide'
+import { Stages } from './pages/Stages'
 import { Learn } from './pages/Learn'
 import { MapPage } from './pages/MapPage'
 import { Progress } from './pages/Progress'
@@ -23,7 +25,7 @@ function LegacyPractice() {
 /** Home is wider than the reading pages, and a lesson in progress takes over the whole screen. */
 function Shell() {
   const path = useLocation().pathname
-  const mode = path === '/' ? ' wide' : path.startsWith('/practice/') || path.startsWith('/mistakes/') ? ' focus' : ''
+  const mode = path === '/' ? ' wide' : path.startsWith('/practice/') || path.startsWith('/mistakes/') || path === '/stages' || path.startsWith('/guide/') ? ' focus' : ''
   return (
     <div className={`shell${mode}`}>
       <SideNav />
@@ -44,6 +46,8 @@ function Shell() {
             <Route path="/streak" element={<Streak />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/goals" element={<Goals />} />
+            <Route path="/stages" element={<Stages />} />
+            <Route path="/guide/:exercise" element={<Guide />} />
             <Route path="/learn/:exercise" element={<Roadmap />} />
             <Route path="/practice/:exercise/:level" element={<Exercise />} />
             <Route path="/mistakes/:exercise" element={<Mistakes />} />

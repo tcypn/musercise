@@ -120,7 +120,6 @@ export function PathView({ stages, openId, onOpen }: Props) {
   const s = stages[index]
   const next = stages[index + 1]
   const [unit, setUnit] = useState(0)
-  const [listOpen, setListOpen] = useState(false)
   const banner = useRef<HTMLElement>(null)
   const units = useRef<(HTMLDivElement | null)[]>([])
 
@@ -147,18 +146,10 @@ export function PathView({ stages, openId, onOpen }: Props) {
     }
   }, [openId])
 
-  useEffect(() => {
-    if (!listOpen) return
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setListOpen(false)
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [listOpen])
-
   if (!s) return null
   const lessons = s.lessons
   const shown = lessons[Math.min(unit, lessons.length - 1)]
   const show = (id: number) => {
-    setListOpen(false)
     onOpen(id)
     requestAnimationFrame(() => document.querySelector('.path-view')?.scrollIntoView({ block: 'start', behavior: 'smooth' }))
   }
@@ -167,36 +158,19 @@ export function PathView({ stages, openId, onOpen }: Props) {
     <div className="path-view">
       <section className="stage-block open" aria-labelledby={`stage-${s.stage.id}`}>
         <header ref={banner} className="stage-banner">
-          <button type="button" className="stage-title" aria-expanded={listOpen} aria-controls="stage-list" onClick={() => setListOpen((o) => !o)}>
+          <Link to="/stages" state={{ stage: s.stage.id }} className="stage-title" aria-label={`Stage ${s.stage.id}: see all stages`}>
             <span className="stage-eyebrow">
               Stage {s.stage.id}{shown?.number !== undefined ? `, lesson ${shown.number}` : ''}
             </span>
             <h2 id={`stage-${s.stage.id}`}>{shown?.number !== undefined ? shown.name : s.stage.name}</h2>
-          </button>
-          <Link to="/map" className="guide-btn" aria-label={`Guidebook: open the map to read about stage ${s.stage.id}`}>
-            <Book size={24} />
-            <span className="guide-text" aria-hidden="true">Guidebook</span>
           </Link>
-          {listOpen && (
-            <>
-              <div className="goal-backdrop" onClick={() => setListOpen(false)} />
-              <div id="stage-list" className="goal-panel stage-list" role="dialog" aria-label="Stages">
-                <ol>
-                  {stages.map((st) => (
-                    <li key={st.stage.id}>
-                      <button type="button" className={`stage-pick ${st.stage.id === s.stage.id ? 'active' : ''}`} onClick={() => show(st.stage.id)}>
-                        <span className="stage-pick-main">
-                          <span className="stage-eyebrow">Stage {st.stage.id}{st.finished ? ' · finished' : ''}</span>
-                          <strong>{st.stage.name}</strong>
-                        </span>
-                        <span className="quiet">{st.ready === 0 ? 'coming soon' : `${st.ready} of ${st.total} ready`}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </>
-          )}
+          <Link
+            to={shown?.number !== undefined ? `/guide/${shown.id}` : '/map'}
+            className="guide-btn"
+            aria-label={shown?.number !== undefined ? `Guide to ${shown.name}` : `Guidebook: open the map to read about stage ${s.stage.id}`}
+          >
+            <Book size={26} />
+          </Link>
         </header>
 
         {lessons.map((lesson, i) => (

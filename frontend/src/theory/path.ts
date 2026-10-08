@@ -51,6 +51,9 @@ export interface PathStage {
   current: boolean
   /** Every playable level in the stage is passed. */
   finished: boolean
+  /** Levels passed, out of all levels of the stage's lessons that can be practised. */
+  levelsPassed: number
+  levelsTotal: number
 }
 
 /** The sideways shift of the nth node: a gentle S-curve that repeats. */
@@ -127,6 +130,8 @@ export function buildPath(progress: Progress, goal?: Goal): PathStage[] {
       total: concepts.length,
       current: withOffsets.some((n) => n.state === 'current'),
       finished: playable.length > 0 && playable.every((n) => n.state === 'done'),
+      levelsPassed: playable.filter((n) => n.state === 'done').length,
+      levelsTotal: playable.length,
     }
   })
 }

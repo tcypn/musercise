@@ -118,6 +118,12 @@ describe.each(EXERCISE_LIST.map((e) => [e.id, e] as const))('lesson %s', (_id, e
     }
   })
 
+  it('has a short tip for the guide, if any', () => {
+    if (exercise.tip === undefined) return
+    expect(exercise.tip.length).toBeGreaterThan(40)
+    expect(exercise.tip.length).toBeLessThan(320)
+  })
+
   it('builds a fair session: every answer of a level shows up', () => {
     const rand = seeded(11)
     for (const level of exercise.levels) {

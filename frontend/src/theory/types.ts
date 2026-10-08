@@ -93,6 +93,8 @@ export interface ExerciseDef {
   describe(question: Question): string
   /** Used in "Not quite. That was ...". */
   phrase(item: Item): string
+  /** A short tip for the lesson guide: how to think about it, or the convention it follows. */
+  tip?: string
   /** Short word for the direction/way of playing, shown under the keyboard. */
   modeLabel: Partial<Record<Mode, string>>
 }

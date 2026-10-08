@@ -206,5 +206,6 @@ export const nashvilleExercise: ExerciseDef = {
   playStyle: () => ({ gap: 0, hold: 1.5 }),
   describe: (q) => q.explain ?? '',
   modeLabel: { chord: 'numbers' },
+  tip: 'Count up the scale from the key note: 1 is home, 4 and 5 are the other major chords, a "-" makes a chord minor. The number after a slash is the bass note, counted in the key: in C, 5/7 is G/B.',
   phrase: (item) => (item.id.startsWith('n-') ? `number ${item.short}` : `the ${item.short} chord`),
 }

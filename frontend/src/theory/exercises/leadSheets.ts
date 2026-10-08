@@ -358,5 +358,6 @@ export const leadSheetsExercise: ExerciseDef = {
   playStyle: () => ({ gap: 0, hold: 1.5 }),
   describe: (q) => q.explain ?? '',
   modeLabel: { chord: 'chart' },
+  tip: 'Read a chart in playing order before you play: find the repeats, the endings and any D.C. or D.S. first. Two chords in a 4/4 bar get 2 beats each unless slashes say otherwise; after D.C. or D.S., repeats are not taken again.',
   phrase: (item) => item.name.toLowerCase(),
 }

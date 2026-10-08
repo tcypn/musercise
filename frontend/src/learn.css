@@ -46,7 +46,7 @@
 
 /* One stage at a time: the banner sticks under the app bar and names the lesson you are scrolling through. */
 .stage-banner { position: sticky; top: calc(var(--appbar-h, 0rem) + 0.5rem); z-index: 15; }
-.stage-title { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; padding: 0; border: 0; background: none; color: #fff; text-align: left; cursor: pointer; font: inherit; }
+.stage-title { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; padding: 0; border: 0; background: none; color: #fff; text-align: left; cursor: pointer; font: inherit; text-decoration: none; }
 .stage-title h2 { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .stage-title:focus-visible { outline: 3px solid #fff; outline-offset: 4px; border-radius: 0.5rem; }
 .stage-list { top: calc(100% + 0.6rem); width: min(32rem, calc(100vw - 2rem)); max-height: 70vh; overflow-y: auto; color: var(--ink); }
@@ -283,3 +283,35 @@
 .goal-lessons a { color: inherit; text-decoration: none; display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.35rem 0; border-bottom: 1px solid var(--line); }
 .goal-lessons .goal-state { color: var(--ink-soft); white-space: nowrap; font-size: 0.9rem; }
 .goal-lessons .done .goal-state { color: #3a7d00; font-weight: 800; }
+
+/* The banner in two parts, as in Duolingo: the stage list on the left, the lesson guide on the right. */
+.stage-banner .guide-btn { align-self: stretch; min-height: 0; margin: -1.1rem -1.1rem -1.1rem 0; padding: 0 1.3rem; border: 0; border-left: 2px solid rgba(0, 0, 0, 0.15); border-radius: 0 1rem 1rem 0; background: transparent; }
+.stage-banner .guide-btn:hover, .stage-title:hover { background: rgba(255, 255, 255, 0.12); }
+.stage-banner .guide-btn:active { transform: none; }
+
+/* Full-screen pages opened from the banner: the stage list and the lesson guide. */
+.fullpage { max-width: 40rem; margin: 0 auto; padding: 0 1rem 4rem; }
+.fullpage-top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 0.5rem; min-height: 4rem; background: #fff; border-bottom: 2px solid var(--line); margin: 0 -1rem 1rem; padding: 0 0.5rem; }
+.fullpage-top .lesson-x { text-decoration: none; }
+.fullpage-title { flex: 1; margin: 0 2.5rem 0 0; text-align: center; font-size: 1.25rem; }
+.stage-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+.stage-card2 { background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 1rem; padding: 1rem 1.1rem; }
+.stage-card2.current { border-color: var(--green); }
+.stage-card2-head { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; }
+.stage-card2 h2 { margin: 0; font-size: 1.2rem; }
+.stage-card2 p { margin: 0.4rem 0; }
+.stage-card2-done { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--brass); color: #fff; }
+.stage-card2-count { font-size: 0.9rem; }
+.stage-card2-here { display: inline-block; margin-top: 0.3rem; color: #3a7d00; font: 900 0.85rem/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; }
+.stage-card2-jump { margin-top: 0.3rem; padding: 0; border: 0; background: none; color: var(--blue-text); font: 900 0.9rem/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
+.guide-head { text-align: center; padding: 1rem 0 1.25rem; border-bottom: 2px solid var(--line); margin-bottom: 1.25rem; }
+.guide-head .stage-eyebrow { color: var(--ink-soft); }
+.guide-head h1 { margin: 0.3rem 0 0; font-size: clamp(1.5rem, 5vw, 2rem); }
+.guide-section { margin-bottom: 1.5rem; }
+.guide-label { margin: 0 0 0.6rem; color: var(--blue-text); font: 900 0.95rem/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; }
+.guide-levels { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7rem; }
+.guide-level { display: flex; gap: 0.8rem; align-items: flex-start; border: 2px solid var(--line); border-radius: 1rem; padding: 0.75rem 0.9rem; }
+.guide-level p { margin: 0.2rem 0 0; }
+.guide-play { flex: none; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border: 0; border-radius: 0.7rem; background: var(--blue-tint); color: var(--blue-text); cursor: pointer; }
+.guide-play[aria-busy='true'] { background: var(--blue); color: #fff; }
+.guide-start { position: sticky; bottom: 0; padding: 1rem 0; background: #fff; text-align: center; }

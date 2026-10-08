@@ -98,5 +98,6 @@ export const compingExercise: ExerciseDef = {
   playStyle: () => ({ gap: 0, hold: 2.4 }),
   describe: (q) => q.explain ?? '',
   modeLabel: { major: 'pattern' },
+  tip: 'Split the job between your hands: the left hand plays the bass and the beat, the right hand plays the chord softly in the middle of the keyboard. Play less while the singer sings.',
   phrase: (item) => BY_ID.get(item.id)!.name.toLowerCase(),
 }

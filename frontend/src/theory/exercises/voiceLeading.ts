@@ -193,5 +193,6 @@ export const voiceLeadingExercise: ExerciseDef = {
   playStyle: () => ({ gap: 0, hold: 1.5 }),
   describe: (q) => q.explain ?? '',
   modeLabel: { chord: 'next chord' },
+  tip: 'Keep the notes two chords share, and move the others to the nearest note. Your right hand should barely move: C E G → B D G moves just two fingers by a step.',
   phrase: (item) => `${item.short} (${item.name})`,
 }
