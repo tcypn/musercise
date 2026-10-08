@@ -3,6 +3,7 @@ import { SyncNotice } from '../components/SyncNotice'
 import { getDay } from '../store/practice'
 import { useProgress } from '../store/useProgress'
 import { getConcept, KIND_LABEL, SUGGESTED_ROUTE } from '../theory/curriculum'
+import { activeGoal } from '../theory/goals'
 import { EXERCISES, nextLevel } from '../theory/exercises'
 import { summariseMap, type ConceptStatus } from '../theory/mapProgress'
 import { keyForDate, localDateString, ROUTINE } from '../theory/practice'
@@ -61,7 +62,7 @@ export function MapPage() {
       <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
 
       <p className="quiet route-legend">
-        <span className="route-mark" aria-hidden="true">◆</span> marks the suggested route to accompanying a pop or R&amp;B song. Nothing is locked, so start anywhere.
+        <span className="route-mark" aria-hidden="true">◆</span> {activeGoal() ? <>marks the lessons of your goal, <Link to="/goals">{activeGoal()!.name.toLowerCase()}</Link>.</> : <>marks the suggested route to accompanying a pop or R&amp;B song. <Link to="/goals">Choose a goal</Link> to mark your own.</>} Nothing is locked, so start anywhere.
       </p>
 
       <ol className="stages" aria-label="Stages">
@@ -92,14 +93,14 @@ export function MapPage() {
 
 function ConceptRow({ status, here }: { status: ConceptStatus; here: boolean }) {
   const { concept, state, passed, total } = status
-  const onRoute = SUGGESTED_ROUTE.includes(concept.id)
+  const onRoute = (activeGoal()?.lessons ?? SUGGESTED_ROUTE).includes(concept.id)
   const to = concept.exerciseId ? `/learn/${concept.exerciseId}` : `/soon/${concept.id}`
   return (
     <li className={`concept ${state}`}>
       <Link to={to} className="concept-link">
         <span className="concept-main">
           <span className="concept-name">
-            {onRoute && <span className="route-mark" role="img" aria-label="On the suggested route">◆</span>}
+            {onRoute && <span className="route-mark" role="img" aria-label={activeGoal() ? "In your goal" : "On the suggested route"}>◆</span>}
             {concept.name}
             {here && <span className="here">You are here</span>}
           </span>

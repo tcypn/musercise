@@ -1,6 +1,7 @@
 import type { Progress } from '../api/types'
-import { STAGES, type Stage } from './curriculum'
+import { getConcept, STAGES, type Stage } from './curriculum'
 import { EXERCISES } from './exercises'
+import { goalProgress, type Goal } from './goals'
 import { summariseMap } from './mapProgress'
 import { isUnlocked } from './rules'
 
@@ -43,14 +44,21 @@ export interface PathStage {
 const WIND = [0, 56, 84, 56, 0, -56, -84, -56] as const
 export const windOffset = (index: number): number => WIND[index % WIND.length]
 
-export function buildPath(progress: Progress): PathStage[] {
+/**
+ * The lesson path. With a goal, only the goal's lessons are shown (stages without any are left out), and the level to
+ * carry on with is in the goal's next lesson.
+ */
+export function buildPath(progress: Progress, goal?: Goal): PathStage[] {
   const map = summariseMap(progress)
-  const hereExercise = map.stages.flatMap((s) => s.statuses).find((s) => s.concept.id === map.here)?.concept.exerciseId
+  const goalNext = goal ? goalProgress(goal, progress).next : undefined
+  const hereId = goal ? goalNext?.conceptId : map.here
+  const hereExercise = hereId ? getConcept(hereId)?.exerciseId : undefined
 
-  return STAGES.map((stage) => {
+  const stages = STAGES.map((stage) => ({ stage, concepts: goal ? stage.concepts.filter((c) => goal.lessons.includes(c.id)) : stage.concepts }))
+  return stages.filter((s) => s.concepts.length > 0).map(({ stage, concepts }) => {
     const nodes: Omit<PathNode, 'offset'>[] = []
     let ready = 0
-    for (const concept of stage.concepts) {
+    for (const concept of concepts) {
       const exercise = concept.exerciseId ? EXERCISES[concept.exerciseId] : undefined
       if (!exercise) {
         const last = nodes[nodes.length - 1]
@@ -88,7 +96,7 @@ export function buildPath(progress: Progress): PathStage[] {
       stage,
       nodes: withOffsets,
       ready,
-      total: stage.concepts.length,
+      total: concepts.length,
       current: withOffsets.some((n) => n.state === 'current'),
       finished: playable.length > 0 && playable.every((n) => n.state === 'done'),
     }

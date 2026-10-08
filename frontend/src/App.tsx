@@ -4,6 +4,7 @@ import { TabBar } from './components/TabBar'
 import { ComingSoon } from './pages/ComingSoon'
 import { Daily } from './pages/Daily'
 import { Exercise, Mistakes } from './pages/Exercise'
+import { Goals } from './pages/Goals'
 import { Learn } from './pages/Learn'
 import { MapPage } from './pages/MapPage'
 import { Progress } from './pages/Progress'
@@ -33,6 +34,7 @@ function Shell() {
             <Route path="/" element={<Learn />} />
             <Route path="/streak" element={<Streak />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/goals" element={<Goals />} />
             <Route path="/learn/:exercise" element={<Roadmap />} />
             <Route path="/practice/:exercise/:level" element={<Exercise />} />
             <Route path="/mistakes/:exercise" element={<Mistakes />} />
