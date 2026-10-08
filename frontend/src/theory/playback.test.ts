@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EXERCISES } from './exercises'
-import { canSlow, eventsFor, partOf, questionOffsetMs } from './playback'
+import { canSlow, eventsFor, partOf, questionOffsetMs, soundingAt } from './playback'
 import { buildQuestions } from './questions'
 
 const events = [
@@ -73,5 +73,20 @@ describe('answer timing', () => {
 
   it('counts from the start for questions that are only the sound', () => {
     expect(questionOffsetMs({ root: 60, item: 'x', mode: 'ascending', notes: [60, 64] })).toBe(0)
+  })
+})
+
+describe('soundingAt', () => {
+  it('shows the notes just struck and the ones still ringing, like a left hand moving under a held chord', () => {
+    const events = [
+      { time: 0, hold: 2, notes: [60, 64, 67] }, // right hand holds C E G
+      { time: 0, hold: 0.5, notes: [36] }, // left hand C
+      { time: 0.5, hold: 0.5, notes: [43] }, // left hand G
+      { time: 1, hold: 0.5, notes: [48] }, // left hand C, an octave up
+      { time: 2, hold: 1, notes: [55, 59, 62] }, // next chord: the held one has stopped
+    ]
+    expect(soundingAt(events, 1)).toEqual([{ midi: 60, role: 'first' }, { midi: 64, role: 'first' }, { midi: 67, role: 'first' }, { midi: 36, role: 'first' }])
+    expect(soundingAt(events, 2)).toEqual([{ midi: 43, role: 'first' }, { midi: 60, role: 'second' }, { midi: 64, role: 'second' }, { midi: 67, role: 'second' }])
+    expect(soundingAt(events, 4)).toEqual([{ midi: 55, role: 'first' }, { midi: 59, role: 'first' }, { midi: 62, role: 'first' }])
   })
 })

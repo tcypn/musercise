@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { playSequence, prepareAudio, stopSound } from '../../audio/piano'
-import { eventsFor, stepFor } from '../../theory/playback'
+import { eventsFor, soundingAt, stepFor } from '../../theory/playback'
 import type { ExerciseDef, Item, Level, Question } from '../../theory/types'
 import { Keyboard } from '../Keyboard'
 import { Snail, Speaker } from '../dash/Icons'
@@ -17,6 +17,8 @@ export function Listen({ exercise, level, items }: Props) {
   const [playingId, setPlayingId] = useState<string | null>(null)
   /** Which chord or note of the example is sounding, so the keyboard shows what you hear. */
   const [step, setStep] = useState(0)
+  /** Exactly the keys sounding now, while an example plays. */
+  const [sounding, setSounding] = useState<{ midi: number; role: 'first' | 'second' }[] | null>(null)
   const [slow, setSlow] = useState(false)
   const [error, setError] = useState<string>()
   const token = useRef(0)
@@ -34,8 +36,11 @@ export function Listen({ exercise, level, items }: Props) {
     setPlayingId(item.id)
     try {
       setStep(0)
-      const handle = await playSequence(eventsFor(exercise, question, slow), (i) => {
-        const s = i === null || token.current !== mine ? null : stepFor(question, 'all', i)
+      const played = eventsFor(exercise, question, slow)
+      const handle = await playSequence(played, (i) => {
+        if (token.current !== mine) return
+        setSounding(i === null ? null : soundingAt(played, i))
+        const s = i === null ? null : stepFor(question, 'all', i)
         if (s !== null) setStep(s)
       })
       await handle.done
@@ -73,7 +78,7 @@ export function Listen({ exercise, level, items }: Props) {
                 <div className="lesson-keys">
                   <Keyboard
                     range={level.lowRange}
-                    lit={(q.steps ? q.steps[Math.min(playingId === item.id ? step : 0, q.steps.length - 1)].notes : (q.lit ?? q.notes)).map((midi, i) => ({ midi, role: (q.steps ? i === 0 : midi === q.root) ? 'first' : 'second' }))}
+                    lit={(playingId === item.id && sounding) || (q.steps ? q.steps[Math.min(playingId === item.id ? step : 0, q.steps.length - 1)].notes : (q.lit ?? q.notes)).map((midi, i) => ({ midi, role: (q.steps ? i === 0 : midi === q.root) ? 'first' : 'second' }))}
                   />
                   <p className="hero-caption">{exercise.describe(q)}</p>
                 </div>

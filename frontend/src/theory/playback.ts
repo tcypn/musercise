@@ -43,6 +43,17 @@ export function stepFor(question: Question, part: Part, index: number): number |
   return Math.min(full - question.answerFrom, question.steps.length - 1)
 }
 
+/**
+ * The keys sounding when event `index` starts: the notes struck right then ('first') and the notes still ringing
+ * from earlier ('second'), so the keyboard shows exactly what is heard, a moving left hand under a held chord too.
+ */
+export function soundingAt(events: readonly TimedEvent[], index: number): { midi: number; role: 'first' | 'second' }[] {
+  const t = events[index].time
+  const struck = new Set(events.filter((e) => Math.abs(e.time - t) < 1e-6).flatMap((e) => e.notes))
+  const ringing = new Set(events.filter((e) => e.time < t - 1e-6 && e.time + e.hold > t + 1e-6).flatMap((e) => e.notes))
+  return [...[...struck].map((midi) => ({ midi, role: 'first' as const })), ...[...ringing].filter((m) => !struck.has(m)).map((midi) => ({ midi, role: 'second' as const }))]
+}
+
 /** Slow only helps when notes come one after another. */
 export function canSlow(exercise: ExerciseDef, question: Question): boolean {
   return question.events ? question.events.some((e) => e.time > 0) : exercise.playStyle(question.mode).gap > 0

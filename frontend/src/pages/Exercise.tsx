@@ -8,7 +8,7 @@ import { Keyboard } from '../components/Keyboard'
 import { Listen } from '../components/lesson/Listen'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
-import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, stepFor, type Part } from '../theory/playback'
+import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, soundingAt, stepFor, type Part } from '../theory/playback'
 import { buildQuestions, sameSetting } from '../theory/questions'
 import { MISTAKE_QUESTIONS, weakSpot, type WeakSpot } from '../theory/mistakes'
 import { getCachedProgress, getPending } from '../store/pending'
@@ -55,6 +55,8 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
   const [heard, setHeard] = useState<'key' | 'question' | null>(null)
   /** Which chord of a progression the answer keyboard shows: follows the sound, or the chord that was tapped. */
   const [step, setStep] = useState(0)
+  /** While a sound plays: exactly the keys sounding now. */
+  const [sounding, setSounding] = useState<{ midi: number; role: 'first' | 'second' }[] | null>(null)
   /** After a wrong answer: is the keyboard showing the correct answer or what the learner picked? */
   const [view, setView] = useState<'answer' | 'yours'>('answer')
   const [loadError, setLoadError] = useState<string>()
@@ -86,8 +88,10 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
       setPlaying(true)
       try {
         const from = q.answerFrom
-        const handle = await playSequence(eventsFor(exercise, q, slow, part), (i) => {
+        const played = eventsFor(exercise, q, slow, part)
+        const handle = await playSequence(played, (i) => {
           if (playId.current !== mine) return // a newer sound has taken over
+          setSounding(i === null ? null : soundingAt(played, i))
           const s = i === null ? null : stepFor(q, part, i)
           if (s !== null) setStep(s)
           setHeard(i === null || from === undefined ? null : part === 'question' || (part === 'all' && i >= from) ? 'question' : 'key')
@@ -125,6 +129,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     setAttempts([])
     setPicked(null)
     setStep(0)
+    setSounding(null)
     setPhase('question')
     heardAt.current = performance.now()
     if (sounds(qs[0])) void play(qs[0])
@@ -148,6 +153,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     }
     setAttempts((prev) => [...prev, attempt])
     setStep(0)
+    setSounding(null)
     setView('answer')
     setPhase('checked')
     if (sounds(question)) void play(question) // replaces what is sounding, so the ear can check the answer
@@ -164,6 +170,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     setIndex(nextIndex)
     setPicked(null)
     setStep(0)
+    setSounding(null)
     setPhase('question')
     heardAt.current = performance.now()
     if (sounds(questions[nextIndex])) void play(questions[nextIndex])
@@ -290,12 +297,14 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     prepareAudio()
     setView('yours')
     setStep(0)
+    setSounding(null)
     void play(alt)
   }
   function hearCorrect() {
     prepareAudio()
     setView('answer')
     setStep(0)
+    setSounding(null)
     void play(question)
   }
   /** Yours, a short pause, then the correct one. Any other sound that starts in between cancels the rest. */
@@ -304,6 +313,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     prepareAudio()
     setView('yours')
     setStep(0)
+    setSounding(null)
     const first = playId.current + 1
     await play(alt)
     if (playId.current !== first) return
@@ -311,6 +321,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     if (playId.current !== first) return
     setView('answer')
     setStep(0)
+    setSounding(null)
     void play(question)
   }
   const combo = (() => {
@@ -385,7 +396,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
           <div className="lesson-keys">
             <Keyboard
               range={level.lowRange}
-              lit={(shown.steps ? shown.steps[stepNow].notes : (shown.lit ?? shown.notes)).map((midi) => ({ midi, role: midi === (shown.steps ? shown.steps[stepNow].notes[0] : shown.root) ? 'first' : 'second' }))}
+              lit={sounding ?? (shown.steps ? shown.steps[stepNow].notes : (shown.lit ?? shown.notes)).map((midi) => ({ midi, role: midi === (shown.steps ? shown.steps[stepNow].notes[0] : shown.root) ? 'first' : 'second' }))}
             />
             {shown.steps && (
               <div className="chord-steps" role="group" aria-label="Chords of the progression">
@@ -399,6 +410,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
                       prepareAudio()
                       stopSound()
                       setStep(i)
+                      setSounding(null)
                       void playNotes(s.notes, { gap: 0, hold: 1.6 }).catch(() => {})
                     }}
                   >
