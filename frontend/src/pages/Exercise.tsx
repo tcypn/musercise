@@ -334,6 +334,8 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
           <h1 className="lesson-title" style={{ marginTop: '0.5rem' }}>{question.prompt?.text ?? exercise.question}</h1>
         </div>
 
+        {question.prompt?.chart && <pre className="chord-chart">{question.prompt.chart}</pre>}
+
         {question.prompt?.lit && (
           <div className="lesson-keys">
             <Keyboard range={level.lowRange} lit={question.prompt.lit.map((midi) => ({ midi, role: 'first' as const }))} />

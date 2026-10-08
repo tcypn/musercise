@@ -347,3 +347,6 @@ a.level-link:hover .level-title, .concept-link:hover .concept-name { text-decora
 .changelog-head { display: flex; gap: 0.6rem; align-items: baseline; margin: 0; }
 .changelog ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
 .about-credit { font-size: 0.8rem; color: var(--ink-soft); margin: 0.75rem 0 0; }
+
+/* A chord chart shown with a quiz question (lead sheets lesson). */
+.chord-chart { font: 700 1.05rem/1.7 ui-monospace, Menlo, Consolas, monospace; background: #fff; border: 2px solid var(--line); border-radius: 0.9rem; padding: 0.8rem 1rem; margin: 0.5rem 0 1rem; white-space: pre-wrap; overflow-wrap: anywhere; }

@@ -3,11 +3,13 @@ import type { TimedEvent } from './practice'
 
 /**
  * Ways to play one bar of a chord on the piano. The first five are the song textures of the "finding the chords
- * by ear" lesson; the rest are the accompaniment patterns of the comping lesson.
+ * by ear" lesson; then the accompaniment patterns of the comping lesson; the `lh-` ones are left-hand patterns
+ * under a held right-hand chord.
  */
 export type Pattern =
   | 'held' | 'bass' | 'broken' | 'pop' | 'melody'
   | 'block' | 'basic' | 'push' | 'ballad' | 'arpeggio' | 'rnb' | 'gospel' | 'waltz'
+  | 'lh-root' | 'lh-root-5th' | 'lh-octave' | 'lh-broken' | 'lh-alberti' | 'lh-stride' | 'lh-walk'
 
 export const beatsPerBar = (pattern: Pattern): number => (pattern === 'waltz' ? 3 : 4)
 
@@ -59,4 +61,28 @@ export function barEvents(v: VoicedChord, pattern: Pattern, t: number, beat: num
     case 'waltz':
       return [ev(0, 0.95, [bass]), ev(1, 0.9, upper), ev(2, 0.9, upper)]
   }
+  // Left-hand patterns: the right hand holds the chord for the whole bar.
+  const third = atOrAbove(bass + 1, upper.map((m) => m % 12).find((pc) => [3, 4].includes((pc - bass + 120) % 12))!)
+  const held = ev(0, 3.9, upper)
+  const quarters = (notes: number[]) => notes.map((m, i) => ev(i, 0.95, [m]))
+  switch (pattern) {
+    case 'lh-root':
+      return [held, ev(0, 3.9, [bass])]
+    case 'lh-root-5th':
+      return [held, ev(0, 1.9, [bass]), ev(2, 1.9, [fifth])]
+    case 'lh-octave':
+      return [held, ev(0, 1.9, [bass, bass + 12]), ev(2, 1.9, [bass, bass + 12])]
+    case 'lh-broken':
+      return [held, ...quarters([bass, fifth, bass + 12, fifth])]
+    case 'lh-alberti':
+      return [held, ...[bass, fifth, third, fifth, bass, fifth, third, fifth].map((m, i) => ev(i * 0.5, 0.5, [m]))]
+    case 'lh-stride': {
+      const chord = [third, fifth, bass + 12].sort((x, y) => x - y)
+      return [held, ev(0, 0.95, [bass]), ev(1, 0.95, chord), ev(2, 0.95, [bass]), ev(3, 0.95, chord)]
+    }
+    case 'lh-walk':
+      // 1, 2, 3, 5: the 2 is a passing note between the root and the 3rd.
+      return [held, ...quarters([bass, bass + 2, third, fifth])]
+  }
+  return []
 }

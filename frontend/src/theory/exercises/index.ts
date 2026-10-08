@@ -1,4 +1,5 @@
 import type { ExerciseDef, ExerciseId, Item, Level } from '../types'
+import { bassLinesExercise } from './bassLines'
 import { byEarExercise } from './byEar'
 import { cadencesExercise } from './cadences'
 import { chordFunctionExercise } from './chordFunction'
@@ -9,6 +10,8 @@ import { chordSpellingExercise } from './chordSpelling'
 import { diatonicChordsExercise } from './diatonicChords'
 import { extensionsExercise } from './extensions'
 import { intervalsExercise } from './intervals'
+import { leadSheetsExercise } from './leadSheets'
+import { leftHandExercise } from './leftHand'
 import { majorScaleExercise } from './majorScale'
 import { minorScalesExercise } from './minorScales'
 import { modesExercise } from './modes'
@@ -16,7 +19,9 @@ import { noteNamesExercise } from './noteNames'
 import { pentatonicExercise } from './pentatonic'
 import { progressionsExercise } from './progressions'
 import { scaleDegreesExercise } from './scaleDegrees'
+import { transpositionExercise } from './transposition'
 import { twoFiveOneExercise } from './twoFiveOne'
+import { voiceLeadingExercise } from './voiceLeading'
 import { slashChordsExercise } from './slashChords'
 
 export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
@@ -39,9 +44,14 @@ export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   'minor-scales': minorScalesExercise,
   modes: modesExercise,
   comping: compingExercise,
+  'voice-leading': voiceLeadingExercise,
+  'left-hand': leftHandExercise,
+  'bass-lines': bassLinesExercise,
+  'lead-sheets': leadSheetsExercise,
+  transposition: transpositionExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)

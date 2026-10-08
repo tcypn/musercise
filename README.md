@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Nineteen are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes** and **comping patterns**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Twenty-four are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts** and **transposition**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -339,6 +339,35 @@ How to accompany a singer instead of playing block chords on every beat. Hear a 
 | 8 | any key, other loops |
 | 9 | slow, medium and fast |
 | 10 | everything mixed |
+
+### Voice leading (a quiz)
+
+Move from chord to chord with the right hand barely moving. The keyboard shows the chord you are on ("C E G"); pick the inversion of the next chord that moves your hand least ("B D G", "D G B" or "G B D"). The strip shows each finger's move ("C down to B, E down to D, G stays") and the total in semitones. Levels: C to G, F or Am; the pop loop; other loops; G and F; any key; ii and iii; 7th chords in C; 7th chords in any key; ii-V-I; everything.
+
+### Left-hand patterns (ear)
+
+The right hand holds the chord; name the left-hand pattern: **root**, **root and 5th**, **octaves**, **broken** (1-5-8-5), **Alberti** (1-5-3-5), **stride** (low root, then a chord) or **walking** (1-2-3-5). Listen first plays each one to copy. Levels add one pattern at a time, then any key, other loops and tempos.
+
+### Bass lines (ear)
+
+Name how the bass moves under a chord loop: **roots**, a **pedal** note, a **walk-down** through slash chords (C – G/B – Am), a **walk-up** with a passing note on beat 4, or **root and 5th**. After the answer every bar's bass notes are shown ("G/B · bass B"). Levels add one line at a time, then any key, other loops, a busier right hand, a faster tempo and no key first.
+
+### Reading lead sheets and chord charts (a quiz)
+
+A short chord chart is shown as on a band's music stand; answer how to play it: how many bars, which chord in a bar, two chords in a bar, % and N.C., repeats, 1st and 2nd endings, D.C. al Fine, D.S. al Coda, time signatures and beat slashes. The strip gives the bars in playing order.
+
+### Transposition (a quiz)
+
+Move chords to another key, as when a singer needs it lower: one chord up or down a whole step, a progression from one key to another through its numbers, a half step, slash chords, 7th chords, playing with a guitarist's capo, and flat keys.
+
+### Conventions
+
+Some rules vary between books and bands. These lessons use the most common ones:
+
+- **Chord charts:** two chords in a 4/4 bar get 2 beats each unless slashes show otherwise; a slash `/` is one more beat of the chord before it; `%` repeats the bar before; N.C. means no chord. A repeat is played twice, and on the second time the 2nd ending replaces the 1st. After D.C. or D.S., repeats are not taken again; D.C. al Fine stops at Fine; D.S. al Coda jumps from "To Coda" to the Coda.
+- **Voice leading:** "moves least" means the right hand only, counted in semitones finger by finger (lowest note to lowest note, and so on); the bass is the left hand's job.
+- **Bass lines and walking patterns:** notes outside the chord are passing notes, and are named as such.
+- **Capo:** chord shapes + capo = the key you hear (one half step per fret).
 
 ### Listening aids
 

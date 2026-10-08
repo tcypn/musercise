@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.22.0', date: '2026-10-08', changes: ['New lessons: voice leading, left-hand patterns, bass lines, reading lead sheets and chord charts, transposition', 'Comping patterns: a "Try it" line after every answer'] },
   { version: '1.21.0', date: '2026-10-08', changes: ['New lesson: comping patterns (basic pop, ballad, pop push, arpeggio, R&B, gospel, waltz)'] },
   { version: '1.20.0', date: '2026-10-07', changes: ['New lesson: modes (Dorian first)'] },
   { version: '1.19.0', date: '2026-10-06', changes: ['New lesson: minor scales'] },

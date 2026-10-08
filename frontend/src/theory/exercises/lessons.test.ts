@@ -1189,3 +1189,292 @@ describe('comping patterns', () => {
     }
   })
 })
+
+describe('voice leading', () => {
+  const lesson = EXERCISES['voice-leading']
+  const short = (id: string) => lesson.items.find((i) => i.id === id)!.short
+  // Independent theory: chord shapes, and the hand movement between two close-position chords.
+  const SHAPES: Record<string, number[]> = { '': [0, 4, 7], m: [0, 3, 7], maj7: [0, 4, 7, 11], m7: [0, 3, 7, 10], '7': [0, 4, 7, 10] }
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+  /** Stack these pitch classes upward from a bottom note, and find the bottom note (within an octave either way) that moves least. */
+  function best(pcs: number[], current: number[]): number {
+    let least = Infinity
+    for (let bottom = current[0] - 12; bottom <= current[0] + 12; bottom++) {
+      if (((bottom % 12) + 12) % 12 !== pcs[0]) continue
+      const notes = [bottom]
+      for (const pc of pcs.slice(1)) {
+        let m = notes[notes.length - 1] + 1
+        while (((m % 12) + 12) % 12 !== pc) m++
+        notes.push(m)
+      }
+      least = Math.min(least, notes.reduce((s, m, i) => s + Math.abs(m - current[i]), 0))
+    }
+    return least
+  }
+
+  it('offers every inversion of the next chord, and the answer is the only one that moves least', () => {
+    const rand = seeded(127)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 80, rand)) {
+        const [, symbol] = q.prompt!.text.match(/Next: ([A-G][♯♭]*(?:maj7|m7|7|m)?)\./)!
+        const [, rootName, suffix] = symbol.match(/^([A-G][♯♭]*)(maj7|m7|7|m|)$/)!
+        const chord = new Set(SHAPES[suffix].map((s) => (pcOf(rootName) + s) % 12))
+        expect(q.choices!.length).toBe(chord.size)
+        const current = q.prompt!.lit!
+        const moves = q.choices!.map((id) => {
+          const pcs = short(id).split(' ').map(pcOf)
+          expect(new Set(pcs)).toEqual(chord)
+          return best(pcs, current)
+        })
+        const mine = moves[q.choices!.indexOf(q.item)]
+        expect(moves.filter((m) => m === mine).length, `level ${level.id} ${q.prompt!.text}`).toBe(1)
+        expect(Math.min(...moves)).toBe(mine)
+        expect(q.explain).toContain(`(${mine} semitone`)
+        expect(new Set(current.map((m) => m % 12)).size).toBe(current.length)
+      }
+    }
+  })
+
+  it('explains a move in plain words', () => {
+    const q = buildQuestions(lesson, lesson.levels[0], 60, seeded(2)).find((x) => x.prompt!.text.startsWith('You are on C (C E G). Next: G.'))!
+    expect(q.explain).toBe('C E G → B D G: C down to B, E down to D, G stays (3 semitones in all). Try it: play the two chords this way with your right hand, then keep going round the loop.')
+  })
+})
+
+describe('left-hand patterns', () => {
+  const lesson = EXERCISES['left-hand']
+  // Independent description: each pattern as (beat, notes above the bass), with t = the chord's 3rd (3 or 4).
+  const PATTERN: Record<string, (t: number) => [number, number[]][]> = {
+    root: () => [[0, [0]]],
+    'root-5th': () => [[0, [0]], [2, [7]]],
+    octave: () => [[0, [0, 12]], [2, [0, 12]]],
+    broken: () => [[0, [0]], [1, [7]], [2, [12]], [3, [7]]],
+    alberti: (t) => [0, 7, t, 7, 0, 7, t, 7].map((x, i) => [i / 2, [x]] as [number, number[]]),
+    stride: (t) => [[0, [0]], [1, [t, 7, 12]], [2, [0]], [3, [t, 7, 12]]],
+    walk: (t) => [[0, [0]], [1, [2]], [2, [t]], [3, [7]]],
+  }
+  const MINOR = new Set(['ii', 'iii', 'vi'])
+
+  it('plays the named left-hand pattern under a held right-hand chord', () => {
+    const rand = seeded(131)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 50, rand)) {
+        const events = q.events!
+        const numerals = q.steps!.map((s) => s.label.split(' · ')[0])
+        const rhTimes = q.steps!.flatMap((s) => events.filter((e) => JSON.stringify(e.notes) === JSON.stringify(s.notes.slice(1))).map((e) => e.time))
+        const bar = [...new Set(rhTimes)].sort((a, b) => a - b)[1]
+        const beat = bar / 4
+        for (let b = 0; b < 8; b++) {
+          const step = q.steps![b % 4]
+          const bass = step.notes[0]
+          const lh = events
+            .filter((e) => e.time >= b * bar - 1e-6 && e.time < (b + 1) * bar - 1e-6 && JSON.stringify(e.notes) !== JSON.stringify(step.notes.slice(1)))
+            .map((e) => [Math.round(((e.time - b * bar) / beat) * 2) / 2, e.notes.map((m) => m - bass).sort((x, y) => x - y)])
+          const want = PATTERN[q.item](MINOR.has(numerals[b % 4]) ? 3 : 4).map(([t, n]) => [t, [...n].sort((x, y) => x - y)])
+          expect(lh, `level ${level.id} ${q.item} bar ${b}`).toEqual(want)
+        }
+        const other = level.items.find((x) => x !== q.item)!
+        expect(sameSetting(lesson, level, q, other)!.steps).toEqual(q.steps)
+      }
+    }
+  })
+})
+
+describe('bass lines', () => {
+  const lesson = EXERCISES['bass-lines']
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : -1), 0) + 24) % 12
+  const SHAPE: Record<string, number[]> = { '': [0, 4, 7], m: [0, 3, 7] }
+
+  it('plays the named bass line: right notes, right beats, and a real walk-down', () => {
+    const rand = seeded(137)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const song = q.events!.slice(q.answerFrom ?? 0)
+        const chords = q.steps!.map((s) => {
+          const [, root, suffix] = s.label.split(' · ')[0].match(/^([A-G][♯♭]*)(m?)/)!
+          return { root: pcOf(root), pcs: SHAPE[suffix].map((x) => (pcOf(root) + x) % 12), upper: s.notes.filter((m) => m >= 48 && s.notes.indexOf(m) > 0 && song.some((e) => e.notes.length > 1 && e.notes.includes(m))) }
+        })
+        // bar starts: the first right-hand chord of each run of the same chord
+        const rh = song.filter((e) => e.notes.length > 1)
+        const starts = rh.filter((e, i) => i === 0 || JSON.stringify(e.notes) !== JSON.stringify(rh[i - 1].notes)).map((e) => e.time)
+        expect(starts.length).toBe(8)
+        const bar = starts[1] - starts[0]
+        const bassOf = (b: number) => song
+          .filter((e) => e.notes.length === 1 && e.time >= starts[b] - 1e-6 && e.time < starts[b] + bar - 1e-6)
+          .map((e) => [Math.round((e.time - starts[b]) / (bar / 4)), e.notes[0]] as [number, number])
+        const lines = [0, 1, 2, 3, 4, 5, 6, 7].map(bassOf)
+        const pcs = (b: number) => lines[b].map(([, m]) => m % 12)
+        for (let b = 0; b < 8; b++) {
+          const c = chords[b % 4]
+          const next = chords[(b + 1) % 4]
+          if (q.item === 'roots') expect(lines[b].map(([t]) => t).concat(pcs(b))).toEqual([0, c.root])
+          if (q.item === 'root-5th') expect(lines[b].map(([t]) => t).concat(pcs(b))).toEqual([0, 2, c.root, (c.root + 7) % 12])
+          if (q.item === 'walk-up') {
+            expect(lines[b].map(([t]) => t)).toEqual([0, 3])
+            expect(pcs(b)).toEqual([c.root, (next.root + 11) % 12])
+          }
+          if (q.item === 'pedal') expect(pcs(b)).toEqual(pcs(0))
+          if (q.item === 'walk-down') {
+            expect(lines[b].length).toBe(1)
+            expect(c.pcs).toContain(pcs(b)[0])
+            if (b % 4 === 0) expect(pcs(b)[0]).toBe(c.root)
+            else {
+              const prev = lines[b - 1][0][1], now = lines[b][0][1]
+              expect(now).toBeLessThan(prev)
+              for (let m = now + 1; m < prev; m++) expect(c.pcs).not.toContain(m % 12)
+            }
+          }
+        }
+        if (q.item === 'pedal' && q.answerFrom !== undefined) expect(pcs(0)[0]).toBe(Math.min(...q.events![0].notes) % 12)
+        if (q.item === 'walk-down') expect([0, 1, 2, 3].filter((b) => pcs(b)[0] !== chords[b].root).length).toBeGreaterThanOrEqual(1)
+        // the shown bass names are the notes heard
+        q.steps!.forEach((s, b) => expect(s.label.split(' · bass ')[1].split(' ').map(pcOf)).toEqual(pcs(b)))
+        const other = level.items.find((x) => x !== q.item)!
+        expect(sameSetting(lesson, level, q, other)!.steps!.map((s) => s.notes.slice(-3))).toEqual(q.steps!.map((s) => s.notes.slice(-3)))
+      }
+    }
+  })
+})
+
+describe('reading lead sheets and chord charts', () => {
+  const lesson = EXERCISES['lead-sheets']
+  const short = (id: string) => lesson.items.find((i) => i.id === id)!.short
+  interface RefBar { tokens: string[]; open: string; close: string }
+  /** Read the chart exactly as shown on screen. */
+  function parse(text: string) {
+    const lines = text.split('\n')
+    const meter = Number(lines[0][0])
+    const jumpLine = lines.find((l) => l.startsWith('D.'))
+    const body = lines.slice(1).filter((l) => !l.startsWith('D.')).join(' ')
+    const parts = body.split(/(\|\|:|:\|\||\|\||\|)/).map((p) => p.trim())
+    const bars: RefBar[] = []
+    for (let i = 0; i < parts.length; i++) {
+      if (/^(\|\|:|:\|\||\|\||\|)$/.test(parts[i]) || parts[i] === '') continue
+      bars.push({ tokens: parts[i].replace('[To Coda]', '[ToCoda]').split(/\s+/), open: parts[i - 1] ?? '|', close: parts[i + 1] ?? '|' })
+    }
+    const jump = jumpLine ? { dc: jumpLine.startsWith('D.C.'), after: Number(jumpLine.match(/after bar (\d+)/)![1]) - 1 } : undefined
+    return { meter, bars, jump }
+  }
+  const has = (b: RefBar, t: string) => b.tokens.includes(t)
+  const chordsOf = (b: RefBar) => b.tokens.filter((t) => !t.startsWith('[') && !/^[12]\.$/.test(t))
+  /** Playing order by the usual rules: repeats twice, 2nd ending on the way back, no repeats after D.C./D.S., Fine stops, To Coda jumps. */
+  function order(c: ReturnType<typeof parse>): number[] {
+    const out: number[] = []
+    const done = new Set<number>()
+    let i = 0, back = false, second = false
+    for (let guard = 0; guard < 200 && i < c.bars.length; guard++) {
+      const b = c.bars[i]
+      if (second && has(b, '1.')) { i = c.bars.findIndex((x) => has(x, '2.')); second = false; continue }
+      if (has(b, '[Coda]') && !back) break
+      out.push(i)
+      if (back && has(b, '[Fine]')) break
+      if (back && has(b, '[ToCoda]')) { i = c.bars.findIndex((x) => has(x, '[Coda]')); continue }
+      if (b.close === ':||' && !back && !done.has(i)) { done.add(i); second = true; let s = i; while (s > 0 && c.bars[s].open !== '||:') s--; i = s; continue }
+      if (c.jump && c.jump.after === i && !back) { back = true; i = c.jump.dc ? 0 : c.bars.findIndex((x) => has(x, '[Segno]')); continue }
+      i++
+    }
+    return out
+  }
+  const heard = (c: ReturnType<typeof parse>, i: number): string => {
+    let k = i
+    while (chordsOf(c.bars[k])[0] === '%') k--
+    return chordsOf(c.bars[k])[0]
+  }
+  const slots = (c: ReturnType<typeof parse>, b: RefBar) => {
+    const t = chordsOf(b)
+    if (t.includes('/')) return t
+    return t.flatMap((x) => [x, ...Array(c.meter / t.length - 1).fill('/')])
+  }
+
+  it('every answer matches the chart as written, read with the usual rules', () => {
+    const rand = seeded(139)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 80, rand)) {
+        const c = parse(q.prompt!.chart!)
+        const text = q.prompt!.text
+        const ord = order(c)
+        let want: string
+        let m: RegExpMatchArray | null
+        if (text === 'How many bars are written?') want = `${c.bars.length} bars`
+        else if (text === 'How many bars do you play in all?') want = `${ord.length} bars`
+        else if (text === 'How many beats are in each bar?') want = `${c.meter} beats`
+        else if ((m = text.match(/^Which chord do you play in bar (\d+)\?$/))) want = heard(c, Number(m[1]) - 1)
+        else if ((m = text.match(/^You start at bar 1\. What is the (\d+)\w\w bar you play\?$/))) want = heard(c, ord[Number(m[1]) - 1])
+        else if ((m = text.match(/^In bar (\d+), how many beats does (\S+) get\?$/))) {
+          const s = slots(c, c.bars[Number(m[1]) - 1])
+          const start = s.indexOf(m[2])
+          let n = 1
+          while (s[start + n] === '/') n++
+          want = `${n} beat${n === 1 ? '' : 's'}`
+        } else if ((m = text.match(/^In bar (\d+), which chord do you play on beat (\d)\?$/))) {
+          const s = slots(c, c.bars[Number(m[1]) - 1])
+          let k = Number(m[2]) - 1
+          while (s[k] === '/') k--
+          want = s[k]
+        } else throw new Error(`unknown question: ${text}`)
+        expect(short(q.item), `level ${level.id}: ${text}\n${q.prompt!.chart}`).toBe(want)
+        expect(q.choices!.length).toBeGreaterThanOrEqual(2)
+      }
+    }
+  })
+
+  it('shows a chart a band would recognise', () => {
+    const q = buildQuestions(lesson, lesson.levels[4], 30, seeded(4))[0]
+    expect(q.prompt!.chart).toMatch(/\|\|:/)
+    expect(q.prompt!.chart).toMatch(/1\. \S+ :\|\|/)
+    expect(q.prompt!.chart).toMatch(/2\. \S+/)
+  })
+})
+
+describe('transposition', () => {
+  const lesson = EXERCISES.transposition
+  const short = (id: string) => lesson.items.find((i) => i.id === id)!.short
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : ch === '♭' ? -1 : 0), 0) + 24) % 12
+  /** Move a note name by letters and semitones, spelled by letter. */
+  function move(name: string, letters: number, semis: number): string {
+    const letter = LETTERS[(LETTERS.indexOf(name[0]) + letters + 7) % 7]
+    const acc = ((((pcOf(name) + semis - NATURAL[letter]) % 12) + 18) % 12) - 6
+    return letter + (acc > 0 ? '♯'.repeat(acc) : '♭'.repeat(-acc))
+  }
+  /** Transpose a chord symbol from one key to another: every note keeps its distance and its letter step from the key note. */
+  function transpose(symbol: string, from: string, to: string): string {
+    const letters = (LETTERS.indexOf(to[0]) - LETTERS.indexOf(from[0]) + 7) % 7
+    const semis = (pcOf(to) - pcOf(from) + 12) % 12
+    return symbol.replace(/[A-G][♯♭]*/g, (n) => move(n, letters, semis))
+  }
+
+  it('every answer is the right transposition, worked out independently', () => {
+    const rand = seeded(149)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 80, rand)) {
+        const t = q.prompt!.text
+        let m: RegExpMatchArray | null
+        let want: string
+        if ((m = t.match(/^Move (\S+) (up|down) a whole step/))) {
+          const [, chord, dir] = m
+          want = chord.replace(/^[A-G][♯♭]*/, (n) => move(n, dir === 'up' ? 1 : -1, dir === 'up' ? 2 : -2))
+        } else if ((m = t.match(/^(.+) is \S+ in (\S+) major\. In (\S+) major, what does (\S+) become\?$/))) {
+          const [, chords, from, to, chord] = m
+          expect(chords.split(' ')).toContain(chord)
+          want = transpose(chord, from, to)
+        } else if ((m = t.match(/^A guitarist plays (\S+)-shape chords with a capo on fret (\d)\. What key do you hear\?$/))) {
+          want = short(q.item)
+          expect(pcOf(want)).toBe((pcOf(m[1]) + Number(m[2])) % 12)
+        } else if ((m = t.match(/^The song is in (\S+) major\. The guitarist puts a capo on fret (\d)\. Which chord shapes do they play\?$/))) {
+          want = short(q.item)
+          expect(pcOf(want)).toBe((pcOf(m[1]) - Number(m[2]) + 12) % 12)
+          expect(['C', 'G', 'D', 'A', 'E']).toContain(want)
+        } else throw new Error(`unknown question: ${t}`)
+        expect(short(q.item), `level ${level.id}: ${t}`).toBe(want)
+        // no two tiles that sound the same
+        const sound = (s: string) => s.replace(/[A-G][♯♭]*/g, (n) => `<${pcOf(n)}>`)
+        const sounds = q.choices!.map((c) => sound(short(c)))
+        expect(new Set(sounds).size).toBe(sounds.length)
+      }
+    }
+  })
+})

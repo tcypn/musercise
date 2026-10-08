@@ -1,6 +1,6 @@
 import type { TimedEvent } from './practice'
 
-export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping'
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping' | 'voice-leading' | 'left-hand' | 'bass-lines' | 'lead-sheets' | 'transposition'
 
 /** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
 export type Mode =
@@ -54,7 +54,7 @@ export interface Question {
   /** After the answer, the chords of a progression one by one: each lights on the keyboard as it sounds, and can be tapped to hear alone. */
   steps?: { label: string; notes: number[] }[]
   /** Quiz lessons: the question in words, with keys to show on the keyboard while it is asked. */
-  prompt?: { text: string; lit?: number[] }
+  prompt?: { text: string; lit?: number[]; chart?: string }
   /** Quiz lessons: why the answer is right, in a sentence, shown after the answer. */
   explain?: string
   /** Quiz lessons: offer only these answers (ids, always including the right one) instead of every answer of the level. */

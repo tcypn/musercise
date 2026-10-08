@@ -5,15 +5,15 @@ import { spellFrom } from '../spelling'
 import type { ExerciseDef, Item, Level, Mode, Question } from '../types'
 
 /** The accompaniment patterns, each with how to play it in words. */
-const PATTERNS: readonly (Item & { grid: string })[] = [
-  { id: 'block', short: 'Block', name: 'Block on every beat', hint: 'Both hands, whole chord, every beat: heavy', grid: 'both hands play the whole chord on every beat. It keeps time but sounds heavy: the place to start from, not to stay.' },
-  { id: 'basic', short: 'Basic pop', name: 'Basic pop', hint: 'Bass and 5th below, soft chords on every beat', grid: 'left hand: the bass on 1, the 5th on 3. Right hand: the chord on every beat, softer.' },
-  { id: 'ballad', short: 'Ballad', name: 'Ballad (broken left hand)', hint: 'A rolling left hand under a held chord', grid: 'right hand: hold the chord. Left hand rolls root, 5th, octave, 5th in eighths: 1 & 2 & 3 & 4 &.' },
-  { id: 'push', short: 'Pop push', name: 'Pop push', hint: 'Bouncy: the chord lands just before beat 3', grid: 'right hand: the chord on 1, the "&" of 2, and 4. Left hand: the bass on 1 and 3.' },
-  { id: 'arpeggio', short: 'Arpeggio', name: 'Arpeggio', hint: 'Soft: the chord one note at a time', grid: 'left hand: the bass on 1, held. Right hand: the chord one note at a time on the "&"s.' },
-  { id: 'rnb', short: 'R&B', name: 'R&B syncopated', hint: 'Short, off-beat chords with space', grid: 'right hand: short chords on 1, the "&" of 2 and the "&" of 3. Left hand: the bass on 1 and 4. Leave space.' },
-  { id: 'gospel', short: 'Gospel', name: 'Gospel octaves', hint: 'Big: octaves in the left hand', grid: 'left hand: octaves on 1 and 3. Right hand: the full chord on every beat. For the big last chorus.' },
-  { id: 'waltz', short: 'Waltz', name: 'Waltz (3/4)', hint: 'Oom-pah-pah: bass, chord, chord', grid: 'three beats: the bass on 1, the chord on 2 and 3.' },
+const PATTERNS: readonly (Item & { grid: string; tryIt: string })[] = [
+  { id: 'block', short: 'Block', name: 'Block on every beat', hint: 'Both hands, whole chord, every beat: heavy', grid: 'both hands play the whole chord on every beat. It keeps time but sounds heavy: the place to start from, not to stay.', tryIt: 'play C G Am F like this first, then try the same loop as basic pop and hear how much lighter it gets.' },
+  { id: 'basic', short: 'Basic pop', name: 'Basic pop', hint: 'Bass and 5th below, soft chords on every beat', grid: 'left hand: the bass on 1, the 5th on 3. Right hand: the chord on every beat, softer.', tryIt: 'left hand C then G, right hand C E G four times, softer than the left; then the next chord.' },
+  { id: 'ballad', short: 'Ballad', name: 'Ballad (broken left hand)', hint: 'A rolling left hand under a held chord', grid: 'right hand: hold the chord. Left hand rolls root, 5th, octave, 5th in eighths: 1 & 2 & 3 & 4 &.', tryIt: 'hold C E G with your right hand while the left rolls C G C G in eighths; slow, around 70.' },
+  { id: 'push', short: 'Pop push', name: 'Pop push', hint: 'Bouncy: the chord lands just before beat 3', grid: 'right hand: the chord on 1, the "&" of 2, and 4. Left hand: the bass on 1 and 3.', tryIt: 'count 1 & 2 & 3 & 4 & aloud and play the right hand on 1, the & of 2, and 4.' },
+  { id: 'arpeggio', short: 'Arpeggio', name: 'Arpeggio', hint: 'Soft: the chord one note at a time', grid: 'left hand: the bass on 1, held. Right hand: the chord one note at a time on the "&"s.', tryIt: 'left hand holds C; right hand plays G, C, E, C on the &s, softly.' },
+  { id: 'rnb', short: 'R&B', name: 'R&B syncopated', hint: 'Short, off-beat chords with space', grid: 'right hand: short chords on 1, the "&" of 2 and the "&" of 3. Left hand: the bass on 1 and 4. Leave space.', tryIt: 'play the right hand short and light on 1, &2 and &3, and leave the rest silent.' },
+  { id: 'gospel', short: 'Gospel', name: 'Gospel octaves', hint: 'Big: octaves in the left hand', grid: 'left hand: octaves on 1 and 3. Right hand: the full chord on every beat. For the big last chorus.', tryIt: 'left hand plays C and the C above together on 1 and 3; right hand a full chord on every beat, louder.' },
+  { id: 'waltz', short: 'Waltz', name: 'Waltz (3/4)', hint: 'Oom-pah-pah: bass, chord, chord', grid: 'three beats: the bass on 1, the chord on 2 and 3.', tryIt: 'count 1 2 3: low C on 1, then C E G on 2 and 3, like a waltz.' },
 ]
 const BY_ID = new Map(PATTERNS.map((p) => [p.id, p]))
 const items: readonly Item[] = PATTERNS.map(({ id, short, name, hint }) => ({ id, short, name, hint }))
@@ -67,7 +67,7 @@ function build(pattern: Pattern, mode: Mode, loop: string[], tonicPc: number, bp
     root: 48 + tonicPc, item: pattern, mode, notes: [48 + tonicPc],
     events,
     steps: voiced.map((v, i) => ({ label: `${loop[i]} · ${names[i]}`, notes: [v.bass, ...v.upper] })),
-    explain: `${p.name}, ${loop.join('–')} in ${label} (${names.join(' ')}): ${p.grid}`,
+    explain: `${p.name}, ${loop.join('–')} in ${label} (${names.join(' ')}): ${p.grid} Try it: ${p.tryIt}`,
     swap: (other) => build(other as Pattern, mode, loop, tonicPc, bpm),
   }
 }
