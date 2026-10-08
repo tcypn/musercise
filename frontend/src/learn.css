@@ -15,7 +15,7 @@
 .learn-path { grid-area: path; } .learn-ear { grid-area: ear; }
 @media (min-width: 62rem) {
   .learn { max-width: none; grid-template-columns: minmax(0, 1fr) 24rem; column-gap: 2.5rem; grid-template-rows: auto auto auto auto auto auto auto 1fr;
-    grid-template-areas: 'notice notice' 'path top' 'path today' 'path rec' 'path mistakes' 'path accuracy' 'path ear' 'path .'; }
+    grid-template-areas: 'top top' 'notice notice' 'path today' 'path rec' 'path mistakes' 'path accuracy' 'path ear' 'path .'; }
 }
 
 /* Streak, top right: just the flame and the number. It opens the streak page. */
@@ -220,16 +220,28 @@
 .compare .quiet { flex-basis: 100%; margin: 0; }
 .learn-mistakes:empty { display: none; }
 
-/* The goal line on the stage banner, and the one-time goal welcome card */
-.goal-line { display: inline-block; color: #fff; font: 800 0.78rem/1.2 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; opacity: 0.95; margin-bottom: 0.3rem; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(255, 255, 255, 0.18); }
-.goal-line:hover, .goal-line:focus-visible { background: rgba(255, 255, 255, 0.3); }
-.goal-welcome { background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
-.goal-welcome h2 { margin: 0 0 0.25rem; font-size: 1.2rem; }
-.goal-welcome .goal-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem; margin: 0.8rem 0; }
-.goal-choice { display: flex; flex-direction: column; gap: 0.25rem; text-align: left; font: inherit; color: var(--ink); background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 0.9rem; padding: 0.75rem 0.9rem; cursor: pointer; }
-.goal-choice strong { color: var(--blue-text); font-size: 1.02rem; }
-.goal-choice .quiet { font-size: 0.9rem; line-height: 1.35; }
-.goal-choice:hover, .goal-choice:focus-visible { border-color: var(--blue-edge, var(--blue-text)); background: var(--blue-tint); }
+/* The goal chip (top left, like a course switcher) and the panel that drops down from it */
+.goal-chip-wrap { position: relative; min-width: 0; }
+.goal-chip { display: inline-flex; align-items: center; max-width: 100%; min-height: 2.75rem; border: 2px solid var(--line); border-radius: 0.9rem; background: #fff; }
+.goal-chip-main { display: inline-flex; align-items: center; gap: 0.45rem; min-width: 0; padding: 0 0.6rem 0 0.7rem; min-height: 2.6rem; border: 0; background: none; color: var(--ink); font: 800 0.95rem/1 var(--sans); cursor: pointer; }
+.goal-chip:not(.set) .goal-chip-main { color: var(--blue-text); }
+.goal-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.goal-chip-clear { display: inline-grid; place-items: center; width: 2.4rem; min-height: 2.6rem; border: 0; border-left: 2px solid var(--line); background: none; color: var(--ink-soft); cursor: pointer; flex: none; }
+.goal-chip-main:hover, .goal-chip-clear:hover { background: #f7f7f7; }
+.goal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); z-index: 40; }
+.goal-panel { position: absolute; top: calc(100% + 0.6rem); left: 0; z-index: 41; width: min(40rem, calc(100vw - 2rem)); background: #fff; border: 2px solid var(--line); border-radius: 1rem; padding: 1rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); }
+.goal-panel::before { content: ''; position: absolute; top: -0.55rem; left: 1.4rem; width: 0.9rem; height: 0.9rem; background: #fff; border-left: 2px solid var(--line); border-top: 2px solid var(--line); transform: rotate(45deg); }
+.goal-tiles { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; }
+.goal-tile { flex: 0 0 auto; width: 6.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.6rem 0.3rem; border: 2px solid transparent; border-radius: 0.9rem; background: none; color: var(--ink); font: 800 0.9rem/1.15 var(--sans); cursor: pointer; }
+.goal-tile-icon { display: grid; place-items: center; width: 4rem; height: 3.2rem; border-radius: 0.8rem; background: var(--blue-tint); color: var(--blue-text); }
+.goal-tile.active { border-color: var(--blue-text); }
+.goal-tile:hover { background: #f7f7f7; }
+.goal-summary { border: 2px solid var(--line); border-radius: 0.9rem; padding: 0.8rem 1rem; margin-top: 0.75rem; }
+.goal-summary p { margin: 0.25rem 0; }
+.goal-more { display: inline-block; margin-top: 0.4rem; color: var(--blue-text); font: 800 0.9rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; }
+/* The Learn top row: goal on the left, streak on the right. On phones they live in the app bar instead. */
+.learn-top { justify-content: space-between; align-items: center; gap: 1rem; }
+@media (max-width: 47.99rem) { .learn-top { display: none; } }
 /* Goals page */
 .goal-card { background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 1rem; padding: 1rem; margin: 1rem 0; }
 .goal-card.active { border-color: var(--green); }

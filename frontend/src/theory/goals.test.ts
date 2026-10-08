@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { emptyProgress } from '../store/normalise'
 import { getConcept } from './curriculum'
-import { activeGoal, GOALS, goalProgress, markWelcomeSeen, setActiveGoal, welcomeSeen } from './goals'
+import { activeGoal, GOALS, goalProgress, setActiveGoal, subscribeGoal } from './goals'
 import { buildPath } from './path'
 
 const fakeStorage = () => {
@@ -34,15 +34,17 @@ describe('goals', () => {
     expect(prog.ready).toBe(6)
   })
 
-  it('remembers the goal and the welcome on this device, and copes with blocked storage', () => {
+  it('remembers the goal on this device, tells everything showing it, and copes with blocked storage', () => {
     vi.stubGlobal('localStorage', fakeStorage())
     expect(activeGoal()).toBeUndefined()
-    expect(welcomeSeen()).toBe(false)
+    const heard = vi.fn()
+    const stop = subscribeGoal(heard)
     setActiveGoal('by-ear')
-    markWelcomeSeen()
     expect(activeGoal()?.id).toBe('by-ear')
-    expect(welcomeSeen()).toBe(true)
+    expect(heard).toHaveBeenCalledTimes(1)
+    stop()
     setActiveGoal(null)
+    expect(heard).toHaveBeenCalledTimes(1)
     expect(activeGoal()).toBeUndefined()
     vi.stubGlobal('localStorage', { getItem: () => { throw new Error('blocked') }, setItem: () => { throw new Error('blocked') } })
     expect(() => setActiveGoal('improvise')).not.toThrow()

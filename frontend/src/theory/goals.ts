@@ -7,6 +7,8 @@ import { EXERCISES } from './exercises'
 export interface Goal {
   id: string
   name: string
+  /** Under the goal's tile in the goal picker. */
+  short: string
   /** One line: what you will be able to do. */
   why: string
   lessons: readonly string[]
@@ -15,24 +17,28 @@ export interface Goal {
 export const GOALS: readonly Goal[] = [
   {
     id: 'chord-sheet',
+    short: 'Chord sheet',
     name: 'Play from a chord sheet',
     why: 'Open a chord chart and play the song, chords and accompaniment, in any key. (You already read the melody.)',
     lessons: ['chord-spelling', 'diatonic-chords', 'nashville', 'lead-sheets', 'slash-chords', 'transposition', 'voice-leading', 'comping', 'left-hand', 'bass-lines'],
   },
   {
     id: 'by-ear',
+    short: 'By ear',
     name: 'Work out a song by ear',
     why: 'Hear a song and find its chords: what they are, where they go, and when the key changes.',
     lessons: ['intervals', 'chord-quality', 'scale-degrees', 'chord-function', 'progressions', 'cadences', 'slash-chords', 'borrowed-chords', 'modulation', 'by-ear'],
   },
   {
     id: 'accompany',
+    short: 'Accompany',
     name: 'Accompany a singer',
     why: 'Play behind someone singing: smooth chords, a groove, a bass line, in their key, following where the song goes.',
     lessons: ['chord-spelling', 'diatonic-chords', 'voice-leading', 'comping', 'left-hand', 'bass-lines', 'transposition', 'cadences', 'modulation', 'by-ear'],
   },
   {
     id: 'improvise',
+    short: 'Improvise',
     name: 'Improvise',
     why: 'Make up lines that fit the chords: know where you are in the scale and which notes land well.',
     lessons: ['scale-degrees', 'pentatonic', 'chord-tones', 'minor-scales', 'modes', 'two-five-one', 'scale-choice', 'approach-notes', 'phrasing'],
@@ -44,13 +50,20 @@ export const getGoalById = (id: string | null | undefined): Goal | undefined => 
 // ---- The chosen goal, kept on this device -----------------------------------------------------------
 
 const GOAL_KEY = 'musercise.goal'
-const WELCOME_KEY = 'musercise.goal-welcome'
+const listeners = new Set<() => void>()
 
 export const activeGoal = (): Goal | undefined => getGoalById(readJson<string | null>(GOAL_KEY, null))
-/** Choose a goal, or `null` to show every lesson. */
-export const setActiveGoal = (id: string | null): void => writeJson(GOAL_KEY, id)
-export const welcomeSeen = (): boolean => readJson<boolean>(WELCOME_KEY, false)
-export const markWelcomeSeen = (): void => writeJson(WELCOME_KEY, true)
+/** Choose a goal, or `null` to show every lesson. Everything showing the goal updates at once. */
+export function setActiveGoal(id: string | null): void {
+  writeJson(GOAL_KEY, id)
+  listeners.forEach((l) => l())
+}
+/** For `useSyncExternalStore`: tell me when the goal changes. */
+export function subscribeGoal(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => void listeners.delete(listener)
+}
+export const activeGoalId = (): string | null => activeGoal()?.id ?? null
 
 // ---- Progress towards a goal ------------------------------------------------------------------------
 

@@ -89,12 +89,9 @@ interface Props {
   stages: PathStage[]
   openId: number
   onOpen: (id: number) => void
-  /** The active goal and how far along it is, or null when every lesson is shown. */
-  goal: { name: string; done: number; total: number } | null
 }
 
-export function PathView({ stages, openId, onOpen, goal }: Props) {
-  const lessonsWord = goal ? 'goal lessons ready' : 'lessons ready'
+export function PathView({ stages, openId, onOpen }: Props) {
   return (
     <div className="path-view">
       {stages.map((s) => {
@@ -104,11 +101,8 @@ export function PathView({ stages, openId, onOpen, goal }: Props) {
             {open ? (
               <header className="stage-banner">
                 <div>
-                  <Link to="/goals" className="goal-line">
-                    {goal ? `Goal: ${goal.name} · ${goal.done} of ${goal.total} done` : 'Goal: none · choose one'} ›
-                  </Link>
                   <p className="stage-eyebrow">
-                    Stage {s.stage.id} · {s.ready === 0 ? 'coming soon' : `${s.ready} of ${s.total} ${lessonsWord}`}
+                    Stage {s.stage.id} · {s.ready === 0 ? 'coming soon' : `${s.ready} of ${s.total} lessons ready`}
                   </p>
                   <h2 id={`stage-${s.stage.id}`}>{s.stage.name}</h2>
                 </div>
@@ -123,7 +117,7 @@ export function PathView({ stages, openId, onOpen, goal }: Props) {
                   <span className="stage-icon" aria-hidden="true">{s.ready === 0 ? <Lock size={22} /> : <Ear size={24} />}</span>
                   <div>
                     <p className="stage-eyebrow">
-                      Stage {s.stage.id}{s.ready === 0 ? ' · coming soon' : ` · ${s.ready} of ${s.total} ${lessonsWord}`}
+                      Stage {s.stage.id}{s.ready === 0 ? ' · coming soon' : ` · ${s.ready} of ${s.total} lessons ready`}
                     </p>
                     <h2 id={`stage-${s.stage.id}`}>{s.stage.name}</h2>
                     <p className="stage-blurb">{s.stage.blurb}</p>

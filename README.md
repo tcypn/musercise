@@ -20,7 +20,7 @@ Streak, accuracy and charts include sessions that have not uploaded yet. Day bou
 
 ### Goals
 
-Choose what you want to be able to do, and the path on Learn shows only the lessons that lead there: **Play from a chord sheet**, **Work out a song by ear**, **Accompany a singer** or **Improvise**. The goal shows as one line at the top of the stage banner ("Goal: play from a chord sheet · 4 of 10 done"); tap it to open the Goals page, see every lesson of each goal with its status, change goal, or go back to showing everything. A one-time card on Learn asks the first time. The Map still shows every lesson and marks your goal's with ◆. The goal is kept on this device.
+Choose what you want to be able to do, and the path on Learn shows only the lessons that lead there: **Play from a chord sheet**, **Work out a song by ear**, **Accompany a singer** or **Improvise**. The goal sits top left, like a course switcher (in the app bar on phones, in Learn's top row on wider screens), with the streak on the right: tap it to open a panel with the four goals and how far along yours is, or tap ✕ to show every lesson again. "More about this goal" opens the Goals page with every lesson of each goal and its status. The Map marks your goal's lessons with ◆. The goal is kept on this device.
 ### A lesson
 
 A lesson is 20 questions. Press the speaker (or **R**) to hear it, **Slow** to hear it with the notes further apart, pick an answer (tap, or keys **1 to 9**) and press **Check** (or **Enter**). A green or red strip then slides up with the right answer and the song or sound that goes with it; **Continue** moves on. Score 80% to pass. Colours that carry text are deeper shades than the bright ones on shapes, so text stays readable (4.5:1 or more).

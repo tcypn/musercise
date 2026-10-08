@@ -62,7 +62,7 @@ export function MapPage() {
       <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
 
       <p className="quiet route-legend">
-        <span className="route-mark" aria-hidden="true">◆</span> {activeGoal() ? <>marks the lessons of your goal, <Link to="/goals">{activeGoal()!.name.toLowerCase()}</Link>.</> : <>marks the suggested route to accompanying a pop or R&amp;B song. <Link to="/goals">Choose a goal</Link> to mark your own.</>} Nothing is locked, so start anywhere.
+        <span className="route-mark" aria-hidden="true">◆</span> {activeGoal() ? <>marks the lessons of your goal, {activeGoal()!.name.toLowerCase()}.</> : <>marks the suggested route to accompanying a pop or R&amp;B song.</>} Nothing is locked, so start anywhere.
       </p>
 
       <ol className="stages" aria-label="Stages">

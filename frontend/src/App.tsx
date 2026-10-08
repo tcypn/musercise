@@ -1,4 +1,6 @@
 import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { GoalChip } from './components/dash/GoalChip'
+import { StreakChip } from './components/dash/StreakChip'
 import { Brand, SideNav } from './components/SideNav'
 import { TabBar } from './components/TabBar'
 import { ComingSoon } from './pages/ComingSoon'
@@ -27,7 +29,14 @@ function Shell() {
       <SideNav />
       <div className="app-col">
         <header className="site-header">
-          <Brand />
+          {path === '/settings' ? (
+            <Brand />
+          ) : (
+            <>
+              <GoalChip />
+              <StreakChip />
+            </>
+          )}
         </header>
         <main>
           <Routes>

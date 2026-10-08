@@ -1,19 +1,15 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useProgress } from '../store/useProgress'
-import { activeGoal, GOALS, goalProgress, markWelcomeSeen, setActiveGoal, type LessonState } from '../theory/goals'
+import { useGoal } from '../store/useGoal'
+import { GOALS, goalProgress, setActiveGoal, type LessonState } from '../theory/goals'
 
 const STATE_TEXT: Record<LessonState, string> = { done: 'Done', started: 'In progress', new: 'Not started', soon: 'Coming soon' }
 
 /** Choose what you want to be able to do; the path on Home then shows only those lessons. */
 export function Goals() {
   const { progress } = useProgress()
-  const [active, setActive] = useState(() => activeGoal()?.id ?? null)
-  const choose = (id: string | null) => {
-    setActiveGoal(id)
-    markWelcomeSeen()
-    setActive(id)
-  }
+  const active = useGoal()?.id ?? null
+  const choose = (id: string | null) => setActiveGoal(id)
 
   return (
     <section className="practice">
