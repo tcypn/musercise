@@ -1,6 +1,6 @@
 import type { TimedEvent } from './practice'
 
-export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping' | 'voice-leading' | 'left-hand' | 'bass-lines' | 'lead-sheets' | 'transposition'
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping' | 'voice-leading' | 'left-hand' | 'bass-lines' | 'lead-sheets' | 'transposition' | 'modulation' | 'borrowed-chords' | 'nashville' | 'circle-of-fifths'
 
 /** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
 export type Mode =

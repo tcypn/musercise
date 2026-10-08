@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Twenty-four are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts** and **transposition**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Twenty-eight are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers** and **the circle of fifths**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -360,6 +360,22 @@ A short chord chart is shown as on a band's music stand; answer how to play it: 
 
 Move chords to another key, as when a singer needs it lower: one chord up or down a whole step, a progression from one key to another through its numbers, a half step, slash chords, 7th chords, playing with a guitarist's capo, and flat keys.
 
+### Key changes (ear)
+
+Hear a phrase settle in a key, then a second phrase: did it **stay**, go **up a whole step** (the classic last-chorus lift), **up a half step**, **to the key of V**, **to the key of IV**, or **to the relative minor**? After the answer every chord is shown with its number in its key. Levels add one move at a time, then any key, changes prepared by the new key's V7, sudden changes, and less help.
+
+### Borrowed and secondary chords (ear)
+
+A loop in a major key with one chord from outside it: a chord **borrowed** from the minor key (**iv**, **♭VII**, **♭VI**, **♭III**) or a **secondary dominant** that pulls to another chord (**V/V**, **V/vi**, **V/ii**). The strip says what the chord does ("E7 is V of vi: it pulls to Am") with a Try it line. Levels add one chord at a time, then any key, 7th chords, 9ths and a pop rhythm.
+
+### Nashville numbers (a quiz)
+
+Chords written as numbers of the key, as session players do: 1 4 5 6- in G is G C D Em. Read numbers as chords and chords as numbers, with minors (6-), slash numbers (1/3), 7ths (5⁷, 1maj7, 2-7), borrowed numbers (♭7, ♭3, ♭6, 4-) and a whole number chart.
+
+### The circle of fifths (a quiz)
+
+The twelve keys round a clock, C at the top: the next key either way, sharps and flats, relative minors, a key's IV and V neighbours, how far a key change travels, chord moves (V–I, ii–V–I) and the three keys with two names (B = C♭, F♯ = G♭, D♭ = C♯). The strip shows the circle with the answer marked.
+
 ### Conventions
 
 Some rules vary between books and bands. These lessons use the most common ones:
@@ -368,6 +384,7 @@ Some rules vary between books and bands. These lessons use the most common ones:
 - **Voice leading:** "moves least" means the right hand only, counted in semitones finger by finger (lowest note to lowest note, and so on); the bass is the left hand's job.
 - **Bass lines and walking patterns:** notes outside the chord are passing notes, and are named as such.
 - **Capo:** chord shapes + capo = the key you hear (one half step per fret).
+- **Nashville numbers:** a plain number is a major chord, `-` makes it minor, `⁷` is a dominant 7th, and the number after a slash is the bass note counted in the key (in C, 5/7 is G/B).
 
 ### Listening aids
 

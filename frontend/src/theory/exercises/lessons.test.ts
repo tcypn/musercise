@@ -1503,3 +1503,151 @@ describe('transposition', () => {
     }
   })
 })
+
+describe('key changes', () => {
+  const lesson = EXERCISES.modulation
+  // Independent theory: semitones from the old home to the new, and the scales of both keys.
+  const SHIFT: Record<string, number> = { none: 0, 'up-whole': 2, 'up-half': 1, 'to-V': 7, 'to-IV': 5, 'to-relative': 9 }
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11]
+  const HARMONIC_MINOR_PLUS = [0, 2, 3, 5, 7, 8, 10, 11]
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : ch === '♭' ? -1 : 0), 0) + 24) % 12
+
+  it('plays a first phrase in the old key and a second ending home in the new one', () => {
+    const rand = seeded(151)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const oldHome = Math.min(...q.events![0].notes) % 12
+        const chords = q.steps!.map((s) => s.notes)
+        const newHome = (oldHome + SHIFT[q.item]) % 12
+        const scale = (home: number, minor: boolean) => (minor ? HARMONIC_MINOR_PLUS : MAJOR).map((x) => (home + x) % 12)
+        const old = scale(oldHome, false)
+        const fresh = scale(newHome, q.item === 'to-relative')
+        expect(chords.length === 9 || chords.length === 10).toBe(true)
+        chords.slice(0, 5).forEach((c) => c.forEach((m) => expect(old).toContain(m % 12)))
+        chords.slice(5).forEach((c) => c.forEach((m) => expect(fresh, `level ${level.id} ${q.item}`).toContain(m % 12)))
+        // both phrases end on their home chord, root in the bass
+        expect(Math.min(...chords[4]) % 12).toBe(oldHome)
+        expect(Math.min(...chords[chords.length - 1]) % 12).toBe(newHome)
+        // the labels name the right keys
+        const key = q.steps![chords.length - 1].label.match(/in ([A-G][♯♭]?) (major|minor)/)!
+        expect(pcOf(key[1])).toBe(newHome)
+        expect(key[2]).toBe(q.item === 'to-relative' ? 'minor' : 'major')
+        const other = level.items.find((x) => x !== q.item)!
+        const alt = sameSetting(lesson, level, q, other)!
+        expect(alt.steps!.slice(0, 5).map((s) => s.notes)).toEqual(q.steps!.slice(0, 5).map((s) => s.notes))
+      }
+    }
+  })
+})
+
+describe('borrowed and secondary chords', () => {
+  const lesson = EXERCISES['borrowed-chords']
+  // Independent theory: each outside chord's root above home and its quality, and the major scale.
+  const OUT: Record<string, [number, 'maj' | 'min']> = { iv: [5, 'min'], bVII: [10, 'maj'], bVI: [8, 'maj'], bIII: [3, 'maj'], 'V-V': [2, 'maj'], 'V-vi': [4, 'maj'], 'V-ii': [9, 'maj'] }
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11]
+  const thirdOf = (rel: number[]) => (rel.includes(4) ? 'maj' : rel.includes(3) ? 'min' : '?')
+
+  it('has exactly one chord outside the key, and it is the one named', () => {
+    const rand = seeded(157)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const home = Math.min(...q.events![0].notes) % 12
+        const scale = MAJOR.map((x) => (home + x) % 12)
+        const outside = q.steps!.filter((s) => s.notes.some((m) => !scale.includes(m % 12)))
+        expect(outside.length, `level ${level.id} ${q.item}: ${q.steps!.map((s) => s.label).join(', ')}`).toBe(1)
+        const notes = outside[0].notes
+        const root = Math.min(...notes) % 12
+        const [want, quality] = OUT[q.item]
+        expect((root - home + 12) % 12).toBe(want)
+        expect(thirdOf(notes.map((m) => (m - root + 120) % 12))).toBe(quality)
+        const other = level.items.find((x) => x !== q.item)!
+        expect(sameSetting(lesson, level, q, other)!.events![0].notes).toEqual(q.events![0].notes)
+      }
+    }
+  })
+})
+
+describe('Nashville numbers', () => {
+  const lesson = EXERCISES.nashville
+  const short = (id: string) => lesson.items.find((i) => i.id === id)!.short
+  const NATURAL: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
+  const LETTERS = 'CDEFGAB'
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11]
+  const pcOf = (label: string) => (NATURAL[label[0]] + [...label.slice(1)].reduce((s, ch) => s + (ch === '♯' ? 1 : ch === '♭' ? -1 : 0), 0) + 24) % 12
+  /** The note `degree` (1-7) of a major key, lowered by `flat` semitones, spelled by letter. */
+  function noteOf(key: string, degree: number, flat = 0): string {
+    const letter = LETTERS[(LETTERS.indexOf(key[0]) + degree - 1) % 7]
+    const acc = ((((pcOf(key) + MAJOR[degree - 1] - flat - NATURAL[letter]) % 12) + 18) % 12) - 6
+    return letter + (acc > 0 ? '♯'.repeat(acc) : '♭'.repeat(-acc))
+  }
+  /** Independent reading of a Nashville number in a key. */
+  function chord(key: string, num: string): string {
+    const m = num.match(/^(♭?)([1-7])(-?)(⁷|maj7|7)?(?:\/([1-7]))?$/)!
+    const [, flat, deg, minor, seventh, bass] = m
+    const root = noteOf(key, Number(deg), flat ? 1 : 0)
+    const kind = minor ? (seventh ? 'm7' : 'm') : seventh === '⁷' ? '7' : seventh === 'maj7' ? 'maj7' : ''
+    // the number after the slash is a note of the key: 5/7 in C is G/B, because B is note 7 of C
+    const bassNote = bass ? noteOf(key, Number(bass)) : ''
+    return `${root}${kind}${bass ? `/${bassNote}` : ''}`
+  }
+
+  it('reads every number and chord the way a session player would', () => {
+    const rand = seeded(163)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 80, rand)) {
+        const t = q.prompt!.text
+        let m: RegExpMatchArray | null
+        if ((m = t.match(/^In (\S+) major, (?:the chart says .+\. )?[Ww]hat chord is (\S+)\?$/))) {
+          expect(short(q.item), `level ${level.id}: ${t}`).toBe(chord(m[1], m[2]))
+        } else if ((m = t.match(/^In (\S+) major, which number is (\S+)\?$/))) {
+          expect(chord(m[1], short(q.item)), `level ${level.id}: ${t}`).toBe(m[2])
+        } else if ((m = t.match(/^Which chord do you play in bar (\d+)\?$/))) {
+          const lines = q.prompt!.chart!.split('\n')
+          const key = lines[0].replace('Key: ', '')
+          const bars = lines.slice(1).join(' ').split('|').map((b) => b.trim()).filter(Boolean)
+          expect(short(q.item)).toBe(chord(key, bars[Number(m[1]) - 1]))
+        } else throw new Error(`unknown question: ${t}`)
+        expect(q.choices!.length).toBeGreaterThanOrEqual(2)
+      }
+    }
+  })
+})
+
+describe('the circle of fifths', () => {
+  const lesson = EXERCISES['circle-of-fifths']
+  const short = (id: string) => lesson.items.find((i) => i.id === id)!.short
+  // Independent theory: the circle written out by hand, with each key's signature (+ sharps, - flats).
+  const CIRCLE = ['C', 'G', 'D', 'A', 'E', 'B', 'F♯', 'D♭', 'A♭', 'E♭', 'B♭', 'F']
+  const SIGNATURE: Record<string, number> = { C: 0, G: 1, D: 2, A: 3, E: 4, B: 5, 'F♯': 6, 'D♭': -5, 'A♭': -4, 'E♭': -3, 'B♭': -2, F: -1, 'C♭': -7, 'G♭': -6, 'C♯': 7 }
+  const RELATIVE: Record<string, string> = { C: 'A', G: 'E', D: 'B', A: 'F♯', E: 'C♯', B: 'G♯', 'F♯': 'D♯', 'D♭': 'B♭', 'A♭': 'F', 'E♭': 'C', 'B♭': 'G', F: 'D' }
+  const SAME: Record<string, string> = { B: 'C♭', 'F♯': 'G♭', 'D♭': 'C♯' }
+  const II: Record<string, string> = { C: 'Dm', G: 'Am', D: 'Em', A: 'Bm', E: 'F♯m', B: 'C♯m', 'F♯': 'G♯m', 'D♭': 'E♭m', 'A♭': 'B♭m', 'E♭': 'Fm', 'B♭': 'Cm', F: 'Gm' }
+  const step = (k: string, n: number) => CIRCLE[(((CIRCLE.indexOf(k) + n) % 12) + 12) % 12]
+  const acc = (n: number) => (n === 0 ? 'No sharps or flats' : `${Math.abs(n)} ${n > 0 ? 'sharp' : 'flat'}${Math.abs(n) === 1 ? '' : 's'}`)
+
+  it('every answer follows from the circle', () => {
+    const rand = seeded(167)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 80, rand)) {
+        const t = q.prompt!.text
+        let m: RegExpMatchArray | null
+        let want: string
+        if ((m = t.match(/what is (\d) steps? (clockwise|counter-clockwise) from (\S+)\?$/))) want = `${step(m[3], (m[2] === 'clockwise' ? 1 : -1) * Number(m[1]))} major`
+        else if ((m = t.match(/^How many sharps or flats does (\S+) major have\?$/))) want = acc(SIGNATURE[m[1]])
+        else if ((m = t.match(/^What is the relative minor of (\S+) major\?$/))) want = `${RELATIVE[m[1]]} minor`
+        else if ((m = t.match(/What is the (IV|V) chord in (\S+) major\?$/))) want = `${step(m[2], m[1] === 'V' ? 1 : -1)} major`
+        else if ((m = t.match(/^A song moves from (\S+) major to (\S+) major\./))) {
+          let d = (CIRCLE.indexOf(m[2]) - CIRCLE.indexOf(m[1]) + 12) % 12
+          if (d > 6) d -= 12
+          want = `${Math.abs(d)} step${Math.abs(d) === 1 ? '' : 's'} ${d > 0 ? 'clockwise' : 'counter-clockwise'}`
+        } else if ((m = t.match(/If V is (\S+), what is I\?$/))) want = `${step(m[1], -1)} major`
+        else if ((m = t.match(/In (\S+) major, what is the ii chord\?$/))) want = II[m[1]]
+        else if ((m = t.match(/which key sounds the same as (\S+) major\?$/))) want = `${SAME[m[1]]} major`
+        else throw new Error(`unknown question: ${t}`)
+        expect(short(q.item), `level ${level.id}: ${t}`).toBe(want)
+        expect(q.choices!.length).toBeGreaterThanOrEqual(2)
+      }
+    }
+  })
+})

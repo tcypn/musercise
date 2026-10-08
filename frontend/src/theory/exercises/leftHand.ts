@@ -71,7 +71,7 @@ function build(pattern: string, mode: Mode, loop: string[], tonicPc: number, bpm
     events,
     stepOf,
     steps: voiced.map((v, i) => ({ label: `${loop[i]} · ${names[i]}`, notes: [v.bass, ...v.upper] })),
-    explain: `${p.name}, ${loop.join('–')} in ${label} (${names.join(' ')}): ${p.how} Try it: ${p.tryIt}`,
+    explain: `${p.name}, ${loop.join('–')} in ${label} (${names.join(' ')}): ${p.how} Try it${tonicPc === 0 ? "" : " in C"}: ${p.tryIt}`,
     swap: (other) => build(other, mode, loop, tonicPc, bpm),
   }
 }

@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.23.0', date: '2026-10-08', changes: ['New lessons: key changes, borrowed and secondary chords, Nashville numbers, the circle of fifths', 'Fix: "Try it" examples in comping and left-hand patterns say "in C" when the question is in another key'] },
   { version: '1.22.2', date: '2026-10-08', changes: ['While a sound plays, the keyboard lights exactly the keys sounding at that moment, such as a left hand moving under a held chord'] },
   { version: '1.22.1', date: '2026-10-08', changes: ['Fix: in Listen first and after an answer, the keyboard shows the chord or note that is sounding (it showed only the home note in the newer lessons)'] },
   { version: '1.22.0', date: '2026-10-08', changes: ['New lessons: voice leading, left-hand patterns, bass lines, reading lead sheets and chord charts, transposition', 'Comping patterns: a "Try it" line after every answer'] },
