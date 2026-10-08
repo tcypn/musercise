@@ -13,9 +13,14 @@
 .learn-notice .notice { margin: 0; }
 .learn-today { grid-area: today; } .learn-rec { grid-area: rec; } .learn-mistakes { grid-area: mistakes; } .learn-accuracy { grid-area: accuracy; }
 .learn-path { grid-area: path; } .learn-ear { grid-area: ear; }
+/* Narrow screens: the side cards take their own places in the single column. */
+.learn-side { display: contents; }
 @media (min-width: 62rem) {
-  .learn { max-width: none; grid-template-columns: minmax(0, 1fr) 24rem; column-gap: 2.5rem; grid-template-rows: auto auto auto auto auto auto auto 1fr;
-    grid-template-areas: 'top top' 'notice notice' 'path today' 'path rec' 'path mistakes' 'path accuracy' 'path ear' 'path .'; }
+  .learn { max-width: none; grid-template-columns: minmax(0, 1fr) 24rem; column-gap: 2.5rem; grid-template-rows: auto auto 1fr;
+    grid-template-areas: 'top top' 'notice notice' 'path side'; }
+  /* The cards stay beside the path while it scrolls; if they are taller than the screen, the column scrolls on its own. */
+  .learn-side { grid-area: side; display: flex; flex-direction: column; gap: 1rem; align-self: start; position: sticky; top: 1rem;
+    max-height: calc(100vh - 2rem); overflow-y: auto; overscroll-behavior: contain; padding-bottom: 0.5rem; }
 }
 
 /* Streak, top right: just the flame and the number. It opens the streak page. */

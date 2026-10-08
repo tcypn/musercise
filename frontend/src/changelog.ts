@@ -9,7 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
-  { version: '1.25.0', date: '2026-10-08', changes: ['The path shows one stage at a time, with a banner that stays at the top and names the lesson you are in (tap it to switch stage)', 'Each lesson ends in a numbered badge, with a divider before the next lesson and "Up next" at the bottom', 'The app bar stays at the top on phones'] },
+  { version: '1.25.0', date: '2026-10-08', changes: ['The path shows one stage at a time, with a banner that stays at the top and names the lesson you are in (tap it to switch stage)', 'Each lesson ends in a numbered badge, with a divider before the next lesson and "Up next" at the bottom', 'The app bar stays at the top on phones', 'On wide screens, the cards beside the path stay on screen while you scroll'] },
   { version: '1.24.0', date: '2026-10-08', changes: ['Goals: choose what you want to be able to do, and the path on Learn shows only the lessons that lead there'] },
   { version: '1.23.0', date: '2026-10-08', changes: ['New lessons: key changes, borrowed and secondary chords, Nashville numbers, the circle of fifths', 'Fix: "Try it" examples in comping and left-hand patterns say "in C" when the question is in another key'] },
   { version: '1.22.2', date: '2026-10-08', changes: ['While a sound plays, the keyboard lights exactly the keys sounding at that moment, such as a left hand moving under a held chord'] },

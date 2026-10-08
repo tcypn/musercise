@@ -49,14 +49,17 @@ export function Learn() {
         <SyncNotice sync={sync} message={message} pendingCount={pendingCount} rejectedCount={rejectedCount} />
       </div>
 
-      <div className="learn-today"><TodayCard today={today} /></div>
-      <div className="learn-rec"><RecommendedList items={recs} /></div>
-      <div className="learn-mistakes"><MistakesCard spots={spots} /></div>
-      <div className="learn-accuracy"><AccuracyCard view={accuracy} days={bars} /></div>
       <div className="learn-path">
         <PathView stages={path} openId={openId} onOpen={setPicked} />
       </div>
-      <div className="learn-ear"><EarRadar exercises={progress.exercises} /></div>
+      {/* On wide screens these cards form a column beside the path that stays on screen while the path scrolls. */}
+      <div className="learn-side">
+        <div className="learn-today"><TodayCard today={today} /></div>
+        <div className="learn-rec"><RecommendedList items={recs} /></div>
+        <div className="learn-mistakes"><MistakesCard spots={spots} /></div>
+        <div className="learn-accuracy"><AccuracyCard view={accuracy} days={bars} /></div>
+        <div className="learn-ear"><EarRadar exercises={progress.exercises} /></div>
+      </div>
     </div>
   )
 }
