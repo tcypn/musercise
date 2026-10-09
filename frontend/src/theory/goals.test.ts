@@ -30,8 +30,8 @@ describe('goals', () => {
     expect(prog.lessons[0]).toMatchObject({ state: 'done', passed: 10 })
     expect(prog.lessons[1]).toMatchObject({ state: 'started', passed: 1 })
     expect(prog.next?.conceptId).toBe('pentatonic')
-    expect(prog.lessons.filter((l) => l.state === 'soon').map((l) => l.conceptId)).toEqual(['scale-choice', 'approach-notes', 'phrasing'])
-    expect(prog.ready).toBe(6)
+    expect(prog.lessons.filter((l) => l.state === 'soon').map((l) => l.conceptId)).toEqual([])
+    expect(prog.ready).toBe(9)
   })
 
   it('remembers the goal on this device, tells everything showing it, and copes with blocked storage', () => {

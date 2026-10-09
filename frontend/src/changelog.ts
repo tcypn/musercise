@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.27.0', date: '2026-10-09', changes: ['New lessons: which scale over which chord, approach notes and embellishments, phrasing and call-and-response', 'The Improvise goal is now complete'] },
   { version: '1.26.0', date: '2026-10-08', changes: ['The green banner has two parts: the stage and lesson open a list of all stages, the book opens a guide to the lesson (what you learn, every level with an example to hear, a tip)'] },
   { version: '1.25.0', date: '2026-10-08', changes: ['The path shows one stage at a time, with a banner that stays at the top and names the lesson you are in (tap it to switch stage)', 'Each lesson ends in a numbered badge, with a divider before the next lesson and "Up next" at the bottom', 'The app bar stays at the top on phones', 'On wide screens, the cards beside the path stay on screen while you scroll'] },
   { version: '1.24.0', date: '2026-10-08', changes: ['Goals: choose what you want to be able to do, and the path on Learn shows only the lessons that lead there'] },

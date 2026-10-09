@@ -1657,3 +1657,126 @@ describe('the circle of fifths', () => {
     }
   })
 })
+
+describe('which scale over which chord', () => {
+  const lesson = EXERCISES['scale-choice']
+  // Independent theory: each scale as semitones above its root.
+  const SCALE: Record<string, number[]> = {
+    major: [0, 2, 4, 5, 7, 9, 11], mixolydian: [0, 2, 4, 5, 7, 9, 10], dorian: [0, 2, 3, 5, 7, 9, 10], locrian: [0, 1, 3, 5, 6, 8, 10],
+    'major-pent': [0, 2, 4, 7, 9], 'minor-pent': [0, 3, 5, 7, 10],
+  }
+
+  it('offers exactly one scale that holds every note of the chord, and it is the answer', () => {
+    const rand = seeded(173)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const at = q.prompt ? Number(q.prompt.text.match(/chord (\d)\?/)![1]) - 1 : 0
+        const chord = q.steps![at].notes
+        const root = Math.min(...chord)
+        const tones = [...new Set(chord.map((m) => (m - root + 120) % 12))]
+        const fits = q.choices!.filter((c) => tones.every((t) => SCALE[c].includes(t)))
+        expect(fits, `level ${level.id}: ${q.steps!.map((s) => s.label).join(' ')}`).toEqual([q.item])
+        // every chord of the progression is heard, and the keyboard follows it
+        expect(new Set(q.stepOf).size).toBe(q.steps!.length)
+      }
+    }
+  })
+})
+
+describe('approach notes and embellishments', () => {
+  const lesson = EXERCISES['approach-notes']
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11]
+
+  it('lands on a chord tone, approached exactly the way the answer says', () => {
+    const rand = seeded(179)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 80, rand)) {
+        const events = q.events!
+        const chord = q.steps![0].notes
+        const home = Math.min(...chord) % 12
+        const chordPcs = new Set(chord.map((m) => m % 12))
+        // the last line: from its last "start" note to the end
+        const roles = q.steps!.map((s) => s.label.split(' · ')[0])
+        const from = roles.lastIndexOf('start')
+        const line = events.slice(from) // events and steps line up one to one (stepOf is 0, 1, 2…)
+        expect(q.stepOf).toEqual(q.steps!.map((_, i) => i))
+        const target = line[line.length - 1]
+        const t = target.notes[0]
+        expect(chordPcs.has(t % 12), `level ${level.id}`).toBe(true)
+        const middle = line.slice(1, -1)
+        const rel = middle.map((e) => e.notes[0] - t)
+        const inScale = (m: number) => MAJOR.includes((m - home + 120) % 12)
+        switch (q.item) {
+          case 'direct':
+            expect(middle.length).toBe(1)
+            expect(chordPcs.has(middle[0].notes[0] % 12)).toBe(true)
+            expect(Math.abs(rel[0])).toBeGreaterThanOrEqual(3)
+            break
+          case 'below':
+            expect(rel).toEqual([-1])
+            expect(target.time - middle[0].time).toBeGreaterThan(0.25)
+            break
+          case 'grace':
+            expect(rel).toEqual([-1])
+            expect(target.time - middle[0].time).toBeLessThan(0.15)
+            expect(middle[0].hold).toBeLessThan(0.1)
+            break
+          case 'above':
+            expect([1, 2]).toContain(rel[0])
+            expect(inScale(middle[0].notes[0])).toBe(true)
+            break
+          case 'enclosure':
+            expect(rel.length).toBe(2)
+            expect([1, 2]).toContain(rel[0])
+            expect(inScale(middle[0].notes[0])).toBe(true)
+            expect(rel[1]).toBe(-1)
+            break
+        }
+        // the start of the line is a chord tone well away from the target
+        expect(chordPcs.has(line[0].notes[0] % 12)).toBe(true)
+        expect(Math.abs(line[0].notes[0] - t)).toBeGreaterThanOrEqual(3)
+      }
+    }
+  })
+})
+
+describe('phrasing, licks and call-and-response', () => {
+  const lesson = EXERCISES.phrasing
+  const PENT = { major: [0, 2, 4, 7, 9], minor: [0, 3, 5, 7, 10] }
+
+  it('the response does exactly one thing, the one named', () => {
+    const rand = seeded(181)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const home = Math.min(...q.events![0].notes) % 12
+        const notes = q.events!.slice(q.answerFrom)
+        const parts = q.steps!.map((s) => s.label.split(' · ')[0])
+        const call = notes.filter((_, i) => parts[i] === 'call')
+        const res = notes.filter((_, i) => parts[i] === 'response')
+        // independent: where each note sits in the pentatonic, counted up from home
+        const scale = PENT[q.mode as 'major' | 'minor']
+        const pos = (m: number) => {
+          const rel = m - (60 + home)
+          const oct = Math.floor(rel / 12)
+          const at = scale.indexOf(((rel % 12) + 12) % 12)
+          expect(at, `note ${m} not in the pentatonic`).toBeGreaterThanOrEqual(0)
+          return oct * 5 + at
+        }
+        const len = (e: { hold: number }) => Math.round(e.hold * 100)
+        const c = call.map((e) => pos(e.notes[0]))
+        const r = res.map((e) => pos(e.notes[0]))
+        const sameRhythm = c.length === r.length && call.every((e, i) => len(e) === len(res[i]))
+        const shift = c.length === r.length && r.every((x, i) => x - c[i] === r[0] - c[0]) ? r[0] - c[0] : null
+        const isHome = (p: number) => p % 5 === 0
+        const truths = [
+          sameRhythm && shift === 0 && 'repeat',
+          sameRhythm && (shift === 1 || shift === -1) && 'sequence',
+          sameRhythm && shift === null && c.slice(0, -1).every((x, i) => x === r[i]) && isHome(r[r.length - 1]) && !isHome(c[c.length - 1]) && 'answer',
+        ].filter(Boolean)
+        expect(truths.length).toBeLessThanOrEqual(1)
+        expect(truths[0] ?? 'contrast', `level ${level.id}: ${c} / ${r}`).toBe(q.item)
+        expect(isHome(c[c.length - 1])).toBe(false)
+      }
+    }
+  })
+})

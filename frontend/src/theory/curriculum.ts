@@ -116,9 +116,9 @@ export const STAGES: readonly Stage[] = [
     concepts: [
       { id: 'melodic-dictation', name: 'Melodic dictation', kind: 'ear', blurb: 'Hear a short melody and play it back on the keyboard.', why: 'Brings everything together: it is how you learn a tune without sheet music.', before: ['scale-degrees', 'intervals'] },
       { id: 'chord-tones', name: 'Chord tones and guide tones', kind: 'ear', blurb: 'Hear which melody notes belong to the chord underneath, especially the 3rd and 7th.', why: 'Landing on chord tones is what makes an improvised line sound like it fits.', before: ['chord-quality', 'progressions'] , exerciseId: 'chord-tones' },
-      { id: 'scale-choice', name: 'Which scale over which chord', kind: 'ear+theory', blurb: 'Choose a scale that suits each chord and hear how it colours the sound.', why: 'The practical core of improvising: it tells you which notes are safe and which add tension.', before: ['pentatonic', 'diatonic-chords'] },
-      { id: 'approach-notes', name: 'Approach notes and embellishments', kind: 'ear', blurb: 'Hear passing notes, neighbour notes and grace notes that decorate a melody.', why: 'These make a line flow instead of sounding like a scale going up and down.', before: ['chord-tones'] },
-      { id: 'phrasing', name: 'Phrasing, licks and call-and-response', kind: 'ear', blurb: 'Hear a short phrase and answer it with your own.', why: 'This is how improvising turns into music: short ideas with shape, space and repetition.', before: ['pentatonic', 'chord-tones'] },
+      { id: 'scale-choice', name: 'Which scale over which chord', kind: 'ear+theory', blurb: 'Choose a scale that suits each chord and hear how it colours the sound.', why: 'The practical core of improvising: it tells you which notes are safe and which add tension.', before: ['pentatonic', 'diatonic-chords'] , exerciseId: 'scale-choice' },
+      { id: 'approach-notes', name: 'Approach notes and embellishments', kind: 'ear', blurb: 'Hear passing notes, neighbour notes and grace notes that decorate a melody.', why: 'These make a line flow instead of sounding like a scale going up and down.', before: ['chord-tones'] , exerciseId: 'approach-notes' },
+      { id: 'phrasing', name: 'Phrasing, licks and call-and-response', kind: 'ear', blurb: 'Hear a short phrase and answer it with your own.', why: 'This is how improvising turns into music: short ideas with shape, space and repetition.', before: ['pentatonic', 'chord-tones'] , exerciseId: 'phrasing' },
     ],
   },
   {

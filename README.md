@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Twenty-eight are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers** and **the circle of fifths**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Thirty-one are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers**, **the circle of fifths**, **which scale over which chord**, **approach notes and embellishments** and **phrasing and call-and-response**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -379,6 +379,18 @@ Chords written as numbers of the key, as session players do: 1 4 5 6- in G is G 
 ### The circle of fifths (a quiz)
 
 The twelve keys round a clock, C at the top: the next key either way, sharps and flats, relative minors, a key's IV and V neighbours, how far a key change travels, chord moves (V–I, ii–V–I) and the three keys with two names (B = C♭, F♯ = G♭, D♭ = C♯). The strip shows the circle with the answer marked.
+
+### Which scale over which chord (ear)
+
+Hear a chord and choose the scale whose notes all belong to it: **major** over maj7, **Mixolydian** over 7, **Dorian** over m7, **Locrian** over m7♭5, and the **major** or **minor pentatonic** over plain major or minor chords. Each question offers only choices where exactly one fits, and the strip names the note that decides it ("C7 has B♭, so Mixolydian"). Levels add one chord at a time, then any key, a ii-V-I where you choose for the chord named, and less help.
+
+### Approach notes and embellishments (ear)
+
+Hear a short line land on a chord tone and name how it got there: **straight**, from a **half step below**, from the **scale note above**, an **enclosure** (above, then below) or a quick **grace note**. Every note of the line is shown, labelled (start, approach, target and which chord tone). Levels add one approach at a time, then other targets (3rd, 5th, 7th), any key, two lines in a row and faster lines.
+
+### Phrasing, licks and call-and-response (ear)
+
+Hear a short pentatonic call, a breath, then the response, and name what the response does: **repeats** it, plays a **new idea**, moves it a step (a **sequence**), or **answers** it by coming home to 1. Every note of both is shown with its number. Levels add one kind of response at a time, then longer calls, any key, the minor pentatonic, rhythm and sequences going down.
 
 ### Conventions
 
