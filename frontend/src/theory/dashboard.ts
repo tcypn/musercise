@@ -1,5 +1,7 @@
 import type { DailyRow, ExerciseProgress, Progress } from '../api/types'
+import { getConcept } from './curriculum'
 import { EXERCISES, EXERCISE_LIST, getItem, nextLevel } from './exercises'
+import type { Goal } from './goals'
 import type { ExerciseDef, ExerciseId, Item } from './types'
 
 /** Dates are plain YYYY-MM-DD strings in the user's own calendar. All date maths here works on the calendar, not on clock time. */
@@ -249,9 +251,9 @@ function lastDay(progress: Progress, id: ExerciseId): string | null {
   return row ? (row.day ?? row.ended_at.slice(0, 10)) : null
 }
 
-function weakSpot(progress: Progress): Recommendation | null {
+function weakSpot(progress: Progress, pool: readonly ExerciseDef[]): Recommendation | null {
   let worst: { exercise: ExerciseDef; item: Item; asked: number; accuracy: number } | null = null
-  for (const exercise of EXERCISE_LIST) {
+  for (const exercise of pool) {
     for (const row of progress.exercises[exercise.id].items) {
       if (row.asked < WEAK_MIN_ANSWERS) continue
       const accuracy = row.correct / row.asked
@@ -279,22 +281,35 @@ function weakSpot(progress: Progress): Recommendation | null {
   }
 }
 
-/** Up to three suggestions: your weakest answer, your next level, and what you have practised least recently. */
-export function recommendations(progress: Progress, today: string): Recommendation[] {
+/** The ready lessons of a goal, in the goal's order. */
+const goalExercises = (goal: Goal): ExerciseDef[] =>
+  goal.lessons.flatMap((id) => {
+    const exerciseId = getConcept(id)?.exerciseId
+    return exerciseId && EXERCISES[exerciseId] ? [EXERCISES[exerciseId]] : []
+  })
+
+/**
+ * Up to three suggestions: your weakest answer, your next level, and what you have practised least recently.
+ * With a goal, all three come from the goal's lessons, and the next level can be the goal's next lesson.
+ */
+export function recommendations(progress: Progress, today: string, goal?: Goal): Recommendation[] {
   const list: Recommendation[] = []
   const add = (r: Recommendation | null) => {
     if (r && !list.some((x) => x.to === r.to)) list.push(r)
   }
+  const pool = goal ? goalExercises(goal) : EXERCISE_LIST
+  if (pool.length === 0) return list
 
-  add(weakSpot(progress))
+  add(weakSpot(progress, pool))
 
   // Next level of whatever you practised most recently, if it is not finished.
-  const recent = progress.history[0] ? EXERCISES[progress.history[0].exercise] : undefined
-  const candidates = recent ? [recent, ...EXERCISE_LIST.filter((e) => e.id !== recent.id)] : [...EXERCISE_LIST]
+  const last = progress.history[0] ? EXERCISES[progress.history[0].exercise] : undefined
+  const recent = last && pool.includes(last) ? last : undefined
+  const candidates = recent ? [recent, ...pool.filter((e) => e.id !== recent.id)] : [...pool]
   for (const exercise of candidates) {
     const passed = passedLevels(progress, exercise.id)
     if (passed.size >= exercise.levels.length) continue
-    if (exercise.id !== recent?.id && progress.exercises[exercise.id].levels.length === 0) continue
+    if (!goal && exercise.id !== recent?.id && progress.exercises[exercise.id].levels.length === 0) continue
     const level = nextLevel(exercise, passed)
     const best = progress.exercises[exercise.id].levels.find((l) => l.level === level.id)?.best_accuracy
     add({
@@ -307,7 +322,7 @@ export function recommendations(progress: Progress, today: string): Recommendati
   }
 
   // The exercise left alone the longest (or never started).
-  const oldest = [...EXERCISE_LIST].sort((a, b) => (lastDay(progress, a.id) ?? '').localeCompare(lastDay(progress, b.id) ?? ''))[0]
+  const oldest = [...pool].sort((a, b) => (lastDay(progress, a.id) ?? '').localeCompare(lastDay(progress, b.id) ?? ''))[0]
   const passed = passedLevels(progress, oldest.id)
   if (passed.size < oldest.levels.length) {
     const level = nextLevel(oldest, passed)

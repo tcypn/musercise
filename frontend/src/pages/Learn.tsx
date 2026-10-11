@@ -26,8 +26,8 @@ export function Learn() {
 
   const accuracy = useMemo(() => accuracyView(progress, today), [progress, today])
   const bars = useMemo(() => last7(progress.daily, today), [progress.daily, today])
-  const recs = useMemo(() => recommendations(progress, today), [progress, today])
   const goal = useGoal()
+  const recs = useMemo(() => recommendations(progress, today, goal), [progress, today, goal])
   const path = useMemo(() => buildPath(progress, goal), [progress, goal])
   const spots = useMemo(() => weakSpots(progress), [progress])
   const openId = picked ?? defaultStage(path)

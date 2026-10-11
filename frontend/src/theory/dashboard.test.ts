@@ -15,7 +15,9 @@ import {
   weekStart,
   weekStrip,
 } from './dashboard'
+import { getConcept } from './curriculum'
 import { EXERCISES } from './exercises'
+import { GOALS } from './goals'
 import type { ExerciseId } from './types'
 
 // 30 September 2026 is a Wednesday. Weeks (Mon-Sun): 09-21..09-27, 09-28..10-04.
@@ -315,6 +317,19 @@ describe('recommendations', () => {
     const recs = recommendations(p, TODAY)
     expect(recs.map((r) => r.kind)).toEqual(['weak', 'next', 'stale'])
     expect(recs).toHaveLength(3)
+  })
+
+  it('with a goal, suggests only the goal\'s lessons, starting with its next one', () => {
+    const goal = GOALS.find((g) => g.id === 'improvise')!
+    const p = emptyProgress()
+    p.exercises.intervals.levels = [level(1, true)]
+    p.exercises.intervals.items = [{ item: '5', asked: 30, correct: 10 }] // weak, but not in the goal
+    p.history = [session('intervals', TODAY)]
+    const recs = recommendations(p, TODAY, goal)
+    const ids = new Set(goal.lessons.map((id) => getConcept(id)?.exerciseId).filter(Boolean))
+    expect(recs.length).toBeGreaterThan(0)
+    for (const r of recs) expect(ids.has(r.to.split('/')[2] as ExerciseId)).toBe(true)
+    expect(recs[0]).toMatchObject({ kind: 'next', to: `/practice/${getConcept(goal.lessons[0])!.exerciseId}/1`, reason: 'Where to begin' })
   })
 
   it('has nothing to suggest once every level of both lessons is passed', () => {
