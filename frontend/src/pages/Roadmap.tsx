@@ -1,11 +1,39 @@
 import { BackLink } from '../components/BackLink'
+import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Keyboard } from '../components/Keyboard'
 import { SyncNotice } from '../components/SyncNotice'
 import { useProgress } from '../store/useProgress'
 import { getExercise, levelItems, nextLevel } from '../theory/exercises'
+import type { Item } from '../theory/types'
 import { weakSpot } from '../theory/mistakes'
 import { isUnlocked, PASS_ACCURACY, QUESTIONS_PER_SESSION } from '../theory/rules'
+
+const CHIPS_SHOWN = 8
+
+/** A level's answers as chips: the first few, and "+N more" to see the rest. */
+function ItemChips({ items }: { items: Item[] }) {
+  const [all, setAll] = useState(false)
+  const shown = all ? items : items.slice(0, CHIPS_SHOWN)
+  const toggle = (e: React.MouseEvent) => {
+    // The level row is a link to practise; this only opens or closes the list.
+    e.preventDefault()
+    e.stopPropagation()
+    setAll((a) => !a)
+  }
+  return (
+    <>
+      {shown.map((item) => (
+        <span key={item.id} className="chip">{item.short}</span>
+      ))}
+      {items.length > CHIPS_SHOWN && (
+        <button type="button" className="chip more" aria-expanded={all} onClick={toggle}>
+          {all ? 'Show less' : `+${items.length - CHIPS_SHOWN} more`}
+        </button>
+      )}
+    </>
+  )
+}
 
 /** The ten levels of one concept. */
 export function Roadmap() {
@@ -61,9 +89,7 @@ export function Roadmap() {
                 </span>
                 <span className="level-blurb">{level.blurb}</span>
                 <span className="chips" aria-label="What this level asks">
-                  {levelItems(exercise, level).map((item) => (
-                    <span key={item.id} className="chip">{item.short}</span>
-                  ))}
+                  <ItemChips items={levelItems(exercise, level)} />
                   <span className="chip mode">{level.modes.map((m) => exercise.modeLabel[m]).filter(Boolean).join(' / ')}</span>
                 </span>
                 <span className="level-status">

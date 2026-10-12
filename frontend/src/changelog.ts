@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.28.1', date: '2026-10-12', changes: ['Fix: lesson pages show at most 8 answers per level, with "+N more" to see the rest'] },
   { version: '1.28.0', date: '2026-10-11', changes: ['Recommended today follows your goal: with a goal chosen, every suggestion comes from its lessons'] },
   { version: '1.27.0', date: '2026-10-09', changes: ['New lessons: which scale over which chord, approach notes and embellishments, phrasing and call-and-response', 'The Improvise goal is now complete'] },
   { version: '1.26.0', date: '2026-10-08', changes: ['The green banner has two parts: the stage and lesson open a list of all stages, the book opens a guide to the lesson (what you learn, every level with an example to hear, a tip)'] },

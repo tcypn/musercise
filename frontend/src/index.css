@@ -157,6 +157,7 @@ a.level-link:hover .level-title { text-decoration: underline; text-decoration-co
 .chip { font: 600 0.78rem var(--sans); background: var(--paper); border: 1px solid var(--line); border-radius: 0.3rem; padding: 0.08rem 0.4rem; }
 .chip.mode { background: transparent; border-style: dashed; color: var(--ink-soft); font-weight: 400; }
 .level.locked .chip { color: #8b90a3; }
+.chip.more { cursor: pointer; color: var(--ink-soft); }
 
 /* Practice */
 .practice.wide { max-width: none; }
