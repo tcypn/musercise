@@ -1,6 +1,6 @@
 import type { TimedEvent } from './practice'
 
-export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping' | 'voice-leading' | 'left-hand' | 'bass-lines' | 'lead-sheets' | 'transposition' | 'modulation' | 'borrowed-chords' | 'nashville' | 'circle-of-fifths' | 'scale-choice' | 'approach-notes' | 'phrasing' | 'meter' | 'subdivisions' | 'groove' | 'rhythm-dictation' | 'song-form' | 'hand-roles' | 'arpeggio-hits' | 'fills' | 'passing-chords' | 'intros-endings'
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping' | 'voice-leading' | 'left-hand' | 'bass-lines' | 'lead-sheets' | 'transposition' | 'modulation' | 'borrowed-chords' | 'nashville' | 'circle-of-fifths' | 'scale-choice' | 'approach-notes' | 'phrasing' | 'meter' | 'subdivisions' | 'groove' | 'rhythm-dictation' | 'song-form' | 'hand-roles' | 'arpeggio-hits' | 'fills' | 'passing-chords' | 'intros-endings' | 'play-chords' | 'play-back'
 
 /** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
 export type Mode =
@@ -61,6 +61,8 @@ export interface Question {
   explain?: string
   /** Quiz lessons: offer only these answers (ids, always including the right one) instead of every answer of the level. */
   choices?: string[]
+  /** Play lessons: what must be played. Any octave and voicing counts; `bass`, when set, must be the lowest note's pitch class. */
+  target?: { pcs: number[]; bass?: number }
   /** The same question with another answer swapped in and nothing else changed (used for "hear yours"). */
   swap?: (item: string) => Question
 }
@@ -79,8 +81,12 @@ export interface ExerciseDef {
   question: string
   /** Lessons that play a key first: the names of the two parts on screen ("The key", "Name this chord"). */
   partLabels?: { key: string; question: string }
-  /** `quiz`: read and answer, no sound (unless a question carries `events`). Default `ear`. */
-  kind?: 'ear' | 'quiz'
+  /** `quiz`: read and answer, no sound (unless a question carries `events`). `play`: answer by playing the notes. Default `ear`. */
+  kind?: 'ear' | 'quiz' | 'play'
+  /** Play lessons: the answer that the notes played stand for (the question's own item when right, `other` when they match none). */
+  judge?(question: Question, midis: readonly number[]): string
+  /** Play lessons: play the question's sound before the answer (hear it, then play it). Otherwise it sounds only after Check. */
+  playFirst?: boolean
   /** What the lit strip on the keyboard stands for in the intro: "lowest note" (default) or, for one-note questions, "note". */
   rangeWord?: string
   /** Shown before answer hints: "Song:" or "Sounds:". */

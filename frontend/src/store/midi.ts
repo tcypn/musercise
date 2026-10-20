@@ -102,7 +102,9 @@ export function createMidi(host: MidiHost | undefined, remember = true) {
     getState: () => state,
     subscribe(listener: () => void) {
       listeners.add(listener)
-      return () => listeners.delete(listener)
+      return () => {
+        listeners.delete(listener)
+      }
     },
     /** Reconnect on start if the learner connected before on this device. */
     resume() {

@@ -369,3 +369,9 @@ a.level-link:hover .level-title, .concept-link:hover .concept-name { text-decora
 .piano-tools { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; justify-content: space-between; }
 .piano-tools select { font: inherit; padding: 0.35rem 0.5rem; border-radius: 0.5rem; border: 2px solid var(--line); background: #fff; }
 .piano-notes { margin: 0.2rem 0 0; }
+
+/* Play lessons: answer with notes. */
+.play-answer { display: grid; gap: 0.6rem; }
+.play-answer .keyboard { height: 8rem; }
+.play-reading { margin: 0; font-size: 1.1rem; text-align: center; min-height: 1.6em; }
+.play-tools { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; }

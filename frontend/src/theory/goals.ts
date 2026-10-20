@@ -20,14 +20,14 @@ export const GOALS: readonly Goal[] = [
     short: 'Chord sheet',
     name: 'Play from a chord sheet',
     why: 'Open a chord chart and play the song, chords and accompaniment, in any key. (You already read the melody.)',
-    lessons: ['chord-spelling', 'diatonic-chords', 'nashville', 'lead-sheets', 'slash-chords', 'transposition', 'voice-leading', 'comping', 'left-hand', 'bass-lines', 'hand-roles', 'arpeggio-hits', 'passing-chords', 'fills', 'intros-endings'],
+    lessons: ['chord-spelling', 'play-chords', 'diatonic-chords', 'nashville', 'lead-sheets', 'slash-chords', 'transposition', 'voice-leading', 'comping', 'left-hand', 'bass-lines', 'hand-roles', 'arpeggio-hits', 'passing-chords', 'fills', 'intros-endings'],
   },
   {
     id: 'by-ear',
     short: 'By ear',
     name: 'Work out a song by ear',
     why: 'Hear a song and find its chords: what they are, where they go, and when the key changes.',
-    lessons: ['intervals', 'chord-quality', 'scale-degrees', 'chord-function', 'progressions', 'cadences', 'slash-chords', 'borrowed-chords', 'modulation', 'by-ear'],
+    lessons: ['intervals', 'chord-quality', 'scale-degrees', 'chord-function', 'progressions', 'cadences', 'slash-chords', 'borrowed-chords', 'modulation', 'play-back', 'by-ear'],
   },
   {
     id: 'accompany',

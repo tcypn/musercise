@@ -2057,3 +2057,56 @@ describe('intros, endings and turnarounds', () => {
     }
   })
 })
+
+// ---- Play lessons: the answer is the notes played ------------------------------------------------
+
+describe('play the chord, and hear it, play it', () => {
+  // Independent: chord recipes as semitones above the root, and which tone a slash answer puts in the bass.
+  const RECIPE: Record<string, number[]> = { maj: [0, 4, 7], min: [0, 3, 7], dim: [0, 3, 6], aug: [0, 4, 8], '7': [0, 4, 7, 10], maj7: [0, 4, 7, 11], m7: [0, 3, 7, 10], m7b5: [0, 3, 6, 10] }
+  const SLASH: Record<string, [string, number]> = { 'maj/3': ['maj', 4], 'maj/5': ['maj', 7], 'min/3': ['min', 3], 'min/5': ['min', 7] }
+  const spread = (pcs: number[], bass: number) => [36 + bass, ...pcs.map((pc) => 60 + pc), ...pcs.map((pc) => 72 + pc)]
+
+  for (const id of ['play-chords', 'play-back'] as const) {
+    const lesson = EXERCISES[id]
+    it(`${id}: the right chord in any voicing is right; a different chord on the same root is not`, () => {
+      const rand = seeded(id.length * 31)
+      for (const level of lesson.levels) {
+        for (const q of buildQuestions(lesson, level, 40, rand)) {
+          const root = q.root % 12
+          const [type, bassAbove] = SLASH[q.item] ?? [q.item, null]
+          const pcs = RECIPE[type].map((x) => (root + x) % 12)
+          const bass = bassAbove === null ? root : (root + bassAbove) % 12
+          // as the app voices it, spread over both hands, and with the bass doubled low
+          expect(lesson.judge!(q, q.notes), `level ${level.id}`).toBe(q.item)
+          expect(lesson.judge!(q, spread(pcs, bass)), `level ${level.id}`).toBe(q.item)
+          // the notes the app plays and shows are exactly the chord
+          expect([...new Set(q.notes.map((m) => m % 12))].sort((a, b) => a - b)).toEqual([...pcs].sort((a, b) => a - b))
+          if (bassAbove !== null) {
+            expect(Math.min(...q.notes) % 12).toBe(bass)
+            // a slash chord with the wrong note in the bass is not right
+            expect(lesson.judge!(q, spread(pcs, root))).not.toBe(q.item)
+          }
+          for (const [other, recipe] of Object.entries(RECIPE)) {
+            if (other === type) continue
+            const wrong = recipe.map((x) => (root + x) % 12)
+            const said = lesson.judge!(q, spread(wrong, root))
+            expect(said, `level ${level.id}: ${type} played as ${other}`).not.toBe(q.item)
+            expect([other, 'other']).toContain(said)
+          }
+          expect(lesson.judge!(q, [])).toBe('other')
+        }
+      }
+    })
+  }
+
+  it('play-chords: a numeral names the chord on that step of the key', () => {
+    const lesson = EXERCISES['play-chords']
+    const STEP: Record<string, number> = { I: 0, ii: 2, iii: 4, IV: 5, V: 7, vi: 9, vii: 11 }
+    const KEYS: Record<string, number> = { C: 0, G: 7, D: 2, A: 9, E: 4, B: 11, 'F♯': 6, 'D♭': 1, 'C♯': 1, 'A♭': 8, 'E♭': 3, 'B♭': 10, F: 5, 'G♭': 6, 'C♭': 11 }
+    for (const q of buildQuestions(lesson, lesson.levels[8], 120, seeded(5))) {
+      const m = q.prompt!.text.match(/^Play (vii|iii|ii|IV|vi|V|I)\S* in (\S+) major$/)!
+      expect(m, q.prompt!.text).not.toBeNull()
+      expect(q.root % 12).toBe((KEYS[m[2]] + STEP[m[1]]) % 12)
+    }
+  })
+})

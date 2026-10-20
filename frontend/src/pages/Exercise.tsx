@@ -6,6 +6,9 @@ import { Book, Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
 import { Listen } from '../components/lesson/Listen'
+import { PlayAnswer } from '../components/lesson/PlayAnswer'
+import { midi, useMidi } from '../store/midi'
+import { nameChord } from '../theory/chordName'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
 import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, soundingAt, stepFor, type Part } from '../theory/playback'
@@ -65,6 +68,13 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
   const startedAt = useRef<Date | null>(null)
   const heardAt = useRef(0)
   const quiz = exercise.kind === 'quiz'
+  /** Play lessons: answered with notes (a connected piano, or keys tapped on screen) instead of answer buttons. */
+  const playMode = exercise.kind === 'play'
+  const piano = useMidi()
+  const [tapped, setTapped] = useState<number[]>([])
+  /** Play lessons: the notes that were checked, to show what was played. */
+  const [yourNotes, setYourNotes] = useState<number[]>([])
+  const playedNotes = [...new Set([...piano.held, ...tapped])].sort((a, b) => a - b)
   const count = focus ? MISTAKE_QUESTIONS : QUESTIONS_PER_SESSION
   const levelChoices = useMemo(() => levelItems(exercise, level), [exercise, level])
   const question = questions[index]
@@ -76,8 +86,8 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
   // After a wrong answer: the picked answer, in the same key, so the two can be heard back to back.
   const wrongPick = phase === 'checked' && !quiz && !!question && picked !== null && picked !== question.item
   const alt = useMemo(() => (wrongPick ? sameSetting(exercise, level, question, picked!) : null), [wrongPick, exercise, level, question, picked])
-  /** Does this question make a sound? Ear lessons always do; quiz questions only when they carry events. */
-  const sounds = (q: Question) => !quiz || !!q.events
+  /** Does this question make a sound? Ear lessons always do; quiz questions only when they carry events; play lessons only when hearing is the question. */
+  const sounds = (q: Question) => (playMode ? !!exercise.playFirst : !quiz || !!q.events)
   const back = focus ? '/' : `/learn/${exercise.id}`
 
   // Only the latest play() may touch `playing`, so a sound that was cut short cannot switch the button back on.
@@ -128,6 +138,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     setIndex(0)
     setAttempts([])
     setPicked(null)
+    setTapped([])
     setStep(0)
     setSounding(null)
     setPhase('question')
@@ -140,14 +151,20 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     if (phase === 'question') setPicked(itemId)
   }
 
-  function check() {
-    if (phase !== 'question' || !question || picked === null) return
+  function check(notes: number[] = playedNotes) {
+    // Play lessons: the answer is whatever the notes played stand for.
+    const answer = playMode ? (notes.length ? exercise.judge!(question, notes) : null) : picked
+    if (phase !== 'question' || !question || answer === null) return
+    if (playMode) {
+      setPicked(answer)
+      setYourNotes(notes)
+    }
     const attempt: AttemptPayload = {
       root_midi: question.root,
       item: question.item,
       mode: question.mode,
-      answered: picked,
-      correct: picked === question.item,
+      answered: answer,
+      correct: answer === question.item,
       // Time to answer, not time to listen: when a key plays first, the clock starts when the question itself starts.
       response_ms: Math.max(0, Math.round(performance.now() - heardAt.current - questionOffsetMs(question))),
     }
@@ -156,7 +173,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     setSounding(null)
     setView('answer')
     setPhase('checked')
-    if (sounds(question)) void play(question) // replaces what is sounding, so the ear can check the answer
+    if (sounds(question) || playMode) void play(question) // replaces what is sounding, so the ear can check the answer
   }
 
   function next() {
@@ -169,6 +186,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     const nextIndex = index + 1
     setIndex(nextIndex)
     setPicked(null)
+    setTapped([])
     setStep(0)
     setSounding(null)
     setPhase('question')
@@ -196,6 +214,18 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     setSave(result.remaining === 0 ? 'saved' : 'queued')
   }
 
+  // Play lessons with a piano connected: holding the right notes is the answer, no need to press Check.
+  const autoCheck = useRef<() => void>(() => {})
+  useEffect(() => {
+    autoCheck.current = () => {
+      const held = midi.getState().held
+      if (!playMode || phase !== 'question' || !question || held.length === 0) return
+      const notes = [...new Set([...held, ...tapped])].sort((a, b) => a - b)
+      if (exercise.judge!(question, notes) === question.item) check(notes)
+    }
+  })
+  useEffect(() => midi.subscribe(() => autoCheck.current()), [])
+
   // R replays, 1-9 pick an answer, Enter checks or moves on.
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -211,7 +241,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
         const tile = target.closest<HTMLElement>('[data-tile]')
         // A focused button handles its own Enter, except an already selected tile, which confirms.
         if (target.closest('button') && !(tile && tile.dataset.tile === picked)) return
-        if (phase === 'question' && picked !== null) {
+        if (phase === 'question' && (playMode ? playedNotes.length > 0 : picked !== null)) {
           event.preventDefault()
           check()
         } else if (phase === 'checked') {
@@ -249,7 +279,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
             </p>
           )}
           <p className="quiet" style={{ margin: 0 }}>
-            {focus ? `${count} questions.` : `${QUESTIONS_PER_SESSION} questions. Score ${PASS_ACCURACY * 100}% or more to unlock the next level.`} {quiz ? 'Press' : 'Press R to hear a question again,'} 1 to 9 to pick an answer and Enter to check it.
+            {focus ? `${count} questions.` : `${QUESTIONS_PER_SESSION} questions. Score ${PASS_ACCURACY * 100}% or more to unlock the next level.`} {playMode ? 'Play the notes on a connected piano, or tap them on screen, then press Check (or Enter).' : <>{quiz ? 'Press' : 'Press R to hear a question again,'} 1 to 9 to pick an answer and Enter to check it.</>}
           </p>
           {loadError && <p className="notice warn" role="alert">{loadError}</p>}
         </div>
@@ -354,7 +384,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
           </div>
         )}
 
-        {sounds(question) && (
+        {(sounds(question) || (playMode && checked)) && (
           <div className="speak-row">
             <button type="button" className="speak" onClick={() => { prepareAudio(); void play(question) }} aria-busy={playing} aria-label="Play the question again (R)">
               <Speaker size={60} />
@@ -381,7 +411,26 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
 
         {loadError && <p className="notice warn" role="alert">{loadError}</p>}
 
-        <div className="tiles" role="group" aria-label="Choose the answer">
+        {playMode && !checked && (
+          <PlayAnswer
+            piano={piano}
+            tapped={tapped}
+            onTap={(m) => {
+              prepareAudio()
+              if (tapped.includes(m)) setTapped(tapped.filter((x) => x !== m))
+              else {
+                setTapped([...tapped, m])
+                if (piano.status !== 'connected') void playNotes([m], { gap: 0, hold: 1 }).catch(() => {})
+              }
+            }}
+            onClear={() => setTapped([])}
+          />
+        )}
+        {playMode && checked && (
+          <p className="play-reading">You played <strong>{nameChord(yourNotes).symbol || 'nothing'}</strong> <span className="quiet">{nameChord(yourNotes).notes.join(' ')}</span></p>
+        )}
+
+        {!playMode && <div className="tiles" role="group" aria-label="Choose the answer">
           {choices.map((item, i) => {
             const state = !checked
               ? item.id === picked ? 'selected' : 'idle'
@@ -390,7 +439,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
               <AnswerTile key={item.id} id={item.id} short={item.short} name={item.name} keyHint={i < 9 ? i + 1 : undefined} state={state} disabled={checked} onPick={() => choose(item.id)} />
             )
           })}
-        </div>
+        </div>}
 
         {checked && !quiz && (
           <div className="lesson-keys">
@@ -435,10 +484,11 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
       {checked ? (
         <FeedbackBanner
           correct={correct}
-          title={correct ? (quiz ? 'Correct!' : 'Nice ear!') : 'Not quite'}
+          title={correct ? (quiz ? 'Correct!' : playMode ? 'Well played!' : 'Nice ear!') : 'Not quite'}
           detail={
             quiz ? exercise.describe(question)
             : correct ? <>{exercise.phrase(truth)}</>
+            : playMode ? <>That was {exercise.phrase(truth)}. {exercise.hintLabel} {truth.hint}.</>
             : <>That was {exercise.phrase(truth)}. {exercise.hintLabel} {truth.hint}.</>
           }
           cta={index + 1 >= questions.length ? 'See results' : 'Continue'}
@@ -447,7 +497,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
       ) : (
         <footer className="lesson-foot">
           <div className="lesson-foot-in end">
-            <button type="button" className="button primary big-btn" disabled={picked === null} onClick={check}>Check</button>
+            <button type="button" className="button primary big-btn" disabled={playMode ? playedNotes.length === 0 : picked === null} onClick={() => check()}>Check</button>
           </div>
         </footer>
       )}

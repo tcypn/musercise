@@ -33,6 +33,8 @@ import { arpeggioHitsExercise } from './arpeggioHits'
 import { fillsExercise } from './fills'
 import { passingChordsExercise } from './passingChords'
 import { introsEndingsExercise } from './introsEndings'
+import { playChordsExercise } from './playChords'
+import { playBackExercise } from './playBack'
 import { progressionsExercise } from './progressions'
 import { scaleChoiceExercise } from './scaleChoice'
 import { scaleDegreesExercise } from './scaleDegrees'
@@ -83,9 +85,11 @@ export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   fills: fillsExercise,
   'passing-chords': passingChordsExercise,
   'intros-endings': introsEndingsExercise,
+  'play-chords': playChordsExercise,
+  'play-back': playBackExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise, meterExercise, subdivisionsExercise, grooveExercise, rhythmDictationExercise, songFormExercise, handRolesExercise, arpeggioHitsExercise, fillsExercise, passingChordsExercise, introsEndingsExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise, meterExercise, subdivisionsExercise, grooveExercise, rhythmDictationExercise, songFormExercise, handRolesExercise, arpeggioHitsExercise, fillsExercise, passingChordsExercise, introsEndingsExercise, playChordsExercise, playBackExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)
@@ -100,7 +104,11 @@ export function levelItems(exercise: ExerciseDef, level: Level): Item[] {
   return exercise.items.filter((item) => level.items.includes(item.id))
 }
 
+/** What a play lesson records when the notes played match none of its answers. */
+export const OTHER: Item = { id: 'other', short: 'Other', name: 'something else', hint: 'Notes that make none of the answers' }
+
 export function getItem(exercise: ExerciseDef, id: string): Item {
+  if (id === OTHER.id) return OTHER
   const found = exercise.items.find((item) => item.id === id)
   if (!found) throw new Error(`${exercise.id} has no item ${id}`)
   return found
