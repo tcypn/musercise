@@ -1914,3 +1914,146 @@ describe('song structure', () => {
     }
   })
 })
+
+// ---- Playing from a chord sheet: each answer worked out from the sound alone ----------------------
+
+/** The events of each step (bar or chord), in order. */
+function byStep(q: { events?: { time: number; hold: number; notes: number[] }[]; stepOf?: (number | null)[]; steps?: unknown[] }) {
+  return q.steps!.map((_, s) => q.events!.filter((_, i) => q.stepOf![i] === s))
+}
+const pcsRel = (notes: number[], tonic: number) => [...new Set(notes.map((m) => (m - tonic + 120) % 12))].sort((a, b) => a - b).join(',')
+
+describe('hands and voicings', () => {
+  const lesson = EXERCISES['hand-roles']
+  it('shares the notes between the hands the way the answer says', () => {
+    const rand = seeded(301)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        for (const bar of byStep(q)) {
+          const kinds = new Set<string>(bar.map(({ notes }) => {
+            const n = [...notes].sort((a, b) => a - b)
+            if (n.length === 1) return n[0] < 60 ? 'bass' : 'tune'
+            if (n[0] < 48 && n.filter((m) => m >= 53).length >= 3) return 'both'
+            if (n.length === 3 && n[1] - n[0] === 7 && n[2] - n[0] === 12) return 'low-spread'
+            if (n.every((m) => m < 60)) return 'left-chord'
+            return n.length >= 4 ? 'chord+tune' : 'right-chord'
+          }))
+          const has = (...k: string[]) => k.every((x) => kinds.has(x)) && kinds.size === k.length
+          const heard = has('both') ? 'block' : has('bass', 'right-chord') ? 'bass-chord' : has('low-spread', 'right-chord') ? 'spread'
+            : has('bass', 'chord+tune', 'tune') ? 'melody-top' : has('left-chord', 'tune') ? 'lh-chord' : [...kinds].join('+')
+          expect(heard, `level ${level.id}`).toBe(q.item)
+        }
+      }
+    }
+  })
+})
+
+describe('broken chords and hits', () => {
+  const lesson = EXERCISES['arpeggio-hits']
+  it('strikes the chord together only where the answer says', () => {
+    const rand = seeded(303)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const bars = byStep(q)
+        const beat = (bars[1][0].time - bars[0][0].time) / 4
+        for (const bar of bars) {
+          const start = Math.min(...bar.map((e) => e.time))
+          const bass = Math.min(...bar.flatMap((e) => e.notes))
+          const hits = bar.filter((e) => e.notes.length >= 3).map((e) => Math.round(((e.time - start) / beat) * 2) / 2)
+          // a spread arpeggio climbs from the bass through its 5th: the right hand never plays that low
+          const lowBroken = bar.some((e) => e.notes.length === 1 && e.notes[0] === bass + 7)
+          const heard = hits.length === 0 ? (lowBroken ? 'spread-arp' : 'arp-bar') : hits.length === 1 ? { 0: 'hit-1', 2: 'hit-3', 3.5: 'push' }[hits[0]] : '?'
+          expect(heard, `level ${level.id}`).toBe(q.item)
+        }
+      }
+    }
+  })
+})
+
+describe('fills', () => {
+  const lesson = EXERCISES.fills
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11]
+  const PENT = [0, 2, 4, 7, 9]
+  it('fills the gap with the kind named, and lands on the next chord where it says', () => {
+    const rand = seeded(305)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const tonic = q.root % 12
+        const evs = q.events!
+        const first = evs[1].notes // the first chord, struck on 1
+        const fill = evs.slice(2, -2)
+        const next = evs[evs.length - 2].notes[0] // the next chord's bass (its root)
+        const land = evs[evs.length - 1].notes
+        const top = Math.max(...land)
+        const rel = (m: number) => (m - tonic + 120) % 12
+        const singles = fill.every((e) => e.notes.length === 1)
+        const pairs = fill.every((e) => e.notes.length === 2)
+        const steps = fill.slice(1).map((e, i) => Math.abs(e.notes[0] - fill[i].notes[0]))
+        let kind = '?'
+        if (fill.length === 1 && singles && top - fill[0].notes[0] === 1) kind = 'slide'
+        else if (fill.length === 2 && fill[1].notes.join() === first.join() && fill[0].notes.length === first.length) kind = 'sus'
+        else if (pairs) {
+          const gap = fill.map((e) => e.notes[1] - e.notes[0])
+          kind = gap.every((g) => g === 8 || g === 9) ? 'sixths' : gap.every((g) => g === 3 || g === 4) ? 'thirds' : '?'
+        } else if (singles && fill.every((e) => MAJOR.includes(rel(e.notes[0])))) {
+          const toTop = Math.abs(top - fill[fill.length - 1].notes[0])
+          if (steps.every((s) => s <= 2) && toTop <= 2 && fill.length === 4) kind = 'run'
+          else if (fill.every((e) => PENT.includes(rel(e.notes[0]))) && (steps.some((s) => s >= 3) || toTop >= 3)) kind = 'pent'
+        }
+        const third = (top - next + 120) % 12
+        const lands = (top - next) % 12 === 0 ? 'to-root' : third === 3 || third === 4 ? 'to-3rd' : '?'
+        if (q.item === 'to-root' || q.item === 'to-3rd') expect(lands, `level ${level.id}`).toBe(q.item)
+        else expect(kind, `level ${level.id}`).toBe(q.item)
+        expect(lands).not.toBe('?') // every fill ends on the next chord's root or 3rd
+      }
+    }
+  })
+})
+
+describe('passing chords and walk-ups', () => {
+  const lesson = EXERCISES['passing-chords']
+  it('adds exactly the chords or bass notes named, between the chords on the sheet', () => {
+    const rand = seeded(307)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const tonic = q.root % 12
+        // what sounds at each new bass note, before the last chord: bass (above the tonic) and the chord's notes
+        const parts = byStep(q).slice(0, -1).map((evs) => ({ bass: (Math.min(...evs.flatMap((e) => e.notes)) - tonic + 120) % 12, chord: pcsRel(evs.flatMap((e) => e.notes).filter((m) => m >= 48), tonic) }))
+        const sig = parts.map((p) => `${p.bass}:${p.chord}`).join(' ')
+        const EXPECT: Record<string, string> = {
+          none: '0:0,4,7',
+          'sec-dom': '0:0,4,7 0:0,4,7,10',
+          'walk-up': '0:0,4,7 2: 4:',
+          'minor-iv': '5:0,5,9 5:0,5,8',
+          dim: '0:0,4,7 1:1,4,7',
+          'walk-down': '0:0,4,7 11:2,7,11',
+          'two-five': '5:0,5,9 2:2,5,9 7:2,7,11',
+        }
+        expect(sig, `level ${level.id}`).toBe(EXPECT[q.item])
+      }
+    }
+  })
+})
+
+describe('intros, endings and turnarounds', () => {
+  const lesson = EXERCISES['intros-endings']
+  it('plays the chords of the device named, and only the ritardando slows down', () => {
+    const rand = seeded(309)
+    const ROOTS: Record<string, string> = {
+      plain: '5 7 0', ritard: '5 7 0', 'iv-ending': '5 5 0', 'flat-six': '8 10 0', turnaround: '0 9 2 7 0', vamp: '0 5 0 5', tag: '2 7 2 7 2 7 0',
+    }
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const tonic = q.root % 12
+        const bars = byStep(q)
+        const roots = bars.map((evs) => (Math.min(...evs.flatMap((e) => e.notes)) - tonic + 120) % 12).join(' ')
+        expect(roots, `level ${level.id} ${q.item}`).toBe(ROOTS[q.item])
+        const starts = bars.map((evs) => Math.min(...evs.map((e) => e.time)))
+        const lengths = starts.slice(1).map((t, i) => t - starts[i])
+        const slowing = lengths.length >= 2 && lengths.every((l, i) => i === 0 || l > lengths[i - 1] * 1.1)
+        expect(slowing, `level ${level.id} ${q.item}`).toBe(q.item === 'ritard')
+        if (q.item === 'iv-ending') expect(pcsRel(bars[1].flatMap((e) => e.notes), tonic)).toBe('0,5,8')
+      }
+    }
+  })
+})

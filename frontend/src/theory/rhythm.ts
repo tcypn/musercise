@@ -14,7 +14,13 @@ export const pick = <T,>(list: readonly T[], rand: () => number): T => list[Math
 const DEGREE: Record<string, [Step, string]> = {
   I: [[0, 0], 'maj'], ii: [[1, 2], 'min'], iii: [[2, 4], 'min'], IV: [[3, 5], 'maj'], V: [[4, 7], 'maj'], vi: [[5, 9], 'min'],
   I7: [[0, 0], '7'], IV7: [[3, 5], '7'], V7: [[4, 7], '7'],
+  Imaj7: [[0, 0], 'maj7'], ii7: [[1, 2], 'm7'], vi7: [[5, 9], 'm7'], IVmaj7: [[3, 5], 'maj7'],
+  iv: [[3, 5], 'min'], bVI: [[5, 8], 'maj'], bVII: [[6, 10], 'maj'], '#idim': [[0, 1], 'dim'],
+  'VI7': [[5, 9], '7'], 'III7': [[2, 4], '7'],
 }
+
+/** The numerals this helper knows. */
+export const NUMERALS = Object.keys(DEGREE)
 
 /** Voice a list of numerals in a major key, smoothly, with the chord names for labels. */
 export function voiceNumerals(tonicPc: number, numerals: readonly string[]): { voiced: VoicedChord[]; names: string[] } {

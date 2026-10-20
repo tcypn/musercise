@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Thirty-six are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers**, **the circle of fifths**, **which scale over which chord**, **approach notes and embellishments**, **phrasing and call-and-response**, **meter and time signatures**, **subdivisions and syncopation**, **swing and groove feel**, **rhythm dictation** and **song structure**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 47 lessons), with lessons that are not built yet marked *Coming soon*. Forty-one are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers**, **the circle of fifths**, **which scale over which chord**, **approach notes and embellishments**, **phrasing and call-and-response**, **meter and time signatures**, **subdivisions and syncopation**, **swing and groove feel**, **rhythm dictation**, **song structure**, **hands and voicings**, **broken chords and hits**, **fills**, **passing chords and walk-ups** and **intros, endings and turnarounds**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -411,6 +411,26 @@ Hear one bar over a steady beat and pick how it is counted from four close choic
 ### Song structure (ear)
 
 Two phrases of four chords: does the second **repeat**, play something **new**, or keep the start with a **new ending**? Then whole tunes of four sections, **AABA**, **ABAB** or **AABB**, and the **12-bar blues**. Every bar is shown with its section and chord. Later levels change the comping pattern and the tempo.
+
+### Hands and voicings (ear)
+
+Hear a few bars and name how the hands share the work: **both hands on the chord**, **left bass and right chord**, a **spread** (open) voicing, **chords with the melody on top**, or **left-hand chords** with a tune above. Each bar is shown note by note. The guide's tip gives the working rules: hands apart, play less while the singer sings, fill when they stop.
+
+### Broken chords and hits (ear)
+
+Many songs mix a broken chord with the chord struck together. Name the pattern: **broken all bar**, broken then a **hit on 3**, a **hit on 1** then broken, a **push** on the "&" of 4, or a **spread arpeggio** climbing from the bass. Levels add one pattern at a time, then any key, other loops, 7th chords, and pop and ballad tempos.
+
+### Fills (ear)
+
+A chord, a fill in the gap, then the next chord: name the fill, a **scale run**, a **sus 4 → 3**, **6ths**, **3rds**, a gospel **slide** or a **pentatonic lick**. Every fill lands on the next chord's root or 3rd on beat 1, and one level asks which. Every note of the fill is shown and labelled.
+
+### Passing chords and walk-ups (ear)
+
+Two chords from a chord sheet, and what a pianist slips in between: **nothing**, a **7th chord** into the next (C7 to F), a bass **walk-up** or **walk-down** (C, G/B, Am), the **minor iv** (IV iv I), a **diminished** passing chord, or a quick **ii-V**. The answer shows which chords are on the sheet and which were added.
+
+### Intros, endings and turnarounds (ear)
+
+Name how a song starts, ends or goes back to the top: a **plain** ending, **slowing down**, **IV iv I**, **♭VI ♭VII I**, a **turnaround** (I vi ii V), a two-chord **vamp** intro, or a **tag** (the last line three times).
 
 ### Conventions
 

@@ -20,7 +20,7 @@ export const GOALS: readonly Goal[] = [
     short: 'Chord sheet',
     name: 'Play from a chord sheet',
     why: 'Open a chord chart and play the song, chords and accompaniment, in any key. (You already read the melody.)',
-    lessons: ['chord-spelling', 'diatonic-chords', 'nashville', 'lead-sheets', 'slash-chords', 'transposition', 'voice-leading', 'comping', 'left-hand', 'bass-lines'],
+    lessons: ['chord-spelling', 'diatonic-chords', 'nashville', 'lead-sheets', 'slash-chords', 'transposition', 'voice-leading', 'comping', 'left-hand', 'bass-lines', 'hand-roles', 'arpeggio-hits', 'passing-chords', 'fills', 'intros-endings'],
   },
   {
     id: 'by-ear',
@@ -34,7 +34,7 @@ export const GOALS: readonly Goal[] = [
     short: 'Accompany',
     name: 'Accompany a singer',
     why: 'Play behind someone singing: smooth chords, a groove, a bass line, in their key, following where the song goes.',
-    lessons: ['chord-spelling', 'diatonic-chords', 'voice-leading', 'comping', 'left-hand', 'bass-lines', 'transposition', 'cadences', 'modulation', 'by-ear'],
+    lessons: ['chord-spelling', 'diatonic-chords', 'voice-leading', 'comping', 'hand-roles', 'left-hand', 'arpeggio-hits', 'bass-lines', 'fills', 'passing-chords', 'intros-endings', 'transposition', 'cadences', 'modulation', 'by-ear'],
   },
   {
     id: 'improvise',

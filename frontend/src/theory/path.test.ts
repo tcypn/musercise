@@ -72,7 +72,7 @@ describe('learning path', () => {
 
   it('reports ready counts per stage', () => {
     const path = buildPath(emptyProgress())
-    expect(path.map((s) => s.ready)).toEqual([2, 6, 5, 7, 5, 4, 7])
+    expect(path.map((s) => s.ready)).toEqual([2, 6, 5, 7, 5, 4, 12])
     expect(path[4].nodes.filter((n) => n.state === 'soon').map((n) => n.caption)).toEqual(['Classical forms']) // rhythm: all but classical forms
   })
 

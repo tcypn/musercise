@@ -28,6 +28,11 @@ import { subdivisionsExercise } from './subdivisions'
 import { grooveExercise } from './groove'
 import { rhythmDictationExercise } from './rhythmDictation'
 import { songFormExercise } from './songForm'
+import { handRolesExercise } from './handRoles'
+import { arpeggioHitsExercise } from './arpeggioHits'
+import { fillsExercise } from './fills'
+import { passingChordsExercise } from './passingChords'
+import { introsEndingsExercise } from './introsEndings'
 import { progressionsExercise } from './progressions'
 import { scaleChoiceExercise } from './scaleChoice'
 import { scaleDegreesExercise } from './scaleDegrees'
@@ -73,9 +78,14 @@ export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   groove: grooveExercise,
   'rhythm-dictation': rhythmDictationExercise,
   'song-form': songFormExercise,
+  'hand-roles': handRolesExercise,
+  'arpeggio-hits': arpeggioHitsExercise,
+  fills: fillsExercise,
+  'passing-chords': passingChordsExercise,
+  'intros-endings': introsEndingsExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise, meterExercise, subdivisionsExercise, grooveExercise, rhythmDictationExercise, songFormExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise, meterExercise, subdivisionsExercise, grooveExercise, rhythmDictationExercise, songFormExercise, handRolesExercise, arpeggioHitsExercise, fillsExercise, passingChordsExercise, introsEndingsExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)
