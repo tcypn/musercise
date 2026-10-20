@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.35.1', date: '2026-10-20', changes: ['The "Work out a song by ear" goal now includes naming a note by ear and melodic dictation'] },
   { version: '1.35.0', date: '2026-10-20', changes: ['New lessons: reading the staff and clefs, note values and rests, dynamics, articulation and tempo words, naming a note by ear, melodic dictation, classical forms', 'Every lesson on the map is ready now'] },
   { version: '1.34.0', date: '2026-10-20', changes: ['Play along (from the Piano tab): play a chord chart in time with a count-in, click and backing; with a piano connected (or tapping), every bar is checked for the right chord on beat 1, with how early or late you were'] },
   { version: '1.33.0', date: '2026-10-20', changes: ['Your turn: after answering in an ear lesson, play the answer on your piano or by tapping the keys (any octave counts; practice only, not scored)'] },

@@ -27,7 +27,7 @@ export const GOALS: readonly Goal[] = [
     short: 'By ear',
     name: 'Work out a song by ear',
     why: 'Hear a song and find its chords: what they are, where they go, and when the key changes.',
-    lessons: ['intervals', 'chord-quality', 'scale-degrees', 'chord-function', 'progressions', 'cadences', 'slash-chords', 'borrowed-chords', 'modulation', 'play-back', 'by-ear'],
+    lessons: ['intervals', 'chord-quality', 'scale-degrees', 'note-naming', 'melodic-dictation', 'chord-function', 'progressions', 'cadences', 'slash-chords', 'borrowed-chords', 'modulation', 'play-back', 'by-ear'],
   },
   {
     id: 'accompany',
