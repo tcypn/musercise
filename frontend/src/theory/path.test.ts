@@ -72,8 +72,8 @@ describe('learning path', () => {
 
   it('reports ready counts per stage', () => {
     const path = buildPath(emptyProgress())
-    expect(path.map((s) => s.ready)).toEqual([2, 6, 5, 7, 0, 4, 7])
-    expect(path[4].nodes.every((n) => n.state === 'soon')).toBe(true) // rhythm: nothing built yet
+    expect(path.map((s) => s.ready)).toEqual([2, 6, 5, 7, 5, 4, 7])
+    expect(path[4].nodes.filter((n) => n.state === 'soon').map((n) => n.caption)).toEqual(['Classical forms']) // rhythm: all but classical forms
   })
 
   it('opens the first stage for a new learner and when everything is finished', () => {

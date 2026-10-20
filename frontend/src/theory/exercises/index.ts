@@ -23,6 +23,11 @@ import { nashvilleExercise } from './nashville'
 import { noteNamesExercise } from './noteNames'
 import { pentatonicExercise } from './pentatonic'
 import { phrasingExercise } from './phrasing'
+import { meterExercise } from './meter'
+import { subdivisionsExercise } from './subdivisions'
+import { grooveExercise } from './groove'
+import { rhythmDictationExercise } from './rhythmDictation'
+import { songFormExercise } from './songForm'
 import { progressionsExercise } from './progressions'
 import { scaleChoiceExercise } from './scaleChoice'
 import { scaleDegreesExercise } from './scaleDegrees'
@@ -63,9 +68,14 @@ export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   'scale-choice': scaleChoiceExercise,
   'approach-notes': approachNotesExercise,
   phrasing: phrasingExercise,
+  meter: meterExercise,
+  subdivisions: subdivisionsExercise,
+  groove: grooveExercise,
+  'rhythm-dictation': rhythmDictationExercise,
+  'song-form': songFormExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise, meterExercise, subdivisionsExercise, grooveExercise, rhythmDictationExercise, songFormExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)

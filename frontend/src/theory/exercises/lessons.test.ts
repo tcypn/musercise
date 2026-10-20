@@ -8,6 +8,7 @@ import { EXERCISE_LIST, EXERCISES, levelItems } from './index'
 import { EXTENDED } from './extensions'
 import { HIGHEST_MIDI as TOP } from '../notes'
 import { chordById } from './chords'
+import { countOf } from './rhythmDictation'
 
 /** A seeded random number generator, so a failing case can be replayed. */
 function seeded(seed: number) {
@@ -1776,6 +1777,139 @@ describe('phrasing, licks and call-and-response', () => {
         expect(truths.length).toBeLessThanOrEqual(1)
         expect(truths[0] ?? 'contrast', `level ${level.id}: ${c} / ${r}`).toBe(q.item)
         expect(isHome(c[c.length - 1])).toBe(false)
+      }
+    }
+  })
+})
+
+// ---- Rhythm and form: each test works the answer out from the sound alone ----------------------
+
+/** The start time of each step, from the events that belong to it. */
+function stepStarts(q: { events?: { time: number }[]; stepOf?: (number | null)[] }): number[] {
+  const starts: number[] = []
+  q.events!.forEach((e, i) => {
+    const s = q.stepOf![i]
+    if (s !== null && s !== undefined && starts[s] === undefined) starts[s] = e.time
+  })
+  return starts
+}
+const near = (a: number, b: number) => Math.abs(a - b) < 1e-6
+
+describe('meter and time signatures', () => {
+  const lesson = EXERCISES.meter
+  it('has as many chords in each bar as the meter has beats, with 6/8 grouping its quick notes in threes', () => {
+    const rand = seeded(201)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        q.steps!.forEach((_, bar) => {
+          const evs = q.events!.filter((_, i) => q.stepOf![i] === bar)
+          const onsets = [...new Set(evs.map((e) => Math.round(e.time * 1000)))].sort((a, b) => a - b)
+          const unit = Math.min(...onsets.slice(1).map((t, i) => t - onsets[i]))
+          // chords are the events of two or more notes; single notes are the bass and the quick notes between beats
+          const chords = evs.filter((e) => e.notes.length >= 2).map((e) => Math.round((Math.round(e.time * 1000) - onsets[0]) / unit))
+          const lowest = Math.min(...evs.flatMap((e) => e.notes))
+          expect(evs.filter((e) => near(e.time, onsets[0] / 1000)).flatMap((e) => e.notes)).toContain(lowest) // the bass is on 1
+          const heard = chords.length === 2 && chords[1] === 3 ? '6/8' : `${chords.length}/4`
+          expect(heard, `level ${level.id}`).toBe(q.item)
+        })
+      }
+    }
+  })
+})
+
+describe('subdivisions and syncopation', () => {
+  const lesson = EXERCISES.subdivisions
+  const EXPECT: Record<string, number[]> = {
+    quarter: [0, 1, 2, 3],
+    eighths: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5],
+    triplets: [0, 1, 2, 3].flatMap((b) => [b, b + 1 / 3, b + 2 / 3]),
+    sixteenths: [0, 1, 2, 3].flatMap((b) => [b, b + 0.25, b + 0.5, b + 0.75]),
+    offbeat: [0.5, 1.5, 2.5, 3.5],
+    dotted: [0, 1.5, 3],
+  }
+  it('plays the rhythm named, measured against the beat of the count-in', () => {
+    const rand = seeded(203)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const beat = q.events![1].time - q.events![0].time
+        const bar = 4 * beat
+        const notes = q.events!.filter((e, i) => q.stepOf![i] !== null && e.time < 2 * bar - 1e-6)
+        const at = notes.map((e) => (e.time - bar) / beat)
+        expect(at.length).toBe(EXPECT[q.item].length)
+        at.forEach((x, i) => expect(x).toBeCloseTo(EXPECT[q.item][i], 5))
+      }
+    }
+  })
+})
+
+describe('swing and groove feel', () => {
+  const lesson = EXERCISES.groove
+  it('places the notes inside each beat as the feel says: even, long-short, or in threes', () => {
+    const rand = seeded(205)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const starts = stepStarts(q)
+        const beat = (starts[1] - starts[0]) / 4
+        const inBeat = [...new Set(q.events!.map((e) => Math.round((((e.time / beat) % 1) + 1) % 1 * 1000) % 1000))].sort((a, b) => a - b)
+        const heard = inBeat.length === 3 && Math.abs(inBeat[1] - 333) <= 1 && Math.abs(inBeat[2] - 667) <= 1 ? 'triplet'
+          : inBeat.length === 2 && inBeat[1] === 500 ? 'straight'
+          : inBeat.length === 2 && inBeat[1] >= 580 && inBeat[1] <= 670 ? 'swing'
+          : '?'
+        expect(heard, `level ${level.id}: ${inBeat}`).toBe(q.item)
+      }
+    }
+  })
+})
+
+describe('rhythm dictation', () => {
+  const lesson = EXERCISES['rhythm-dictation']
+  it('plays exactly the rhythm its answer writes, and offers rhythms of the same grid', () => {
+    const rand = seeded(207)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const beat = q.events![1].time - q.events![0].time
+        const bar = 4 * beat
+        const grid = q.item.length
+        const slots = q.events!.filter((e, i) => q.stepOf![i] !== null && e.time < 2 * bar - 1e-6).map((e) => Math.round(((e.time - bar) / bar) * grid))
+        expect([...Array(grid)].map((_, i) => (slots.includes(i) ? 'x' : '-')).join('')).toBe(q.item)
+        expect(q.choices!.length).toBe(4)
+        expect(new Set(q.choices).size).toBe(4)
+        const sameGrid = level.items.filter((id) => id.length === grid).length
+        for (const c of q.choices!) expect(level.items).toContain(c)
+        if (sameGrid >= 4) for (const c of q.choices!) expect(c.length).toBe(grid)
+      }
+    }
+  })
+  it('writes the counts the usual way', () => {
+    const short = (id: string) => lesson.items.find((i) => i.id === id)?.short ?? countOf(id)
+    expect(short('x-xx--x-')).toBe('1 2& – 4')
+    expect(short('-x-x-x-x')).toBe('& & & &')
+    expect(short('x---xxxxx-xx-x-x')).toBe('1 2e&a 3&a ea')
+  })
+})
+
+describe('song structure', () => {
+  const lesson = EXERCISES['song-form']
+  it('has the shape it names: phrases compared bar by bar, sections by their chords, the blues by its numbers', () => {
+    const rand = seeded(209)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const bars = q.steps!.map((s) => [...new Set(s.notes.map((m) => m % 12))].sort((a, b) => a - b).join(','))
+        const tonic = q.root % 12
+        let heard = '?'
+        if (bars.length === 8) {
+          const same = [0, 1, 2, 3].map((i) => bars[i] === bars[i + 4])
+          heard = same.every(Boolean) ? 'repeat' : same.slice(0, 3).every(Boolean) ? 'ending' : !same[0] ? 'new' : '?'
+        } else if (bars.length === 16) {
+          const sec = [0, 1, 2, 3].map((s) => bars.slice(s * 4, s * 4 + 4).join('|'))
+          const letters: string[] = []
+          heard = sec.map((x) => String.fromCharCode(65 + (letters.includes(x) ? letters.indexOf(x) : letters.push(x) - 1))).join('')
+        } else if (bars.length === 12) {
+          // the bass of each bar, as semitones above the tonic: I I I I IV IV I I V IV I V
+          const roots = q.steps!.map((s) => (Math.min(...s.notes) - tonic + 120) % 12)
+          heard = roots.join(' ') === '0 0 0 0 5 5 0 0 7 5 0 7' ? 'blues' : '?'
+        }
+        expect(heard, `level ${level.id}`).toBe(q.item)
       }
     }
   })

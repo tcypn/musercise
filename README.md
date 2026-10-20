@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Thirty-one are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers**, **the circle of fifths**, **which scale over which chord**, **approach notes and embellishments** and **phrasing and call-and-response**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 42 lessons), with lessons that are not built yet marked *Coming soon*. Thirty-six are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers**, **the circle of fifths**, **which scale over which chord**, **approach notes and embellishments**, **phrasing and call-and-response**, **meter and time signatures**, **subdivisions and syncopation**, **swing and groove feel**, **rhythm dictation** and **song structure**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -391,6 +391,26 @@ Hear a short line land on a chord tone and name how it got there: **straight**, 
 ### Phrasing, licks and call-and-response (ear)
 
 Hear a short pentatonic call, a breath, then the response, and name what the response does: **repeats** it, plays a **new idea**, moves it a step (a **sequence**), or **answers** it by coming home to 1. Every note of both is shown with its number. Levels add one kind of response at a time, then longer calls, any key, the minor pentatonic, rhythm and sequences going down.
+
+### Meter and time signatures (ear)
+
+Hear four bars and name the meter: **2/4**, **3/4**, **4/4** or **6/8**. The low bass note marks each 1; 6/8 groups its quick notes in threes with chords on 1 and 4. Levels add one meter at a time, then any key, busy bars, any tempo, a chord change every bar, and no accent (only the chord changes show the bar).
+
+### Subdivisions and syncopation (ear)
+
+A low note counts four beats, then a rhythm plays over it. Name how the beat is split: **quarters**, **eighths**, **triplets**, **sixteenths**, **off-beats** or the 3 + 3 + 2 **pop push**. Every note is shown with its count (1, e, &, a, trip, let). Later levels play the rhythm as chords, or stop the pulse after the count-in.
+
+### Swing and groove feel (ear)
+
+A bass on every beat and chords between: name the feel, **straight** (even), **swing** (long-short) or the **12/8 triplet feel**. Levels add chords on every note, any key, faster and slower tempos, and a lighter swing.
+
+### Rhythm dictation (ear)
+
+Hear one bar over a steady beat and pick how it is counted from four close choices, written as counts per beat: "1 2& – 4" (a dash is a beat with nothing new). Levels go from quarters and rests to eighths, off-beats, sixteenths and syncopation, then any tempo and no pulse.
+
+### Song structure (ear)
+
+Two phrases of four chords: does the second **repeat**, play something **new**, or keep the start with a **new ending**? Then whole tunes of four sections, **AABA**, **ABAB** or **AABB**, and the **12-bar blues**. Every bar is shown with its section and chord. Later levels change the comping pattern and the tempo.
 
 ### Conventions
 
