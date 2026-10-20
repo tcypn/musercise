@@ -33,13 +33,15 @@ export interface MidiHost {
 
 const KEY = 'musercise.midi'
 
-export function createMidi(host: MidiHost | undefined, remember = true) {
+export function createMidi(host: MidiHost | undefined, remember = true, now: () => number = () => performance.now()) {
   const supported = !!host?.requestMIDIAccess
   let state: MidiState = { status: supported ? 'off' : 'unsupported', names: [], held: [] }
   let access: MidiAccessLike | null = null
   /** Held notes per input, so unplugging one clears only its notes. */
   const heldBy = new Map<string, Set<number>>()
   const listeners = new Set<() => void>()
+  /** Told about every key going down, with the time: for play-along timing. */
+  const noteListeners = new Set<(midi: number, t: number) => void>()
 
   const set = (next: Partial<MidiState>) => {
     state = { ...state, ...next }
@@ -52,8 +54,11 @@ export function createMidi(host: MidiHost | undefined, remember = true) {
     const kind = data[0] & 0xf0
     const note = data[1]
     const notes = heldBy.get(id) ?? new Set<number>()
-    if (kind === 0x90 && data[2] > 0) notes.add(note)
-    else if (kind === 0x80 || kind === 0x90) notes.delete(note)
+    if (kind === 0x90 && data[2] > 0) {
+      notes.add(note)
+      const t = now()
+      noteListeners.forEach((l) => l(note, t))
+    } else if (kind === 0x80 || kind === 0x90) notes.delete(note)
     else return
     heldBy.set(id, notes)
     set({ held: heldNow() })
@@ -104,6 +109,12 @@ export function createMidi(host: MidiHost | undefined, remember = true) {
       listeners.add(listener)
       return () => {
         listeners.delete(listener)
+      }
+    },
+    onNote(listener: (midi: number, t: number) => void) {
+      noteListeners.add(listener)
+      return () => {
+        noteListeners.delete(listener)
       }
     },
     /** Reconnect on start if the learner connected before on this device. */

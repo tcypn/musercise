@@ -55,4 +55,21 @@ describe('MIDI piano', () => {
     expect(n.getState()).toMatchObject({ status: 'off', held: [] })
     expect(p.inputs[0].onmidimessage).toBeNull()
   })
+
+  it('tells listeners about every key going down, with the time', async () => {
+    const p = fakePiano(['CLP-845'])
+    let clock = 1000
+    const m = createMidi({ requestMIDIAccess: async () => p.access }, false, () => clock)
+    await m.connect()
+    const heard: [number, number][] = []
+    const stop = m.onNote((n, t) => heard.push([n, t]))
+    p.send(0, 0x90, 60, 80)
+    clock = 1012
+    p.send(0, 0x90, 64, 80)
+    p.send(0, 0x80, 60, 0) // a key going up is not news
+    p.send(0, 0x90, 67, 0)
+    stop()
+    p.send(0, 0x90, 72, 80)
+    expect(heard).toEqual([[60, 1000], [64, 1012]])
+  })
 })

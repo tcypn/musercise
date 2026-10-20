@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { loadPiano, playNotes, prepareAudio } from '../audio/piano'
 import { Keyboard } from '../components/Keyboard'
 import { midi, useMidi, type MidiState } from '../store/midi'
@@ -83,6 +84,7 @@ export function Piano() {
         </label>
         <button className="button" onClick={() => setTapped([])} disabled={tapped.length === 0}>Clear tapped keys</button>
       </div>
+      <p><Link className="button primary" to="/play-along">Play along with a chord chart</Link></p>
       <p className="quiet">Tap a key to add it to the chord (and hear it); tap it again to take it away. Keys pressed on a connected piano light in gold, tapped keys in green.</p>
     </section>
   )

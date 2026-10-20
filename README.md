@@ -442,6 +442,10 @@ Two lessons answered by **playing**, on a connected piano or by tapping keys on 
 
 The **Piano** tab lights the keys you press and names the chord live ("Am7", "C/E · 1st inversion", or "vi7 in C major" with a key chosen). Connect a digital piano with a USB cable (its USB to Host port) and use **Chrome or Edge** on a computer: the app reads it through Web MIDI, remembers it on this device and reconnects by itself. Safari and the iPad have no Web MIDI; there, tap the keys on screen instead (tapped keys sound and are named too). Nothing about MIDI goes to the server.
 
+### Play along
+
+From the Piano tab: choose a chart (pop loop, 50s loop, ii-V-I, 12-bar blues, AABA), a key, a tempo (50–140 bpm), a backing (click, click and bass, or a comping pattern) and 1, 2 or 4 rounds. After four clicks the chart runs bar by bar, the current and next chord in large type. With a piano connected (or tapping the keys), each bar is judged on its beat 1: the notes struck from 150 ms before to 250 ms after the beat must be chord tones including the root and 3rd; within 80 ms is on time, otherwise early or late. The result shows a mark per bar and the average timing. Nothing is sent to the server.
+
 ### Conventions
 
 Some rules vary between books and bands. These lessons use the most common ones:
