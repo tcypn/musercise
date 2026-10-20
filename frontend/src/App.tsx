@@ -14,6 +14,7 @@ import { MapPage } from './pages/MapPage'
 import { Progress } from './pages/Progress'
 import { Roadmap } from './pages/Roadmap'
 import { Settings } from './pages/Settings'
+import { Piano } from './pages/Piano'
 import { Streak } from './pages/Streak'
 
 /** Links from the first version of the app were /practice/<level>: those were intervals. */
@@ -55,6 +56,7 @@ function Shell() {
             <Route path="/soon/:concept" element={<ComingSoon />} />
             <Route path="/daily" element={<Daily />} />
             <Route path="/progress" element={<Progress />} />
+            <Route path="/piano" element={<Piano />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Learn />} />
           </Routes>

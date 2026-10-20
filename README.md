@@ -432,6 +432,10 @@ Two chords from a chord sheet, and what a pianist slips in between: **nothing**,
 
 Name how a song starts, ends or goes back to the top: a **plain** ending, **slowing down**, **IV iv I**, **♭VI ♭VII I**, a **turnaround** (I vi ii V), a two-chord **vamp** intro, or a **tag** (the last line three times).
 
+### Piano (free play)
+
+The **Piano** tab lights the keys you press and names the chord live ("Am7", "C/E · 1st inversion", or "vi7 in C major" with a key chosen). Connect a digital piano with a USB cable (its USB to Host port) and use **Chrome or Edge** on a computer: the app reads it through Web MIDI, remembers it on this device and reconnects by itself. Safari and the iPad have no Web MIDI; there, tap the keys on screen instead (tapped keys sound and are named too). Nothing about MIDI goes to the server.
+
 ### Conventions
 
 Some rules vary between books and bands. These lessons use the most common ones:

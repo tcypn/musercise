@@ -355,3 +355,17 @@ a.level-link:hover .level-title, .concept-link:hover .concept-name { text-decora
 
 /* A chord chart shown with a quiz question (lead sheets lesson). */
 .chord-chart { font: 700 1.05rem/1.7 ui-monospace, Menlo, Consolas, monospace; background: #fff; border: 2px solid var(--line); border-radius: 0.9rem; padding: 0.8rem 1rem; margin: 0.5rem 0 1rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Piano: free play with a connected piano or tapped keys. */
+.piano-connect { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; margin: 0.75rem 0 1rem; }
+.piano-status { margin: 0; color: var(--ink-soft); flex: 1 1 16rem; }
+.piano-status.on { color: var(--green-lip); font-weight: 700; }
+.piano-reading { background: #fff; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 1rem; padding: 0.9rem 1rem; text-align: center; min-height: 6.2rem; }
+.piano-symbol { font: 800 2.2rem/1.15 'Nunito', sans-serif; margin: 0; overflow-wrap: anywhere; }
+.piano-detail { margin: 0.3rem 0 0; color: var(--ink-soft); min-height: 1.4em; }
+.piano-keys { margin: 1rem 0; }
+.piano-keys .keyboard { height: 9rem; }
+.keyboard.tappable .key { cursor: pointer; }
+.piano-tools { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; justify-content: space-between; }
+.piano-tools select { font: inherit; padding: 0.35rem 0.5rem; border-radius: 0.5rem; border: 2px solid var(--line); background: #fff; }
+.piano-notes { margin: 0.2rem 0 0; }
