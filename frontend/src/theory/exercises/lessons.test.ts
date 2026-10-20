@@ -9,6 +9,7 @@ import { EXTENDED } from './extensions'
 import { HIGHEST_MIDI as TOP } from '../notes'
 import { chordById } from './chords'
 import { countOf } from './rhythmDictation'
+import { BOTTOM_STEP } from '../staffLayout'
 
 /** A seeded random number generator, so a failing case can be replayed. */
 function seeded(seed: number) {
@@ -2107,6 +2108,145 @@ describe('play the chord, and hear it, play it', () => {
       const m = q.prompt!.text.match(/^Play (vii|iii|ii|IV|vi|V|I)\S* in (\S+) major$/)!
       expect(m, q.prompt!.text).not.toBeNull()
       expect(q.root % 12).toBe((KEYS[m[2]] + STEP[m[1]]) % 12)
+    }
+  })
+})
+
+// ---- Reading and dictation ---------------------------------------------------------------------
+
+describe('reading the staff', () => {
+  const lesson = EXERCISES.staff
+  const LETTER = 'CDEFGAB'
+  it('draws the note its answer names, where the level puts it', () => {
+    // Independent: the treble staff's bottom line is E4, the bass staff's G2 (steps count letters from C0).
+    expect([BOTTOM_STEP.treble % 7, Math.floor(BOTTOM_STEP.treble / 7)]).toEqual([2, 4])
+    expect([BOTTOM_STEP.bass % 7, Math.floor(BOTTOM_STEP.bass / 7)]).toEqual([4, 2])
+    const rand = seeded(401)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const { clef, items } = q.prompt!.staff!
+        const note = items[0] as { step: number; accidental?: number }
+        const letter = LETTER[note.step % 7]
+        const octave = Math.floor(note.step / 7)
+        const acc = note.accidental === 1 ? '#' : note.accidental === -1 ? 'b' : ''
+        expect(/\d/.test(q.item) ? `${letter}${octave}` : `${letter}${acc}`, `level ${level.id}`).toBe(q.item)
+        const white = [0, 2, 4, 5, 7, 9, 11][note.step % 7]
+        expect(q.notes[0]).toBe(12 * (octave + 1) + white + (note.accidental ?? 0))
+        const off = note.step - BOTTOM_STEP[clef as 'treble' | 'bass']
+        if (level.id === 1) expect(off % 2 === 0 && off >= 0 && off <= 8).toBe(true) // a line
+        if (level.id === 2) expect(off % 2 === 1 && off > 0 && off < 8).toBe(true) // a space
+        if (level.id === 5) expect(off < 0 || off > 8).toBe(true) // ledger lines
+      }
+    }
+  })
+})
+
+describe('note values and rests', () => {
+  const lesson = EXERCISES['note-values']
+  const LEN: Record<string, number> = { whole: 4, half: 2, quarter: 1, eighth: 0.5, sixteenth: 0.25 }
+  const len = (i: { value: string; dot?: boolean }) => LEN[i.value] * (i.dot ? 1.5 : 1)
+  it('draws what the answer says: the symbol, its beats, or a bar that adds up as stated', () => {
+    const rand = seeded(403)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const drawn = q.prompt!.staff!.items
+        const total = drawn.reduce((t, i) => t + len(i), 0)
+        if (q.item.startsWith('b')) expect(total, `level ${level.id}`).toBe(Number(q.item.slice(1)))
+        else if (['full', 'short', 'over'].includes(q.item)) expect(total === 4 ? 'full' : total < 4 ? 'short' : 'over').toBe(q.item)
+        else {
+          expect(drawn).toHaveLength(1)
+          const d = drawn[0]
+          const name = `${d.dot ? 'dotted-' : ''}${d.value}${d.kind === 'rest' ? '-rest' : ''}`
+          expect(name).toBe(q.item)
+        }
+        expect(q.choices).toContain(q.item)
+      }
+    }
+  })
+})
+
+describe('dynamics, articulation and tempo words', () => {
+  const lesson = EXERCISES.markings
+  const LOUD = ['pp', 'p', 'mp', 'mf', 'f', 'ff']
+  const FAST = ['largo', 'adagio', 'andante', 'moderato', 'allegro', 'presto']
+  const MEANS: Record<string, RegExp> = {
+    pp: /very soft/i, p: /^soft/i, mp: /moderately soft/i, mf: /moderately loud/i, f: /^loud/i, ff: /very loud/i, cresc: /louder/i, dim: /softer/i, sfz: /accent/i,
+    largo: /very slow/i, adagio: /^slow/i, andante: /walking/i, moderato: /moderate/i, allegro: /fast/i, presto: /very fast/i, rit: /slower/i, accel: /faster/i, 'a-tempo': /first speed/i,
+    staccato: /short/i, legato: /smooth/i, accent: /stronger/i, tenuto: /full length/i, fermata: /pause|hold/i,
+  }
+  it('asks for the meaning of the answer, or picks the louder or faster of two', () => {
+    const rand = seeded(405)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        if (q.prompt!.text.startsWith('Which is')) {
+          const order = q.prompt!.text.includes('louder') ? LOUD : FAST
+          const other = q.choices!.find((c) => c !== q.item)!
+          expect(order.indexOf(q.item), `level ${level.id}`).toBeGreaterThan(order.indexOf(other))
+        } else {
+          expect(q.prompt!.big, `${q.item}`).toMatch(MEANS[q.item])
+          for (const c of q.choices!.filter((c) => c !== q.item)) expect(q.prompt!.big).not.toMatch(MEANS[c].source === '^soft' ? /^soft/i : /$^/)
+        }
+      }
+    }
+  })
+})
+
+describe('naming a note by ear', () => {
+  const lesson = EXERCISES['note-naming']
+  const PC: Record<string, number> = { C: 0, 'C#': 1, D: 2, Eb: 3, E: 4, F: 5, 'F#': 6, G: 7, Ab: 8, A: 9, Bb: 10, B: 11 }
+  it('plays the named reference, then the note the answer names', () => {
+    const rand = seeded(407)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 60, rand)) {
+        const ev = q.events!
+        expect(ev[ev.length - 1].notes[0] % 12, `level ${level.id}`).toBe(PC[q.item])
+        expect(q.answerFrom).toBe(1)
+        const refName = q.prompt!.text.match(/reference is (\S+)\./)![1]
+        expect(Object.entries({ C: 0, 'C♯': 1, D: 2, 'E♭': 3, E: 4, F: 5, 'F♯': 6, G: 7, 'A♭': 8, A: 9, 'B♭': 10, B: 11 }).find(([n]) => n === refName)![1]).toBe(ev[0].notes[0] % 12)
+      }
+    }
+  })
+})
+
+describe('melodic dictation', () => {
+  const lesson = EXERCISES['melodic-dictation']
+  const MAJOR = [0, 2, 4, 5, 7, 9, 11, 12]
+  it('plays the tune its answer writes, in the key it sets up, among close choices', () => {
+    const rand = seeded(409)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        const home = Math.min(...q.events![0].notes) % 12
+        const tune = q.events!.slice(q.answerFrom)
+        const base = 60 + home
+        expect(tune.map((e) => MAJOR.indexOf(e.notes[0] - base) + 1).join('-'), `level ${level.id}`).toBe(q.item)
+        expect(q.choices).toHaveLength(4)
+        expect(new Set(q.choices).size).toBe(4)
+        for (const c of q.choices!) expect(level.items).toContain(c)
+      }
+    }
+  })
+})
+
+describe('classical forms', () => {
+  const lesson = EXERCISES['classical-forms']
+  it('has the sections of the form it names', () => {
+    const rand = seeded(411)
+    for (const level of lesson.levels) {
+      for (const q of buildQuestions(lesson, level, 40, rand)) {
+        // the bass of each bar, then the bars in fours: one signature per section
+        const roots = q.steps!.map((s) => Math.min(...s.notes) % 12)
+        const secs = Array.from({ length: roots.length / 4 }, (_, i) => roots.slice(i * 4, i * 4 + 4))
+        const sig = secs.map((s) => s.join(','))
+        const bars = q.steps!.map((_, i) => q.events!.filter((_, k) => q.stepOf![k] === i))
+        const rhythm = (i: number) => bars.slice(i * 4, i * 4 + 4).map((b) => b.length).join(',')
+        let heard = '?'
+        if (secs.length === 2) heard = 'binary'
+        else if (secs.length === 3 && sig[0] === sig[1] && sig[1] === sig[2] && new Set([0, 1, 2].map(rhythm)).size > 1) heard = 'variations'
+        else if (secs.length === 3 && sig[0] === sig[2] && sig[0] !== sig[1]) heard = 'ternary'
+        else if (secs.length === 5 && sig[0] === sig[2] && sig[2] === sig[4] && sig[1] !== sig[0] && sig[3] !== sig[0] && sig[1] !== sig[3]) heard = 'rondo'
+        else if (secs.length === 5 && sig[0] === sig[3] && secs[1].every((r, i) => r === (secs[4][i] + 7) % 12)) heard = 'sonata'
+        expect(heard, `level ${level.id}: ${sig.join(' | ')}`).toBe(q.item)
+      }
     }
   })
 })

@@ -35,6 +35,12 @@ import { passingChordsExercise } from './passingChords'
 import { introsEndingsExercise } from './introsEndings'
 import { playChordsExercise } from './playChords'
 import { playBackExercise } from './playBack'
+import { staffExercise } from './staff'
+import { noteValuesExercise } from './noteValues'
+import { markingsExercise } from './markings'
+import { noteNamingExercise } from './noteNaming'
+import { melodicDictationExercise } from './melodicDictation'
+import { classicalFormsExercise } from './classicalForms'
 import { progressionsExercise } from './progressions'
 import { scaleChoiceExercise } from './scaleChoice'
 import { scaleDegreesExercise } from './scaleDegrees'
@@ -87,9 +93,15 @@ export const EXERCISES: Record<ExerciseId, ExerciseDef> = {
   'intros-endings': introsEndingsExercise,
   'play-chords': playChordsExercise,
   'play-back': playBackExercise,
+  staff: staffExercise,
+  'note-values': noteValuesExercise,
+  markings: markingsExercise,
+  'note-naming': noteNamingExercise,
+  'melodic-dictation': melodicDictationExercise,
+  'classical-forms': classicalFormsExercise,
 }
 
-export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise, meterExercise, subdivisionsExercise, grooveExercise, rhythmDictationExercise, songFormExercise, handRolesExercise, arpeggioHitsExercise, fillsExercise, passingChordsExercise, introsEndingsExercise, playChordsExercise, playBackExercise]
+export const EXERCISE_LIST: readonly ExerciseDef[] = [intervalsExercise, chordsExercise, scaleDegreesExercise, extensionsExercise, noteNamesExercise, majorScaleExercise, chordFunctionExercise, diatonicChordsExercise, progressionsExercise, chordSpellingExercise, pentatonicExercise, cadencesExercise, slashChordsExercise, chordTonesExercise, twoFiveOneExercise, byEarExercise, minorScalesExercise, modesExercise, compingExercise, voiceLeadingExercise, leftHandExercise, bassLinesExercise, leadSheetsExercise, transpositionExercise, modulationExercise, borrowedChordsExercise, nashvilleExercise, circleOfFifthsExercise, scaleChoiceExercise, approachNotesExercise, phrasingExercise, meterExercise, subdivisionsExercise, grooveExercise, rhythmDictationExercise, songFormExercise, handRolesExercise, arpeggioHitsExercise, fillsExercise, passingChordsExercise, introsEndingsExercise, playChordsExercise, playBackExercise, staffExercise, noteValuesExercise, markingsExercise, noteNamingExercise, melodicDictationExercise, classicalFormsExercise]
 
 export function getExercise(id: string | undefined): ExerciseDef | undefined {
   return EXERCISE_LIST.find((e) => e.id === id)

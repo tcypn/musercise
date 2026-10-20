@@ -61,7 +61,8 @@ describe('map progress', () => {
   })
 
   it('marks unbuilt concepts as coming soon', () => {
-    expect(conceptStatus(getConcept('melodic-dictation')!, emptyProgress())).toMatchObject({ state: 'soon', total: 0 })
+    // every lesson is built now: a concept without a lesson behind it stands in
+    expect(conceptStatus({ ...getConcept('melodic-dictation')!, exerciseId: undefined }, emptyProgress())).toMatchObject({ state: 'soon', total: 0 })
   })
 
   it('has no continue target once everything that is built is mastered', () => {

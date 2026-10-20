@@ -399,3 +399,18 @@ a.level-link:hover .level-title, .concept-link:hover .concept-name { text-decora
 .pa-bar.r-wrong { border-color: #e2554f; }
 .pa-keys .keyboard { height: 7rem; }
 .pa-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+
+/* A drawn staff (reading lessons). */
+.staff { display: block; height: 13rem; width: auto; max-width: 100%; margin: 0 auto; color: var(--ink); }
+.staff-line { stroke: currentColor; stroke-width: 0.9; }
+.staff-line.bar { stroke-width: 1.4; }
+.staff-head { fill: currentColor; stroke: currentColor; stroke-width: 1.2; }
+.staff-head.open { fill: #fff; stroke-width: 1.6; }
+.staff-stem { stroke: currentColor; stroke-width: 1.2; }
+.staff-flag, .staff-rest, .staff-tie { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.staff-fill, .staff-dot { fill: currentColor; }
+.staff-acc { font-size: 14px; fill: currentColor; }
+.staff-clef { fill: currentColor; font-family: 'Noto Music', 'Bravura', 'Apple Symbols', 'Segoe UI Symbol', serif; }
+.staff-clef.treble { font-size: 52px; }
+.staff-clef.bass { font-size: 34px; }
+.prompt-big { font: 800 2.4rem/1.1 'Nunito', sans-serif; text-align: center; margin: 0; }

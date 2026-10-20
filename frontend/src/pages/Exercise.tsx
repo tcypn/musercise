@@ -5,6 +5,7 @@ import { loadPiano, playNotes, playSequence, prepareAudio, soundBlocked, stopSou
 import { Book, Ear, Snail, Speaker, Trophy } from '../components/dash/Icons'
 import { AnswerTile, Confetti, FeedbackBanner, LessonHeader } from '../components/lesson/parts'
 import { Keyboard } from '../components/Keyboard'
+import { Staff } from '../components/Staff'
 import { Listen } from '../components/lesson/Listen'
 import { PlayAnswer } from '../components/lesson/PlayAnswer'
 import { midi, useMidi } from '../store/midi'
@@ -395,6 +396,8 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
         </div>
 
         {question.prompt?.chart && <pre className="chord-chart">{question.prompt.chart}</pre>}
+        {question.prompt?.staff && <Staff spec={question.prompt.staff} label="A staff with the note or rest to read" />}
+        {question.prompt?.big && <p className="prompt-big">{question.prompt.big}</p>}
 
         {question.prompt?.lit && (
           <div className="lesson-keys">

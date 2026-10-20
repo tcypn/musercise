@@ -1,6 +1,6 @@
 # Musercise
 
-A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 49 lessons), with lessons that are not built yet marked *Coming soon*. Forty-three are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers**, **the circle of fifths**, **which scale over which chord**, **approach notes and embellishments**, **phrasing and call-and-response**, **meter and time signatures**, **subdivisions and syncopation**, **swing and groove feel**, **rhythm dictation**, **song structure**, **hands and voicings**, **broken chords and hits**, **fills**, **passing chords and walk-ups** and **intros, endings and turnarounds**, **play the chord** and **hear it, play it**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
+A personal ear-training and music-theory app for learning to play by ear, improvise and accompany. **Learn** (home) is a lesson path with today's cards around it; the **Map** tab shows everything to learn (7 stages, 49 lessons), and all forty-nine lessons are ready: **keyboard map and note names**, **intervals**, **major scale and key signatures**, **chord quality**, **chord spelling and symbols**, **chords on each scale note**, **scale degrees**, **9ths, 6ths and added notes**, **chord function**, **common progressions**, **cadences**, **inversions and slash chords**, **pentatonic scale**, **chord tones and guide tones**, **ii-V-I**, **finding the chords by ear**, **minor scales**, **modes**, **comping patterns**, **voice leading**, **left-hand patterns**, **bass lines**, **reading lead sheets and chord charts**, **transposition**, **key changes**, **borrowed and secondary chords**, **Nashville numbers**, **the circle of fifths**, **which scale over which chord**, **approach notes and embellishments**, **phrasing and call-and-response**, **meter and time signatures**, **subdivisions and syncopation**, **swing and groove feel**, **rhythm dictation**, **song structure**, **hands and voicings**, **broken chords and hits**, **fills**, **passing chords and walk-ups** and **intros, endings and turnarounds**, **play the chord**, **hear it, play it**, **reading the staff and clefs**, **note values and rests**, **dynamics, articulation and tempo words**, **naming a note by ear**, **melodic dictation** and **classical forms**, each with ten levels and progress tracking (more are added in small batches; the plan is at the bottom of this file).
 
 - **frontend/** React + Vite + TypeScript. Piano sound comes from Salamander Grand Piano samples (Tone.js), pitch-shifted to cover A0 to C8.
 - **backend/** Django + Django REST Framework + SQLite. Stores sessions and computes your stats. Optional: the app also works with no server, keeping progress in the browser.
@@ -445,6 +445,30 @@ The **Piano** tab lights the keys you press and names the chord live ("Am7", "C/
 ### Play along
 
 From the Piano tab: choose a chart (pop loop, 50s loop, ii-V-I, 12-bar blues, AABA), a key, a tempo (50–140 bpm), a backing (click, click and bass, or a comping pattern) and 1, 2 or 4 rounds. After four clicks the chart runs bar by bar, the current and next chord in large type. With a piano connected (or tapping the keys), each bar is judged on its beat 1: the notes struck from 150 ms before to 250 ms after the beat must be chord tones including the root and 3rd; within 80 ms is on time, otherwise early or late. The result shows a mark per bar and the average timing. Nothing is sent to the server.
+
+### Reading the staff and clefs (quiz)
+
+A note drawn on a treble or bass staff (simple SVG, `components/Staff.tsx`): name it. Lines, then spaces, the bass staff, ledger lines, both clefs, sharps, flats, which C (C2 to C6, middle C is C4), and everything.
+
+### Note values and rests (quiz)
+
+Name notes and rests from whole to sixteenth, dotted too; say how many beats one lasts in 4/4 (ties included); and judge whether a bar adds up to exactly four beats. Choices are always of one kind: names, beat counts or bar verdicts.
+
+### Dynamics, articulation and tempo words (quiz)
+
+A meaning ("Very soft", "At a walking pace", "Short and detached"): pick the marking that asks for it, from pp to ff, crescendo and sfz, largo to presto, rit., accel. and a tempo, staccato, legato, accent, tenuto and fermata. Two levels ask which of two is louder or faster.
+
+### Naming a note by ear (ear)
+
+A named reference note, then another note: name it. From C D E up to all twelve, a reference of A or any note, any octave, and two notes after the reference.
+
+### Melodic dictation (ear)
+
+The key, then a short tune: pick its scale numbers ("1 2 3 5 3") from four choices, the closest ones first. Three to six notes, steps, skips and leaps, any key, less help.
+
+### Classical forms (ear)
+
+A short piece in four-bar sections: binary (AB), ternary (ABA), rondo (ABACA), theme and variations (the same chords, a different texture each time), or a short sonata form (B first in the key a 5th up, a development, then A and B at home).
 
 ### Conventions
 

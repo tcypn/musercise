@@ -50,11 +50,11 @@ export const STAGES: readonly Stage[] = [
     blurb: 'Know where every note lives, read it on the page, and hear the distance between two notes.',
     concepts: [
       { id: 'keyboard-map', name: 'Keyboard map and note names', kind: 'theory', blurb: 'Find any note by name on the keyboard: white and black keys, sharps and flats, octaves.', why: 'Every other topic talks about notes by name. Fast note-finding also makes learning pieces quicker.', exerciseId: 'note-names' },
-      { id: 'staff', name: 'Reading the staff and clefs', kind: 'theory', blurb: 'Read notes on the treble and bass staves, including ledger lines.', why: 'Classical pieces and lead sheets are written on the staff. Reading lets you learn music without a video.', before: ['keyboard-map'] },
-      { id: 'note-values', name: 'Note values and rests', kind: 'theory', blurb: 'Whole, half, quarter and eighth notes, dots, ties and rests.', why: 'This is how a page of music tells you when to play, not just what to play.', before: ['staff'] },
-      { id: 'markings', name: 'Dynamics, articulation and tempo words', kind: 'theory', blurb: 'Words like piano, crescendo, staccato and allegro, and what each asks of your hands.', why: 'They turn correct notes into music, especially in classical pieces.', before: ['note-values'] },
+      { id: 'staff', name: 'Reading the staff and clefs', kind: 'theory', blurb: 'Read notes on the treble and bass staves, including ledger lines.', why: 'Classical pieces and lead sheets are written on the staff. Reading lets you learn music without a video.', before: ['keyboard-map'], exerciseId: 'staff' },
+      { id: 'note-values', name: 'Note values and rests', kind: 'theory', blurb: 'Whole, half, quarter and eighth notes, dots, ties and rests.', why: 'This is how a page of music tells you when to play, not just what to play.', before: ['staff'], exerciseId: 'note-values' },
+      { id: 'markings', name: 'Dynamics, articulation and tempo words', kind: 'theory', blurb: 'Words like piano, crescendo, staccato and allegro, and what each asks of your hands.', why: 'They turn correct notes into music, especially in classical pieces.', before: ['note-values'], exerciseId: 'markings' },
       { id: 'intervals', name: 'Intervals', kind: 'ear', blurb: 'Hear two notes and name the distance between them, across all 88 keys.', why: 'Melodies are made of intervals and chords are stacks of them. Everything else builds on this.', exerciseId: 'intervals' },
-      { id: 'note-naming', name: 'Naming a note by ear', kind: 'ear', blurb: 'Hear one note and say which note it is, with a reference note to lean on.', why: 'Very hard to master, but a strong ear for note names helps you find melodies quickly.', before: ['intervals', 'scale-degrees'] },
+      { id: 'note-naming', name: 'Naming a note by ear', kind: 'ear', blurb: 'Hear one note and say which note it is, with a reference note to lean on.', why: 'Very hard to master, but a strong ear for note names helps you find melodies quickly.', before: ['intervals', 'scale-degrees'], exerciseId: 'note-naming' },
     ],
   },
   {
@@ -108,7 +108,7 @@ export const STAGES: readonly Stage[] = [
       { id: 'groove', name: 'Swing and groove feel', kind: 'ear', blurb: 'Tell straight, swung and shuffled feels apart.', why: 'The feel changes how a chord pattern should be played, especially in R&B and jazz.', before: ['subdivisions'], exerciseId: 'groove' },
       { id: 'rhythm-dictation', name: 'Rhythm dictation', kind: 'ear', blurb: 'Hear a rhythm and write it down or tap it back.', why: 'Trains you to copy rhythms from songs exactly.', before: ['subdivisions'], exerciseId: 'rhythm-dictation' },
       { id: 'song-form', name: 'Song structure', kind: 'ear+theory', blurb: 'Recognise verse, chorus, bridge, the 12-bar blues, AABA and turnarounds.', why: 'Knowing where you are in a song lets you prepare the next section instead of chasing it.', before: ['progressions'], exerciseId: 'song-form' },
-      { id: 'classical-forms', name: 'Classical forms', kind: 'ear+theory', blurb: 'Recognise binary, ternary, theme and variations and sonata form.', why: 'Understanding a classical piece\'s shape makes it easier to learn and to play with meaning.', before: ['cadences'] },
+      { id: 'classical-forms', name: 'Classical forms', kind: 'ear+theory', blurb: 'Recognise binary, ternary, theme and variations and sonata form.', why: 'Understanding a classical piece\'s shape makes it easier to learn and to play with meaning.', before: ['cadences'], exerciseId: 'classical-forms' },
     ],
   },
   {
@@ -116,7 +116,7 @@ export const STAGES: readonly Stage[] = [
     name: 'Melody and improvisation',
     blurb: 'Use what you know to invent melodies over chords.',
     concepts: [
-      { id: 'melodic-dictation', name: 'Melodic dictation', kind: 'ear', blurb: 'Hear a short melody and play it back on the keyboard.', why: 'Brings everything together: it is how you learn a tune without sheet music.', before: ['scale-degrees', 'intervals'] },
+      { id: 'melodic-dictation', name: 'Melodic dictation', kind: 'ear', blurb: 'Hear a short melody and play it back on the keyboard.', why: 'Brings everything together: it is how you learn a tune without sheet music.', before: ['scale-degrees', 'intervals'], exerciseId: 'melodic-dictation' },
       { id: 'chord-tones', name: 'Chord tones and guide tones', kind: 'ear', blurb: 'Hear which melody notes belong to the chord underneath, especially the 3rd and 7th.', why: 'Landing on chord tones is what makes an improvised line sound like it fits.', before: ['chord-quality', 'progressions'] , exerciseId: 'chord-tones' },
       { id: 'scale-choice', name: 'Which scale over which chord', kind: 'ear+theory', blurb: 'Choose a scale that suits each chord and hear how it colours the sound.', why: 'The practical core of improvising: it tells you which notes are safe and which add tension.', before: ['pentatonic', 'diatonic-chords'] , exerciseId: 'scale-choice' },
       { id: 'approach-notes', name: 'Approach notes and embellishments', kind: 'ear', blurb: 'Hear passing notes, neighbour notes and grace notes that decorate a melody.', why: 'These make a line flow instead of sounding like a scale going up and down.', before: ['chord-tones'] , exerciseId: 'approach-notes' },

@@ -57,23 +57,13 @@ describe('learning path', () => {
     expect(defaultStage(path)).toBe(3)
   })
 
-  it('groups consecutive unbuilt lessons into one node', () => {
-    const first = buildPath(emptyProgress())[0].nodes.find((n) => n.state === 'soon')!
-    expect(first.lessons).toBe(3) // reading the staff, note values, dynamics and tempo words
-    expect(first.caption).toBe('3 lessons coming soon')
-    expect(first.to).toBe('/map')
-  })
-
-  it('links a single unbuilt lesson to its own page', () => {
-    const stage = buildPath(emptyProgress())[0]
-    const last = stage.nodes[stage.nodes.length - 1]
-    expect(last).toMatchObject({ state: 'soon', caption: 'Naming a note by ear', to: '/soon/note-naming' })
+  it('has every lesson of the map ready: nothing is coming soon any more', () => {
+    for (const stage of buildPath(emptyProgress())) expect(stage.nodes.filter((n) => n.state === 'soon')).toEqual([])
   })
 
   it('reports ready counts per stage', () => {
     const path = buildPath(emptyProgress())
-    expect(path.map((s) => s.ready)).toEqual([2, 6, 7, 7, 5, 4, 12])
-    expect(path[4].nodes.filter((n) => n.state === 'soon').map((n) => n.caption)).toEqual(['Classical forms']) // rhythm: all but classical forms
+    expect(path.map((s) => s.ready)).toEqual([6, 6, 7, 7, 6, 5, 12])
   })
 
   it('opens the first stage for a new learner and when everything is finished', () => {

@@ -1,6 +1,18 @@
 import type { TimedEvent } from './practice'
 
-export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping' | 'voice-leading' | 'left-hand' | 'bass-lines' | 'lead-sheets' | 'transposition' | 'modulation' | 'borrowed-chords' | 'nashville' | 'circle-of-fifths' | 'scale-choice' | 'approach-notes' | 'phrasing' | 'meter' | 'subdivisions' | 'groove' | 'rhythm-dictation' | 'song-form' | 'hand-roles' | 'arpeggio-hits' | 'fills' | 'passing-chords' | 'intros-endings' | 'play-chords' | 'play-back'
+/** Something to draw on a staff: a clef (or none), then notes and rests from left to right. */
+export type NoteValue = 'whole' | 'half' | 'quarter' | 'eighth' | 'sixteenth'
+export type StaffItem =
+  | { kind: 'note'; /** Diatonic step: letter index (C = 0) + 7 × octave, so middle C (C4) is 28. */ step: number; accidental?: -1 | 1; value: NoteValue; dot?: boolean; tieToNext?: boolean }
+  | { kind: 'rest'; value: NoteValue; dot?: boolean }
+export interface StaffSpec {
+  clef: 'treble' | 'bass' | 'none'
+  items: StaffItem[]
+  /** Draw a bar line after the last item. */
+  barEnd?: boolean
+}
+
+export type ExerciseId = 'intervals' | 'chords' | 'scale-degrees' | 'extensions' | 'note-names' | 'major-scale' | 'chord-function' | 'diatonic-chords' | 'progressions' | 'chord-spelling' | 'pentatonic' | 'cadences' | 'slash-chords' | 'chord-tones' | 'two-five-one' | 'by-ear' | 'minor-scales' | 'modes' | 'comping' | 'voice-leading' | 'left-hand' | 'bass-lines' | 'lead-sheets' | 'transposition' | 'modulation' | 'borrowed-chords' | 'nashville' | 'circle-of-fifths' | 'scale-choice' | 'approach-notes' | 'phrasing' | 'meter' | 'subdivisions' | 'groove' | 'rhythm-dictation' | 'song-form' | 'hand-roles' | 'arpeggio-hits' | 'fills' | 'passing-chords' | 'intros-endings' | 'play-chords' | 'play-back' | 'staff' | 'note-values' | 'markings' | 'note-naming' | 'melodic-dictation' | 'classical-forms'
 
 /** How a question is played or set up. Intervals use the first three, chords the next two, scale degrees the key (major or minor). */
 export type Mode =
@@ -56,7 +68,7 @@ export interface Question {
   /** For each of `events`, the step it belongs to (null for the key played first). Needed when a step has several sounds. */
   stepOf?: (number | null)[]
   /** Quiz lessons: the question in words, with keys to show on the keyboard while it is asked. */
-  prompt?: { text: string; lit?: number[]; chart?: string }
+  prompt?: { text: string; lit?: number[]; chart?: string; staff?: StaffSpec; big?: string }
   /** Quiz lessons: why the answer is right, in a sentence, shown after the answer. */
   explain?: string
   /** Quiz lessons: offer only these answers (ids, always including the right one) instead of every answer of the level. */
