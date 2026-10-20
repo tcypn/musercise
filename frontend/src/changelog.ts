@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.33.0', date: '2026-10-20', changes: ['Your turn: after answering in an ear lesson, play the answer on your piano or by tapping the keys (any octave counts; practice only, not scored)'] },
   { version: '1.32.0', date: '2026-10-20', changes: ['New lessons you answer by playing, on a connected piano or by tapping the keys: play the chord (symbols, slash chords, numerals), and hear it, play it'] },
   { version: '1.31.0', date: '2026-10-20', changes: ['New Piano tab: connect your digital piano (USB MIDI, in Chrome or Edge) or tap the keys, and see the chord you play named live, with its numeral in a key you choose'] },
   { version: '1.30.0', date: '2026-10-20', changes: ['New lessons for playing from a chord sheet: hands and voicings, broken chords and hits, fills, passing chords and walk-ups, intros, endings and turnarounds', 'They are part of the "Play from a chord sheet" and "Accompany a singer" goals'] },

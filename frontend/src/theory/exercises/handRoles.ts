@@ -114,6 +114,7 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
 }
 
 export const handRolesExercise: ExerciseDef = {
+  noYourTurn: true,
   id: 'hand-roles',
   name: 'Hands and voicings',
   blurb: 'Hear a few bars and name how the hands share the work: chords in both hands, bass and chord, a spread (open) voicing, chords with the melody on top, or chords in the left hand with a tune in the right. Each suits a different moment in a song.',

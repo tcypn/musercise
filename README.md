@@ -436,6 +436,8 @@ Name how a song starts, ends or goes back to the top: a **plain** ending, **slow
 
 Two lessons answered by **playing**, on a connected piano or by tapping keys on screen, then Check. With a piano connected, holding the right notes checks by itself. Any octave, voicing or doubling counts; a slash chord also needs the right bass note. **Play the chord** shows a symbol (triads, 7ths, slash chords) or a numeral in a key ("vi7 in G major"). **Hear it, play it** plays a chord to play back: first with the root named, later finding the root by ear (the low note sounds first). A wrong answer shows what you played, named, and when it is another chord of the lesson it is recorded as that, so Practise your mistakes knows what you mix up.
 
+**Your turn:** after answering in an ear lesson, *Your turn: play it* opens the same keyboard: play what the answer keyboard shows (the chosen chord, for progressions), on the piano or by tapping, in any octave. It is practice only and is not scored. Rhythm lessons and those whose answer is a whole bar leave it out.
+
 ### Piano (free play)
 
 The **Piano** tab lights the keys you press and names the chord live ("Am7", "C/E · 1st inversion", or "vi7 in C major" with a key chosen). Connect a digital piano with a USB cable (its USB to Host port) and use **Chrome or Edge** on a computer: the app reads it through Web MIDI, remembers it on this device and reconnects by itself. Safari and the iPad have no Web MIDI; there, tap the keys on screen instead (tapped keys sound and are named too). Nothing about MIDI goes to the server.

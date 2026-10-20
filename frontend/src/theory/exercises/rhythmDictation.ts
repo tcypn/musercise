@@ -134,6 +134,7 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
 }
 
 export const rhythmDictationExercise: ExerciseDef = {
+  noYourTurn: true,
   id: 'rhythm-dictation',
   name: 'Rhythm dictation',
   blurb: 'Hear one bar of rhythm over a steady beat and pick how it is counted, such as "1 2& – 4". Writing a rhythm as counts is how you copy a song\'s strumming, comping or melody rhythm exactly.',

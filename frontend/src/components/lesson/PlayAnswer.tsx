@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Keyboard } from '../Keyboard'
 import { midi, type MidiState } from '../../store/midi'
@@ -19,7 +19,15 @@ function useNarrow(): boolean {
  * Play lessons answer with notes: keys held on a connected piano light gold, keys tapped here light green,
  * and what is held is named as you go.
  */
-export function PlayAnswer({ piano, tapped, onTap, onClear }: { piano: MidiState; tapped: readonly number[]; onTap: (midi: number) => void; onClear: () => void }) {
+export function PlayAnswer({ piano, tapped, onTap, onClear, onCheck, result }: {
+  piano: MidiState
+  tapped: readonly number[]
+  onTap: (midi: number) => void
+  onClear: () => void
+  /** "Your turn": its own Check button, and what it said. */
+  onCheck?: () => void
+  result?: ReactNode
+}) {
   const narrow = useNarrow()
   useEffect(() => midi.resume(), [])
   const notes = [...new Set([...piano.held, ...tapped])]
@@ -33,8 +41,12 @@ export function PlayAnswer({ piano, tapped, onTap, onClear }: { piano: MidiState
       <Keyboard lit={lit} onTap={onTap} view={narrow ? [48, 83] : [36, 95]} />
       <div className="play-tools">
         <span className="quiet">{piano.status === 'connected' ? `Piano connected: it checks itself when you play it right.` : <>No piano connected. <Link to="/piano">Connect one</Link> or tap the keys.</>}</span>
-        <button type="button" className="button" onClick={onClear} disabled={tapped.length === 0}>Clear</button>
+        <span className="play-buttons">
+          <button type="button" className="button" onClick={onClear} disabled={tapped.length === 0}>Clear</button>
+          {onCheck && <button type="button" className="button primary" onClick={onCheck} disabled={notes.length === 0}>Check</button>}
+        </span>
       </div>
+      {result && <p className="play-result" role="status">{result}</p>}
     </div>
   )
 }

@@ -93,6 +93,7 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
 }
 
 export const meterExercise: ExerciseDef = {
+  noYourTurn: true,
   id: 'meter',
   name: 'Meter and time signatures',
   blurb: 'Hear a few bars and name the meter: 2/4, 3/4, 4/4 or 6/8. Find beat 1 (the low bass note or the chord change) and count the beats until the next one.',

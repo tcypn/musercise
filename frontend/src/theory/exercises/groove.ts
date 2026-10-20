@@ -90,6 +90,7 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
 }
 
 export const grooveExercise: ExerciseDef = {
+  noYourTurn: true,
   id: 'groove',
   name: 'Swing and groove feel',
   blurb: 'Hear a groove and name its feel: straight eighths (even), swing (long-short) or the 12/8 triplet feel (three per beat). The same chords played in a different feel make a different song.',

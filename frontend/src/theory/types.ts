@@ -85,6 +85,8 @@ export interface ExerciseDef {
   kind?: 'ear' | 'quiz' | 'play'
   /** Play lessons: the answer that the notes played stand for (the question's own item when right, `other` when they match none). */
   judge?(question: Question, midis: readonly number[]): string
+  /** Hide "Your turn" after answering: lessons whose answer is a rhythm or a whole bar, not notes to play. */
+  noYourTurn?: boolean
   /** Play lessons: play the question's sound before the answer (hear it, then play it). Otherwise it sounds only after Check. */
   playFirst?: boolean
   /** What the lit strip on the keyboard stands for in the intro: "lowest note" (default) or, for one-note questions, "note". */

@@ -95,6 +95,7 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
 }
 
 export const subdivisionsExercise: ExerciseDef = {
+  noYourTurn: true,
   id: 'subdivisions',
   name: 'Subdivisions and syncopation',
   blurb: 'A low note keeps the beat; a rhythm plays over it. Name how the beat is split: quarters, eighths, triplets, sixteenths, off-beats or the 3 + 3 + 2 pop push. Counting like this is how you copy a song\'s rhythm.',

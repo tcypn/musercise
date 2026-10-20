@@ -9,6 +9,7 @@ import { Listen } from '../components/lesson/Listen'
 import { PlayAnswer } from '../components/lesson/PlayAnswer'
 import { midi, useMidi } from '../store/midi'
 import { nameChord } from '../theory/chordName'
+import { matchesTarget, yourTurnTarget } from '../theory/yourTurn'
 import { addPending, flushPending, passedLevels } from '../store/pending'
 import { getExercise, getItem, getLevel, levelItems } from '../theory/exercises'
 import { canSlow as questionCanSlow, eventsFor, questionOffsetMs, soundingAt, stepFor, type Part } from '../theory/playback'
@@ -75,9 +76,19 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
   /** Play lessons: the notes that were checked, to show what was played. */
   const [yourNotes, setYourNotes] = useState<number[]>([])
   const playedNotes = [...new Set([...piano.held, ...tapped])].sort((a, b) => a - b)
+  /** "Your turn" after answering: play what the answer keyboard shows. Practice only, not scored. */
+  const [yourTurn, setYourTurn] = useState(false)
+  const [turnTapped, setTurnTapped] = useState<number[]>([])
+  const [turnResult, setTurnResult] = useState<{ ok: boolean; notes: number[] } | null>(null)
+  const resetTurn = () => {
+    setYourTurn(false)
+    setTurnTapped([])
+    setTurnResult(null)
+  }
   const count = focus ? MISTAKE_QUESTIONS : QUESTIONS_PER_SESSION
   const levelChoices = useMemo(() => levelItems(exercise, level), [exercise, level])
   const question = questions[index]
+  const turnTarget = phase === 'checked' && question ? yourTurnTarget(question, step) : []
   // A quiz question may offer just a few of the level's answers; the order is always the lesson's own.
   const choices = useMemo(
     () => (question?.choices ? exercise.items.filter((i) => question.choices!.includes(i.id)) : levelChoices),
@@ -139,6 +150,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     setAttempts([])
     setPicked(null)
     setTapped([])
+    resetTurn()
     setStep(0)
     setSounding(null)
     setPhase('question')
@@ -187,6 +199,7 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
     setIndex(nextIndex)
     setPicked(null)
     setTapped([])
+    resetTurn()
     setStep(0)
     setSounding(null)
     setPhase('question')
@@ -219,6 +232,11 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
   useEffect(() => {
     autoCheck.current = () => {
       const held = midi.getState().held
+      // Your turn: holding the right notes on the piano is enough.
+      if (yourTurn && phase === 'checked' && matchesTarget(held, turnTarget)) {
+        setTurnResult({ ok: true, notes: held })
+        return
+      }
       if (!playMode || phase !== 'question' || !question || held.length === 0) return
       const notes = [...new Set([...held, ...tapped])].sort((a, b) => a - b)
       if (exercise.judge!(question, notes) === question.item) check(notes)
@@ -480,6 +498,37 @@ function Session({ exercise, level, focus }: { exercise: ExerciseDef; level: Lev
           </div>
         )}
       </div>
+
+      {checked && !quiz && !playMode && !exercise.noYourTurn && turnTarget.length > 0 && (
+        <div className="lesson-main your-turn">
+          {!yourTurn ? (
+            <button type="button" className="button" onClick={() => { midi.resume(); setYourTurn(true) }}>Your turn: play it</button>
+          ) : (
+            <>
+              <p className="play-reading">Your turn: play <strong>{nameChord(turnTarget).symbol}</strong> <span className="quiet">{nameChord(turnTarget).notes.join(' ')}</span>, in any octave.</p>
+              <PlayAnswer
+                piano={piano}
+                tapped={turnTapped}
+                onTap={(m) => {
+                  prepareAudio()
+                  setTurnResult(null)
+                  if (turnTapped.includes(m)) setTurnTapped(turnTapped.filter((x) => x !== m))
+                  else {
+                    setTurnTapped([...turnTapped, m])
+                    if (piano.status !== 'connected') void playNotes([m], { gap: 0, hold: 1 }).catch(() => {})
+                  }
+                }}
+                onClear={() => { setTurnTapped([]); setTurnResult(null) }}
+                onCheck={() => {
+                  const notes = [...new Set([...piano.held, ...turnTapped])]
+                  setTurnResult({ ok: matchesTarget(notes, turnTarget), notes })
+                }}
+                result={turnResult && (turnResult.ok ? <strong>✓ That's it</strong> : <>Not yet: you played <strong>{nameChord(turnResult.notes).symbol}</strong>{turnResult.notes.length > 1 ? ` (${nameChord(turnResult.notes).notes.join(' ')})` : ''}. Try again.</>)}
+              />
+            </>
+          )}
+        </div>
+      )}
 
       {checked ? (
         <FeedbackBanner

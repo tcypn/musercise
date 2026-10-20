@@ -99,6 +99,7 @@ function makeQuestion(level: Level, item: Item, mode: Mode, rand: () => number):
 }
 
 export const arpeggioHitsExercise: ExerciseDef = {
+  noYourTurn: true,
   id: 'arpeggio-hits',
   name: 'Broken chords and hits',
   blurb: 'Many songs mix a broken chord (one note at a time) with the chord struck all at once. Hear a few bars and name the pattern: broken all bar, a hit on 3, a hit on 1, a push on the "&" of 4, or a spread arpeggio from the bass.',

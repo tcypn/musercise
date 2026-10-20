@@ -375,3 +375,6 @@ a.level-link:hover .level-title, .concept-link:hover .concept-name { text-decora
 .play-answer .keyboard { height: 8rem; }
 .play-reading { margin: 0; font-size: 1.1rem; text-align: center; min-height: 1.6em; }
 .play-tools { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; }
+.your-turn { padding-top: 0; }
+.play-buttons { display: inline-flex; gap: 0.5rem; }
+.play-result { margin: 0; text-align: center; }
