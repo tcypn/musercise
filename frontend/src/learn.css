@@ -262,8 +262,8 @@
 .goal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); z-index: 40; }
 .goal-panel { position: absolute; top: calc(100% + 0.6rem); left: 0; z-index: 41; width: min(40rem, calc(100vw - 2rem)); background: #fff; border: 2px solid var(--line); border-radius: 1rem; padding: 1rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); }
 .goal-panel::before { content: ''; position: absolute; top: -0.55rem; left: 1.4rem; width: 0.9rem; height: 0.9rem; background: #fff; border-left: 2px solid var(--line); border-top: 2px solid var(--line); transform: rotate(45deg); }
-.goal-tiles { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; }
-.goal-tile { flex: 0 0 auto; width: 6.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.6rem 0.3rem; border: 2px solid transparent; border-radius: 0.9rem; background: none; color: var(--ink); font: 800 0.9rem/1.15 var(--sans); cursor: pointer; }
+.goal-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.6rem, 1fr)); gap: 0.5rem; padding-bottom: 0.25rem; }
+.goal-tile { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.6rem 0.3rem; border: 2px solid transparent; border-radius: 0.9rem; background: none; color: var(--ink); font: 800 0.9rem/1.15 var(--sans); cursor: pointer; }
 .goal-tile-icon { display: grid; place-items: center; width: 4rem; height: 3.2rem; border-radius: 0.8rem; background: var(--blue-tint); color: var(--blue-text); }
 .goal-tile.active { border-color: var(--blue-text); }
 .goal-tile:hover { background: #f7f7f7; }

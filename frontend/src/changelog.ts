@@ -9,6 +9,7 @@ export interface Version {
 }
 
 export const CHANGELOG: readonly Version[] = [
+  { version: '1.36.0', date: '2026-10-22', changes: ['A fifth goal: Read sheet music', 'The goals gain the lessons they were missing: colour chords, song structure and groove for chord sheets; meter, groove and song structure for accompanying; bass lines, colour chords and song structure by ear; rhythm and groove for improvising', 'Fix: on phones the goal panel shows every goal (the last ones were hidden off to the side)'] },
   { version: '1.35.1', date: '2026-10-20', changes: ['The "Work out a song by ear" goal now includes naming a note by ear and melodic dictation'] },
   { version: '1.35.0', date: '2026-10-20', changes: ['New lessons: reading the staff and clefs, note values and rests, dynamics, articulation and tempo words, naming a note by ear, melodic dictation, classical forms', 'Every lesson on the map is ready now'] },
   { version: '1.34.0', date: '2026-10-20', changes: ['Play along (from the Piano tab): play a chord chart in time with a count-in, click and backing; with a piano connected (or tapping), every bar is checked for the right chord on beat 1, with how early or late you were'] },

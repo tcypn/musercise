@@ -4,9 +4,9 @@ import { mergeProgress } from '../../store/merge'
 import { getCachedProgress, getPending } from '../../store/pending'
 import { useGoal } from '../../store/useGoal'
 import { GOALS, goalProgress, setActiveGoal } from '../../theory/goals'
-import { Book, Close, Ear, PianoIcon, Steps, Target } from './Icons'
+import { Book, Close, Ear, PianoIcon, Steps, Target, MusicNote } from './Icons'
 
-const ICON: Record<string, typeof Book> = { 'chord-sheet': Book, 'by-ear': Ear, accompany: PianoIcon, improvise: Steps }
+const ICON: Record<string, typeof Book> = { 'chord-sheet': Book, 'by-ear': Ear, accompany: PianoIcon, improvise: Steps, 'read-music': MusicNote }
 
 /**
  * The goal, top left (like a course switcher): its name, a ✕ to clear it, and a panel that drops down to pick
@@ -34,7 +34,7 @@ export function GoalChip() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  const Icon = goal ? ICON[goal.id] : Target
+  const Icon = goal ? (ICON[goal.id] ?? Target) : Target
   return (
     <div className="goal-chip-wrap">
       <div className={`goal-chip ${goal ? 'set' : ''}`}>
@@ -54,7 +54,7 @@ export function GoalChip() {
           <div ref={panel} id="goal-panel" className="goal-panel" role="dialog" aria-label="Choose a goal">
             <div className="goal-tiles">
               {GOALS.map((g) => {
-                const TileIcon = ICON[g.id]
+                const TileIcon = ICON[g.id] ?? Target
                 return (
                   <button key={g.id} type="button" className={`goal-tile ${goal?.id === g.id ? 'active' : ''}`} aria-pressed={goal?.id === g.id} onClick={() => { setActiveGoal(g.id); close() }}>
                     <span className="goal-tile-icon"><TileIcon size={30} /></span>

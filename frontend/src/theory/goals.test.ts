@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { emptyProgress } from '../store/normalise'
-import { getConcept } from './curriculum'
+import { ALL_CONCEPTS, getConcept } from './curriculum'
 import { activeGoal, GOALS, goalProgress, setActiveGoal, subscribeGoal } from './goals'
 import { buildPath } from './path'
 
@@ -13,11 +13,16 @@ describe('goals', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('lists real map lessons, each once per goal', () => {
-    expect(GOALS.length).toBe(4)
+    expect(GOALS.length).toBe(5)
     for (const g of GOALS) {
       expect(new Set(g.lessons).size, g.id).toBe(g.lessons.length)
       for (const id of g.lessons) expect(getConcept(id), `${g.id}: ${id}`).toBeDefined()
     }
+  })
+
+  it('puts every lesson of the map in at least one goal', () => {
+    const inGoals = new Set(GOALS.flatMap((g) => g.lessons))
+    expect(ALL_CONCEPTS.map((c) => c.id).filter((id) => !inGoals.has(id))).toEqual([])
   })
 
   it('counts lessons done and finds the next one to work on, skipping coming-soon lessons', () => {
@@ -31,7 +36,7 @@ describe('goals', () => {
     expect(prog.lessons[1]).toMatchObject({ state: 'started', passed: 1 })
     expect(prog.next?.conceptId).toBe('pentatonic')
     expect(prog.lessons.filter((l) => l.state === 'soon').map((l) => l.conceptId)).toEqual([])
-    expect(prog.ready).toBe(9)
+    expect(prog.ready).toBe(11)
   })
 
   it('remembers the goal on this device, tells everything showing it, and copes with blocked storage', () => {

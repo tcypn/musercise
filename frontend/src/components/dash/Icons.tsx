@@ -230,6 +230,16 @@ export function Gear({ size = 24, className, title }: IconProps) {
   )
 }
 
+/** Reading music: an eighth note. */
+export function MusicNote({ size = 24, className, title }: IconProps) {
+  return (
+    <svg {...stroke(size, className, title, 2.4)}>
+      <ellipse cx="8" cy="17.5" rx="3.6" ry="2.8" fill="currentColor" stroke="none" />
+      <path d="M11.4 17V4.5c2.4 1.6 5.6 2.4 6.6 5.6" />
+    </svg>
+  )
+}
+
 /** The course icon: a little keyboard. */
 export function PianoIcon({ size = 24, className, title }: IconProps) {
   return (
