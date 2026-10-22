@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { loadPiano, playSequence, prepareAudio, stopSound } from '../audio/piano'
 import { Keyboard } from '../components/Keyboard'
 import { midi, useMidi } from '../store/midi'
 import { readJson, writeJson } from '../store/storage'
 import { keyLabel } from '../theory/harmony'
-import { BACKINGS, CHARTS, judgeBar, schedule, WINDOW, type Backing, type Bar, type BarResult, type Struck } from '../theory/playAlong'
+import { BACKINGS, CHARTS, chartBars, judgeBar, scheduleBars, WINDOW, type Backing, type Bar, type BarResult, type SlotIn, type Struck } from '../theory/playAlong'
 
 const STORE = 'musercise.play-along'
 const KEY_PCS = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5]
@@ -17,6 +17,8 @@ const MARK: Record<BarResult['kind'], string> = { right: '✓', early: '✓ earl
 /** Play along with a chord chart: a count-in, the chart bar by bar, and (with a piano or taps) a check of each bar's beat 1. */
 export function PlayAlong() {
   const piano = useMidi()
+  /** A song from My songs, passed in with its chords already in the chosen key. */
+  const song = (useLocation().state as { song?: { id: string; title: string; bars: SlotIn[][] } } | null)?.song
   const [settings, setSettings] = useState<Settings>(() => ({ ...DEFAULTS, ...readJson<Partial<Settings>>(STORE, {}) }))
   const [phase, setPhase] = useState<'setup' | 'playing' | 'done'>('setup')
   const [bars, setBars] = useState<Bar[]>([])
@@ -51,7 +53,8 @@ export function PlayAlong() {
   async function start() {
     prepareAudio()
     await loadPiano()
-    const plan = schedule(settings.chart, settings.key, settings.bpm, settings.backing, settings.rounds)
+    const plan = scheduleBars(song ? song.bars : chartBars(settings.chart, settings.key), settings.bpm, settings.backing, settings.rounds)
+    let last = -1
     struck.current = []
     anchor.current = null
     setBars(plan.bars)
@@ -65,8 +68,9 @@ export function PlayAlong() {
       const bar = plan.barOf[i]!
       if (b === null) return
       setPos({ bar, beat: b })
-      // A bar is judged once the next one starts (its window has long closed by then).
-      if (b === 0 && bar > 0) judge(plan.bars, bar - 1)
+      // A chord is judged once the next one sounds (its window has long closed by then).
+      if (bar !== last && last >= 0) judge(plan.bars, last)
+      last = bar
     })
     await handle.done
     finish(plan.bars)
@@ -91,8 +95,7 @@ export function PlayAlong() {
     setTimeout(() => setFlash((f) => f.filter((x) => x !== m)), 250)
   }
 
-  const chart = CHARTS.find((c) => c.id === settings.chart)!
-  const perRound = chart.bars.length
+  const perRound = song ? song.bars.flat().length : CHARTS.find((c) => c.id === settings.chart)!.bars.length
   const current = pos.bar >= 0 ? bars[pos.bar] : bars[0]
   const next = bars[pos.bar + 1]
   const round = Math.max(0, Math.floor(Math.max(pos.bar, 0) / perRound))
@@ -103,12 +106,12 @@ export function PlayAlong() {
   if (phase === 'setup') {
     return (
       <section className="practice play-along">
-        <p><Link to="/piano">← Piano</Link></p>
-        <h1>Play along</h1>
+        <p>{song ? <Link to={`/songs/${song.id}`}>← {song.title}</Link> : <Link to="/piano">← Piano</Link>}</p>
+        <h1>{song ? `Play along: ${song.title}` : 'Play along'}</h1>
         <p className="lede">Play a chord chart in time. After a count-in of four clicks, play each bar's chord on beat 1.{piano.status === 'connected' ? ' Your piano is connected: every bar is checked.' : ' Connect a piano on the Piano tab to have every bar checked (tapping the keys below works too, less precisely).'}</p>
         <div className="form play-along-form">
-          <label>Chart <select value={settings.chart} onChange={(e) => set({ chart: e.target.value })}>{CHARTS.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-          <label>Key <select value={settings.key} onChange={(e) => set({ key: Number(e.target.value) })}>{KEY_PCS.map((pc) => <option key={pc} value={pc}>{keyLabel(pc, 'major').label}</option>)}</select></label>
+          {!song && <label>Chart <select value={settings.chart} onChange={(e) => set({ chart: e.target.value })}>{CHARTS.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>}
+          {!song && <label>Key <select value={settings.key} onChange={(e) => set({ key: Number(e.target.value) })}>{KEY_PCS.map((pc) => <option key={pc} value={pc}>{keyLabel(pc, 'major').label}</option>)}</select></label>}
           <label>Tempo: {settings.bpm} bpm <input type="range" min={50} max={140} step={2} value={settings.bpm} onChange={(e) => set({ bpm: Number(e.target.value) })} /></label>
           <label>Backing <select value={settings.backing} onChange={(e) => set({ backing: e.target.value as Backing })}>{BACKINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
           <label>Rounds <select value={settings.rounds} onChange={(e) => set({ rounds: Number(e.target.value) })}>{[1, 2, 4].map((n) => <option key={n} value={n}>{n}</option>)}</select></label>
@@ -138,7 +141,7 @@ export function PlayAlong() {
       )}
       {rows.map((r) => (
         <ol key={r} className="pa-grid" aria-label={`Round ${r + 1}`}>
-          {chart.bars.map((_, i) => {
+          {Array.from({ length: perRound }, (_, i) => {
             const index = r * perRound + i
             const b = bars[index]
             const res = results[index]

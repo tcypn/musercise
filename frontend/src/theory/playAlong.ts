@@ -1,5 +1,6 @@
 import { barEvents, type Pattern } from './comping'
 import type { TimedEvent } from './practice'
+import type { VoicedChord } from './harmony'
 import { voiceNumerals } from './rhythm'
 
 /** Chord charts to play along with, as numerals, one chord per bar. */
@@ -36,13 +37,39 @@ export interface Bar {
   at: number
 }
 
-/** What to play: a bar of clicks to count in, then the chart `rounds` times; and where each bar starts. */
-export function schedule(chartId: string, keyPc: number, bpm: number, backing: Backing, rounds: number): { events: TimedEvent[]; bars: Bar[]; beatOf: (number | null)[]; barOf: (number | null)[] } {
+/** One chord of a chart as played: its name, root, notes (pitch classes) and voicing. */
+export interface SlotIn {
+  name: string
+  rootPc: number
+  pcs: number[]
+  voiced: VoicedChord
+}
+
+/** The chord tone a hand must include besides the root: the 3rd, or for sus chords the 2nd or 4th. */
+function thirdOf(pcs: readonly number[], root: number): number {
+  const rel = (pc: number) => (pc - root + 12) % 12
+  return pcs.find((pc) => [3, 4].includes(rel(pc))) ?? pcs.find((pc) => [2, 5].includes(rel(pc))) ?? pcs.find((pc) => pc !== root) ?? root
+}
+
+/** A built-in chart in a key, one chord per bar. */
+export function chartBars(chartId: string, keyPc: number): SlotIn[][] {
   const chart = CHARTS.find((c) => c.id === chartId)!
   const { voiced, names } = voiceNumerals(keyPc, chart.bars)
+  return voiced.map((v, i) => [{ name: names[i], rootPc: v.bass % 12, pcs: [...new Set([v.bass % 12, ...v.upper.map((m) => m % 12)])], voiced: v }])
+}
+
+/** What to play: a bar of clicks to count in, then the chart `rounds` times; and where each bar starts. */
+export function schedule(chartId: string, keyPc: number, bpm: number, backing: Backing, rounds: number) {
+  return scheduleBars(chartBars(chartId, keyPc), bpm, backing, rounds)
+}
+
+/**
+ * Bars of 4/4, each holding one to four chords that share its beats. The judged "bars" are the chords themselves,
+ * each with the time it starts. Clicks mark every beat; each event knows the chord sounding when it starts.
+ */
+export function scheduleBars(barsIn: readonly SlotIn[][], bpm: number, backing: Backing, rounds: number): { events: TimedEvent[]; bars: Bar[]; beatOf: (number | null)[]; barOf: (number | null)[] } {
   const beat = 60 / bpm
   const events: TimedEvent[] = []
-  /** For every event: which beat of its bar it marks (clicks only), and which bar (-1 for the count-in). */
   const beatOf: (number | null)[] = []
   const barOf: (number | null)[] = []
   const click = (t: number, b: number, bar: number) => {
@@ -53,20 +80,27 @@ export function schedule(chartId: string, keyPc: number, bpm: number, backing: B
   for (let b = 0; b < 4; b++) click(b * beat, b, -1)
   const bars: Bar[] = []
   for (let round = 0; round < rounds; round++) {
-    voiced.forEach((v, i) => {
-      const index = round * voiced.length + i
-      const at = (index + 1) * 4 * beat
-      const pcs = [...new Set([v.bass % 12, ...v.upper.map((m) => m % 12)])]
-      const root = v.bass % 12
-      const third = pcs.find((pc) => [3, 4].includes((pc - root + 12) % 12))!
-      bars.push({ index, round, name: names[i], pcs, root, third, notes: [v.bass, ...v.upper], at })
-      for (let b = 0; b < 4; b++) click(at + b * beat, b, index)
-      const backingEvents = backing === 'click' ? [] : backing === 'bass' ? [{ time: at, hold: 4 * beat * 0.95, notes: [v.bass] }] : barEvents(v, backing, at, beat, () => 0.5)
-      for (const e of backingEvents) {
-        events.push(e)
-        beatOf.push(null)
-        barOf.push(index)
-      }
+    barsIn.forEach((slots, barIndex) => {
+      const barStart = (round * barsIn.length + barIndex + 1) * 4 * beat
+      const each = 4 / slots.length
+      const first = bars.length
+      slots.forEach((slot, k) => {
+        const index = bars.length
+        const at = barStart + k * each * beat
+        const v = slot.voiced
+        bars.push({ index, round, name: slot.name, pcs: slot.pcs, root: slot.rootPc, third: thirdOf(slot.pcs, slot.rootPc), notes: [v.bass, ...v.upper], at })
+        // One chord in the bar: the chosen pattern. Several: each held for its share of the bar.
+        const backingEvents = backing === 'click' ? []
+          : backing === 'bass' ? [{ time: at, hold: each * beat * 0.95, notes: [v.bass] }]
+          : slots.length === 1 ? barEvents(v, backing, at, beat, () => 0.5)
+          : [{ time: at, hold: each * beat * 0.95, notes: [v.bass, ...v.upper] }]
+        for (const e of backingEvents) {
+          events.push(e)
+          beatOf.push(null)
+          barOf.push(index)
+        }
+      })
+      for (let b = 0; b < 4; b++) click(barStart + b * beat, b, first + Math.min(slots.length - 1, Math.floor(b / each)))
     })
   }
   // In time order, so the sound and the screen move together.

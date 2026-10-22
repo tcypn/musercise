@@ -16,6 +16,8 @@ import { Roadmap } from './pages/Roadmap'
 import { Settings } from './pages/Settings'
 import { Piano } from './pages/Piano'
 import { PlayAlong } from './pages/PlayAlong'
+import { Songs } from './pages/Songs'
+import { Song } from './pages/Song'
 import { Streak } from './pages/Streak'
 
 /** Links from the first version of the app were /practice/<level>: those were intervals. */
@@ -59,6 +61,8 @@ function Shell() {
             <Route path="/progress" element={<Progress />} />
             <Route path="/piano" element={<Piano />} />
             <Route path="/play-along" element={<PlayAlong />} />
+            <Route path="/songs" element={<Songs />} />
+            <Route path="/songs/:id" element={<Song />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Learn />} />
           </Routes>
